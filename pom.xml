@@ -19,9 +19,9 @@ limitations under the License.
 	<modelVersion>4.0.0</modelVersion>
 	
 	<groupId>com.agapsys.libs</groupId>
-    <artifactId>action-dispatcher</artifactId>
-    <version>0.1.0-RC1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+	<artifactId>action-dispatcher</artifactId>
+	<version>0.1.0-RC1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 		
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
