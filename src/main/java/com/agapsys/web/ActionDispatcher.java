@@ -21,7 +21,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 public class ActionDispatcher {
-	private final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new LinkedHashMap<>();
+	private final Map<HttpMethod, Map<String, WebAction>> ACTION_MAP = new LinkedHashMap<>();
 
 	/**
 	 * Registers an action with given URL
@@ -29,7 +29,7 @@ public class ActionDispatcher {
 	 * @param httpMethod associated HTTP method
 	 * @param url URL associated with given action and HTTP method
 	 */
-	public void registerAction(Action action, HttpMethod httpMethod, String url) {
+	public void registerAction(WebAction action, HttpMethod httpMethod, String url) {
 		if (action == null) {
 			throw new IllegalArgumentException("action == null");
 		}
@@ -44,7 +44,7 @@ public class ActionDispatcher {
 
 		url = url.trim();
 
-		Map<String, Action> map = ACTION_MAP.get(httpMethod);
+		Map<String, WebAction> map = ACTION_MAP.get(httpMethod);
 
 		if (map == null) {
 			map = new LinkedHashMap<>();
@@ -63,7 +63,7 @@ public class ActionDispatcher {
 	 * parameter map. If there is no mapping, returns null
 	 * @param req HTTP request
 	 */
-	public Action getAction(HttpServletRequest req) {
+	public WebAction getAction(HttpServletRequest req) {
 		HttpMethod httpMethod;
 		try {
 			httpMethod = HttpMethod.valueOf(req.getMethod());
@@ -73,7 +73,7 @@ public class ActionDispatcher {
 		
 		String path = req.getPathInfo();
 
-		Map<String, Action> map = ACTION_MAP.get(httpMethod);
+		Map<String, WebAction> map = ACTION_MAP.get(httpMethod);
 		if (map == null) {
 			return null;
 		} else {
