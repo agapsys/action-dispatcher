@@ -25,18 +25,15 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/*")
 public class ActionDispatcherServlet extends HttpServlet {
-	// CLASS SCOPE =============================================================
+	// CLASS SCOPE =============================================================	
+	public static final String ATTR_EXCEPTION  = "javax.servlet.error.exception";
+	
 	private static final ActionDispatcher dispatcher = new ActionDispatcher();
 	
 	private static WebAction beforeAction   = null;
 	private static WebAction afterAction    = null;
-	private static WebAction notFoundAction = new WebAction() {
-
-		@Override
-		public void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-		}
-	};
+	private static WebAction errorAction    = null;
+	private static WebAction notFoundAction = null;
 	
 	public static void registerAction(WebAction action, HttpMethod httpMethod, String url) {
 		dispatcher.registerAction(action, httpMethod, url);
@@ -56,6 +53,13 @@ public class ActionDispatcherServlet extends HttpServlet {
 		return afterAction;
 	}
 	
+	public static void registerErrorAction(WebAction errorAction) {
+		ActionDispatcherServlet.errorAction = errorAction;
+	}
+	public static WebAction getErrorAction() {
+		return errorAction;
+	}
+	
 	public static void registerNotFoundAction(WebAction notFoundAction) {
 		ActionDispatcherServlet.notFoundAction = notFoundAction;
 	}
@@ -69,11 +73,29 @@ public class ActionDispatcherServlet extends HttpServlet {
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		WebAction action = dispatcher.getAction(req);
 		if (action == null) {
-			notFoundAction.processRequest(req, resp);
+			if (notFoundAction != null) {
+				notFoundAction.processRequest(req, resp);
+			} else {
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			}
 		} else {
-			beforeAction.processRequest(req, resp);
-			action.processRequest(req, resp);
-			afterAction.processRequest(req, resp);
+			try {
+				if (beforeAction != null)
+					beforeAction.processRequest(req, resp);
+				
+				action.processRequest(req, resp);
+				
+				if (afterAction != null)
+					afterAction.processRequest(req, resp);
+				
+			} catch (Throwable t) {
+				if (errorAction == null) {
+					throw t;
+				} else {
+					req.setAttribute(ATTR_EXCEPTION, t);
+					errorAction.processRequest(req, resp);
+				}
+			}
 		}
 	}
 	// =========================================================================
