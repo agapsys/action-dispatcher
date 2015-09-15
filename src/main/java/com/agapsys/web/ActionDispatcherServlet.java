@@ -30,40 +30,40 @@ public class ActionDispatcherServlet extends HttpServlet {
 	
 	private static final ActionDispatcher dispatcher = new ActionDispatcher();
 	
-	private static WebAction beforeAction   = null;
-	private static WebAction afterAction    = null;
-	private static WebAction errorAction    = null;
-	private static WebAction notFoundAction = null;
+	private static Action beforeAction   = null;
+	private static Action afterAction    = null;
+	private static Action errorAction    = null;
+	private static Action notFoundAction = null;
 	
-	public static void registerAction(WebAction action, HttpMethod httpMethod, String url) {
+	public static void registerAction(Action action, HttpMethod httpMethod, String url) {
 		dispatcher.registerAction(action, httpMethod, url);
 	}
 	
-	public static void registerBeforeAction(WebAction beforeAction) {
+	public static void registerBeforeAction(Action beforeAction) {
 		ActionDispatcherServlet.beforeAction = beforeAction;
 	}
-	public static WebAction getBeforeAction() {
+	public static Action getBeforeAction() {
 		return beforeAction;
 	}
 	
-	public static void registerAfterAction(WebAction afterAction) {
+	public static void registerAfterAction(Action afterAction) {
 		ActionDispatcherServlet.afterAction = afterAction;
 	}
-	public static WebAction getAfterAction() {
+	public static Action getAfterAction() {
 		return afterAction;
 	}
 	
-	public static void registerErrorAction(WebAction errorAction) {
+	public static void registerErrorAction(Action errorAction) {
 		ActionDispatcherServlet.errorAction = errorAction;
 	}
-	public static WebAction getErrorAction() {
+	public static Action getErrorAction() {
 		return errorAction;
 	}
 	
-	public static void registerNotFoundAction(WebAction notFoundAction) {
+	public static void registerNotFoundAction(Action notFoundAction) {
 		ActionDispatcherServlet.notFoundAction = notFoundAction;
 	}
-	public static WebAction getNotFoundAction() {
+	public static Action getNotFoundAction() {
 		return notFoundAction;
 	}
 	// =========================================================================
@@ -71,7 +71,7 @@ public class ActionDispatcherServlet extends HttpServlet {
 	// INSTANCE SCOPE ==========================================================
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		WebAction action = dispatcher.getAction(req);
+		Action action = dispatcher.getAction(req);
 		if (action == null) {
 			if (notFoundAction != null) {
 				notFoundAction.processRequest(req, resp);
