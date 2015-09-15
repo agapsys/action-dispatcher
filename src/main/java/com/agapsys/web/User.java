@@ -18,10 +18,6 @@ package com.agapsys.web;
 import java.io.Serializable;
 import java.util.Set;
 
-/**
- *
- * @author Leandro Oliveira (leandro@agapsys.com)
- */
 public interface User extends Serializable {
 	public Set<String> getRoles();
 }
