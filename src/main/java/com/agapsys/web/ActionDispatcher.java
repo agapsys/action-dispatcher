@@ -59,6 +59,13 @@ public class ActionDispatcher {
 	}
 
 	/**
+	 * Removes all registered actions.
+	 */
+	public void clearActions() {
+		ACTION_MAP.clear();
+	}
+	
+	/**
 	 * @return the action associated with given request and respective URL
 	 * parameter map. If there is no mapping, returns null
 	 * @param req HTTP request

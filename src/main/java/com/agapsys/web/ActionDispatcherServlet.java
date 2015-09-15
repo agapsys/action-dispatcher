@@ -26,17 +26,18 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/*")
 public class ActionDispatcherServlet extends HttpServlet {
 	// CLASS SCOPE =============================================================	
-	public static final String ATTR_EXCEPTION  = "javax.servlet.error.exception";
-	
 	private static final ActionDispatcher dispatcher = new ActionDispatcher();
 	
 	private static Action beforeAction   = null;
 	private static Action afterAction    = null;
-	private static Action errorAction    = null;
 	private static Action notFoundAction = null;
 	
 	public static void registerAction(Action action, HttpMethod httpMethod, String url) {
 		dispatcher.registerAction(action, httpMethod, url);
+	}
+	
+	public static void clearActions() {
+		dispatcher.clearActions();
 	}
 	
 	public static void registerBeforeAction(Action beforeAction) {
@@ -51,13 +52,6 @@ public class ActionDispatcherServlet extends HttpServlet {
 	}
 	public static Action getAfterAction() {
 		return afterAction;
-	}
-	
-	public static void registerErrorAction(Action errorAction) {
-		ActionDispatcherServlet.errorAction = errorAction;
-	}
-	public static Action getErrorAction() {
-		return errorAction;
 	}
 	
 	public static void registerNotFoundAction(Action notFoundAction) {
@@ -79,23 +73,13 @@ public class ActionDispatcherServlet extends HttpServlet {
 				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		} else {
-			try {
-				if (beforeAction != null)
-					beforeAction.processRequest(req, resp);
-				
-				action.processRequest(req, resp);
-				
-				if (afterAction != null)
-					afterAction.processRequest(req, resp);
-				
-			} catch (Throwable t) {
-				if (errorAction == null) {
-					throw t;
-				} else {
-					req.setAttribute(ATTR_EXCEPTION, t);
-					errorAction.processRequest(req, resp);
-				}
-			}
+			if (beforeAction != null)
+				beforeAction.processRequest(req, resp);
+
+			action.processRequest(req, resp);
+
+			if (afterAction != null)
+				afterAction.processRequest(req, resp);
 		}
 	}
 	// =========================================================================
