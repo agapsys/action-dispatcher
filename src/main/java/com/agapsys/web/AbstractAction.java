@@ -21,7 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class SecuredAction implements Action {
+public abstract class AbstractAction implements Action {
 	private final SecurityHandler securityHandler;
 	
 	/**
@@ -29,8 +29,16 @@ public abstract class SecuredAction implements Action {
 	 * Creates an action with given security handler
 	 * @param securityHandler security handler used by this action or null if there is no security
 	 */
-	public SecuredAction(SecurityHandler securityHandler) {
+	public AbstractAction(SecurityHandler securityHandler) {
 		this.securityHandler = securityHandler;
+	}
+	
+	/**
+	 * Constructor.
+	 * Creates an action without any security handler
+	 */
+	public AbstractAction() {
+		this(null);
 	}
 	
 	/**

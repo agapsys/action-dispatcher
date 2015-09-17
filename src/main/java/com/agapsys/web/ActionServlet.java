@@ -45,7 +45,7 @@ public class ActionServlet extends HttpServlet {
 		
 	};
 	
-	private class CallerAction extends SecuredAction {
+	private class CallerAction extends AbstractAction {
 		private final Method method;
 		
 		public CallerAction(Method method) {
