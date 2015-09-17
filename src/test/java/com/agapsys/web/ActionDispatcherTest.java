@@ -19,6 +19,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,24 +50,6 @@ public class ActionDispatcherTest {
 	public void testPassNullMethod() {
 		SimpleAction action = new SimpleAction();
 		dispatcher.registerAction(action, null, "/test");
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testPassNullUrl() {
-		SimpleAction action = new SimpleAction();
-		dispatcher.registerAction(action, HttpMethod.POST, null);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testPassEmptyUrl() {
-		SimpleAction action = new SimpleAction();
-		dispatcher.registerAction(action, HttpMethod.POST, "");
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testPassEmptyIfTrimmedUrl() {
-		SimpleAction action = new SimpleAction();
-		dispatcher.registerAction(action, HttpMethod.POST, "  ");
 	}
 
 	@Test
