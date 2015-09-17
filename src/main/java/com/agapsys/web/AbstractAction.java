@@ -46,7 +46,7 @@ public abstract class AbstractAction implements Action {
 	 * This method will be called only if given request is allowed to be processed.
 	 * @param req HTTP request
 	 * @param resp HTTP response
-	 * @see SecuredAction#isAllowed(HttpServletRequest, HttpServletResponse)
+	 * @see SecurityHandler#isAllowed(HttpServletRequest, HttpServletResponse)
 	 * @throws IOException when there is an error processing the request
 	 * @throws ServletException when there is an error processing the request
 	 */
