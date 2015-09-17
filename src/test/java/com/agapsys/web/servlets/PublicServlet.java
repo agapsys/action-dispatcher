@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/public/*")
 public class PublicServlet extends ActionServlet {
 	
-	private void processRequest(String msg, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void processRequest(String msg, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setStatus(HttpServletResponse.SC_OK);
 		resp.getWriter().print(msg);
 	}
@@ -42,6 +42,11 @@ public class PublicServlet extends ActionServlet {
 	@WebAction(mapping = "mapped/get")
 	public void mappedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		processRequest(ActionServletTest.PUBLIC_MAPPED_GET_URL, req, resp);
+	}
+	
+	@WebAction(mapping = "/mapped/get2")
+	public void mappedWithSlash(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		processRequest(ActionServletTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, req, resp);
 	}
 	
 	

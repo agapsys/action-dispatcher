@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.servlet.ServletException;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class ActionServlet extends HttpServlet {
+	// CLASS SCOPE =============================================================
 	private static final CsrfSecurityHandler DEFAULT_CSRF_SECURITY_HANDLER = new CsrfSecurityHandler();
 	private static final UserManager         DEFAULT_USER_MANAGER          = new UserManager() {
 
@@ -45,6 +47,28 @@ public class ActionServlet extends HttpServlet {
 		
 	};
 	
+	private static void matchSignature(Method method) throws RuntimeException {
+		String signature = method.toGenericString();
+
+		String errMsg = String.format("Invalid signature (%s). Required: public void <method_name>(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException", signature);
+		
+		if (!signature.startsWith("public void "))
+			throw new RuntimeException(errMsg);
+		
+		int indexOfOpenParenthesis = signature.indexOf("(");
+		int indexOfCloseParenthesis = signature.indexOf(")");
+		
+		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis);
+		if (!args.equals("javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse"))
+			throw new RuntimeException(errMsg);
+		
+		Set<String> thrownExceptions = new LinkedHashSet<>(Arrays.asList(signature.substring(indexOfCloseParenthesis + 1).trim().replace("throws ", "").split(",")));
+		if (!(thrownExceptions.size() == 2 && thrownExceptions.contains("javax.servlet.ServletException") && thrownExceptions.contains("java.io.IOException")))
+			throw new RuntimeException(errMsg);
+	}
+	// =========================================================================
+	
+	// INSTANCE SCOPE ==========================================================	
 	private class CallerAction extends AbstractAction {
 		private final Method method;
 		
@@ -85,57 +109,66 @@ public class ActionServlet extends HttpServlet {
 	
 	private volatile boolean initialized = false;
 	
-	private synchronized void initialize() {
-		Method[] methods = this.getClass().getMethods();
-		for (Method method : methods) {
-			Annotation[] annotations = method.getAnnotations();
-			for (Annotation annotation : annotations) {
-				if (annotation instanceof WebAction) {
-					WebAction webAction = (WebAction) annotation;
-					
-					String[] requiredRoles = webAction.requiredRoles();
-					Set<String> requiredRoleSet = new LinkedHashSet<>();
-					
-					for (String role : requiredRoles) {
-						if (!requiredRoleSet.add(role))
-							throw new RuntimeException("Duplicate role: " + role);
+	protected synchronized void initialize() {
+		if (!initialized) {
+			Method[] methods = this.getClass().getDeclaredMethods();
+			for (Method method : methods) {
+				Annotation[] annotations = method.getAnnotations();
+				for (Annotation annotation : annotations) {
+					if (annotation instanceof WebAction) {
+						matchSignature(method);
+						WebAction webAction = (WebAction) annotation;
+
+						String[] requiredRoles = webAction.requiredRoles();
+						Set<String> requiredRoleSet = new LinkedHashSet<>();
+
+						for (String role : requiredRoles) {
+							if (!requiredRoleSet.add(role))
+								throw new RuntimeException("Duplicate role: " + role);
+						}
+
+						HttpMethod httpMethod = webAction.httpMethod();
+						String url = webAction.mapping();
+
+						if (url.trim().isEmpty())
+							url = method.getName();
+
+						if (!url.startsWith("/"))
+							url = "/" + url;
+
+						SecurityHandler handler = getSecurityHandler(requiredRoleSet);
+						CallerAction callerAction = new CallerAction(method, handler);
+						dispatcher.registerAction(callerAction, httpMethod, url);
+						
+						if (webAction.defaultAction()) {
+							dispatcher.registerAction(callerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+						}
+					} else if (annotation instanceof BeforeAction) {
+						matchSignature(method);
+						if (beforeAction != null)
+							throw new RuntimeException("Duplicate BeforeAction: " + method.getName());
+
+						CallerAction callerAction = new CallerAction(method);
+						beforeAction = callerAction;
+					} else if (annotation instanceof AfterAction) {
+						matchSignature(method);
+						if (afterAction != null)
+							throw new RuntimeException("Duplicate AfterAction: " + method.getName());
+
+						CallerAction callerAction = new CallerAction(method);
+						afterAction = callerAction;
+					} else if (annotation instanceof NotFoundAction) {
+						matchSignature(method);
+						if (notFoundAction != null)
+							throw new RuntimeException("Duplicate NotFoundAction: " + method.getName());
+
+						CallerAction callerAction = new CallerAction(method);
+						notFoundAction = callerAction;
 					}
-					
-					HttpMethod httpMethod = webAction.httpMethod();
-					String url = webAction.mapping();
-					
-					if (url.trim().isEmpty())
-						url = method.getName();
-					
-					if (!url.startsWith("/"))
-						url = "/" + url;
-					
-					SecurityHandler handler = getSecurityHandler(requiredRoleSet);
-					CallerAction callerAction = new CallerAction(method, handler);
-					
-					dispatcher.registerAction(callerAction, httpMethod, url);
-				} else if (annotation instanceof BeforeAction) {
-					if (beforeAction != null)
-						throw new RuntimeException("Duplicate BeforeAction: " + method.getName());
-					
-					CallerAction callerAction = new CallerAction(method);
-					beforeAction = callerAction;
-				} else if (annotation instanceof AfterAction) {
-					if (afterAction != null)
-						throw new RuntimeException("Duplicate AfterAction: " + method.getName());
-					
-					CallerAction callerAction = new CallerAction(method);
-					afterAction = callerAction;
-				} else if (annotation instanceof NotFoundAction) {
-					if (notFoundAction != null)
-						throw new RuntimeException("Duplicate NotFoundAction: " + method.getName());
-					
-					CallerAction callerAction = new CallerAction(method);
-					notFoundAction = callerAction;
 				}
 			}
+			initialized = true;
 		}
-		initialized = true;
 	}
 	
 	/**

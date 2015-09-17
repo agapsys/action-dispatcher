@@ -27,4 +27,5 @@ public @interface WebAction {
 	HttpMethod httpMethod()    default HttpMethod.GET;
 	String     mapping()       default "";
 	String[]   requiredRoles() default {};
+	boolean    defaultAction() default false;
 }

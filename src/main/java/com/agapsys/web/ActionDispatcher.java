@@ -21,6 +21,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 public class ActionDispatcher {
+	public static final String DEFAULT_URL = "/";
+	
 	private final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new LinkedHashMap<>();
 
 	/**
@@ -38,9 +40,8 @@ public class ActionDispatcher {
 			throw new IllegalArgumentException("httpMethod == null");
 		}
 
-		if (url == null || url.trim().isEmpty()) {
-			throw new IllegalArgumentException("url == null || url.trim().isEmpty()");
-		}
+		if (url == null || url.trim().isEmpty())
+			url = DEFAULT_URL;
 
 		url = url.trim();
 
@@ -79,7 +80,10 @@ public class ActionDispatcher {
 		}
 		
 		String path = req.getPathInfo();
-
+		if (path == null) {
+			path = DEFAULT_URL;
+		}
+		
 		Map<String, Action> map = ACTION_MAP.get(httpMethod);
 		if (map == null) {
 			return null;
