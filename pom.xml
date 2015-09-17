@@ -29,8 +29,8 @@ limitations under the License.
 		<maven.compiler.target>1.7</maven.compiler.target>
 	</properties>
 	
-	<name>Web Action Dispatcher</name>
-	<description>Simple action dispatcher for web applications</description>
+	<name>Action Dispatcher</name>
+	<description>REST framework for java back-end applications</description>
 	<url>https://github.com/agapsys/action-dispatcher</url>
 	
 	<licenses>
