@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.servlets;
+package com.agapsys.web.actions.servlets;
 
-import com.agapsys.web.ActionServletTest;
-import com.agapsys.web.HttpMethod;
-import com.agapsys.web.SecurityHandler;
-import com.agapsys.web.annotations.WebAction;
+import com.agapsys.web.actions.ActionServletTest;
+import com.agapsys.web.actions.HttpMethod;
+import com.agapsys.web.actions.SecurityHandler;
+import com.agapsys.web.actions.WebAction;
 import java.io.IOException;
 import java.util.Set;
 import javax.servlet.ServletException;

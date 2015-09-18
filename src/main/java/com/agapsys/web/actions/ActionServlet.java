@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package com.agapsys.web;
+package com.agapsys.web.actions;
 
-import com.agapsys.web.annotations.AfterAction;
-import com.agapsys.web.annotations.BeforeAction;
-import com.agapsys.web.annotations.NotFoundAction;
-import com.agapsys.web.annotations.WebAction;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;

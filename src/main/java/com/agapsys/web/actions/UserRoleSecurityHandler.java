@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web;
+package com.agapsys.web.actions;
 
 import java.io.IOException;
 import java.util.Set;
@@ -22,23 +22,33 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class SecurityHandlerSet extends AbstractSecurityHandler {
-	private final Set<SecurityHandler> handlerSet;
+public class UserRoleSecurityHandler extends AbstractSecurityHandler {
 	
-	public SecurityHandlerSet(Set<SecurityHandler> handlerSet) {
-		this.handlerSet = handlerSet;
+	
+	// INSTANCE SCOPE ==========================================================
+	private final Set<String> requiredRoles;
+	private final UserManager userManager;
+	
+	/**
+	 * Constructor.
+	 * Creates a security handler with given required roles
+	 * @param requiredRoles required roles. Passing null or an empty set implies in no security
+	 */
+	public UserRoleSecurityHandler(UserManager userManager, Set<String> requiredRoles) {
+		this.requiredRoles = requiredRoles;
+		this.userManager = userManager;
 	}
-
+		
 	@Override
 	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		if (handlerSet == null)
+		if (requiredRoles == null || requiredRoles.isEmpty()) {
 			return true;
-		
-		for (SecurityHandler handler : handlerSet) {
-			if (!handler.isAllowed(req, resp))
-				return false;
+		} else {
+			User sessionUser = userManager != null ? userManager.getSessionUser(req, resp) : null;
+			return sessionUser != null && sessionUser.getRoles().containsAll(requiredRoles);
 		}
-		
-		return true;
 	}
+	
+	
+	// =========================================================================
 }

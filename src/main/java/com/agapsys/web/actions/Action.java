@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.web;
 
-import java.io.Serializable;
-import java.util.Set;
+package com.agapsys.web.actions;
 
-public interface User extends Serializable {
-	public Set<String> getRoles();
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public interface Action {
+	public void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
 }

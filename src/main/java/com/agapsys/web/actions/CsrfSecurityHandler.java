@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web;
+package com.agapsys.web.actions;
 
 import java.io.IOException;
 import java.util.Objects;

@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.web.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package com.agapsys.web.actions;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface BeforeAction {}
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public abstract class AbstractSecurityHandler implements SecurityHandler {
+	@Override
+	public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+	}
+}

@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.web.annotations;
+package com.agapsys.web.actions;
 
-import com.agapsys.web.HttpMethod;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,9 +22,4 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface WebAction {
-	HttpMethod httpMethod()    default HttpMethod.GET;
-	String     mapping()       default "";
-	String[]   requiredRoles() default {};
-	boolean    defaultAction() default false;
-}
+public @interface BeforeAction {}
