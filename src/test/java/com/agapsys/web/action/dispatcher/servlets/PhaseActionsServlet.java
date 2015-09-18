@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.actions.servlets;
+package com.agapsys.web.action.dispatcher.servlets;
 
-import com.agapsys.web.actions.ActionServletTest;
-import com.agapsys.web.actions.HttpMethod;
-import com.agapsys.web.actions.AfterAction;
-import com.agapsys.web.actions.BeforeAction;
-import com.agapsys.web.actions.NotFoundAction;
-import com.agapsys.web.actions.WebAction;
+import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.web.action.dispatcher.AfterAction;
+import com.agapsys.web.action.dispatcher.BeforeAction;
+import com.agapsys.web.action.dispatcher.NotFoundAction;
+import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

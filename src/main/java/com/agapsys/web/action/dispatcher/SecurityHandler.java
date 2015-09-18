@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.agapsys.web.actions;
+package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
-import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class SecurityHandlerSet extends AbstractSecurityHandler {
-	private final Set<SecurityHandler> handlerSet;
+public interface SecurityHandler {
+	/**
+	 * Returns a boolean indicating if given request is allowed to be processed.
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @return a boolean indicating if given request is allowed to be processed.
+	 */
+	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
 	
-	public SecurityHandlerSet(Set<SecurityHandler> handlerSet) {
-		this.handlerSet = handlerSet;
-	}
-
-	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		if (handlerSet == null)
-			return true;
-		
-		for (SecurityHandler handler : handlerSet) {
-			if (!handler.isAllowed(req, resp))
-				return false;
-		}
-		
-		return true;
-	}
+	/**
+	 * Called when given request is not allowed to be processed.
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 */
+	public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
+	
 }

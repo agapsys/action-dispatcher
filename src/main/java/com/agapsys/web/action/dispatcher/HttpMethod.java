@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.web.actions;
 
-import java.io.Serializable;
-import java.util.Set;
+package com.agapsys.web.action.dispatcher;
 
-public interface User extends Serializable {
-	public Set<String> getRoles();
+/** Represents a HTTP method. */
+public enum HttpMethod {
+	DELETE,
+	GET,
+	HEAD,
+	OPTIONS,
+	POST,
+	PUT,
+	TRACE;
 }

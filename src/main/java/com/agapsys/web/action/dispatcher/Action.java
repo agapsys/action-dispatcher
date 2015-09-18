@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.actions;
+package com.agapsys.web.action.dispatcher;
 
-/** Represents a HTTP method. */
-public enum HttpMethod {
-	DELETE,
-	GET,
-	HEAD,
-	OPTIONS,
-	POST,
-	PUT,
-	TRACE;
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public interface Action {
+	public void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
 }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.actions.servlets;
+package com.agapsys.web.action.dispatcher.servlets;
 
-import com.agapsys.web.actions.ActionServlet;
-import com.agapsys.web.actions.ActionServletTest;
-import com.agapsys.web.actions.User;
-import com.agapsys.web.actions.WebAction;
+import com.agapsys.web.action.dispatcher.ActionServlet;
+import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.User;
+import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;

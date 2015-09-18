@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.actions;
+package com.agapsys.web.action.dispatcher;
 
-import com.agapsys.web.actions.CsrfSecurityHandler;
+import com.agapsys.web.action.dispatcher.CsrfSecurityHandler;
 import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.HttpClient;
 import com.agapsys.sevlet.test.HttpGet;
@@ -26,11 +26,11 @@ import com.agapsys.sevlet.test.HttpRequest.HttpHeader;
 import com.agapsys.sevlet.test.HttpResponse;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
-import com.agapsys.web.actions.servlets.DefaultActionServlet;
-import com.agapsys.web.actions.servlets.LoginServlet;
-import com.agapsys.web.actions.servlets.PhaseActionsServlet;
-import com.agapsys.web.actions.servlets.PublicServlet;
-import com.agapsys.web.actions.servlets.SecuredServlet;
+import com.agapsys.web.action.dispatcher.servlets.DefaultActionServlet;
+import com.agapsys.web.action.dispatcher.servlets.LoginServlet;
+import com.agapsys.web.action.dispatcher.servlets.PhaseActionsServlet;
+import com.agapsys.web.action.dispatcher.servlets.PublicServlet;
+import com.agapsys.web.action.dispatcher.servlets.SecuredServlet;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
 import org.junit.Assert;

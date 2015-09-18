@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.web.actions;
+package com.agapsys.web.action.dispatcher;
 
-import com.agapsys.web.actions.ActionDispatcher;
-import com.agapsys.web.actions.HttpMethod;
-import com.agapsys.web.actions.Action;
+import com.agapsys.web.action.dispatcher.ActionDispatcher;
+import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.web.action.dispatcher.Action;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

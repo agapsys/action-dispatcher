@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.actions;
+package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
