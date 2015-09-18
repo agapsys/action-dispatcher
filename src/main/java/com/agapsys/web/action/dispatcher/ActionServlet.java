@@ -177,6 +177,19 @@ public class ActionServlet extends HttpServlet {
 		resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 	}
 	
+	/** 
+	 * Called when there is an error processing an action.
+	 * Default just throws given exception (wrapped into a {@linkplain RuntimeException}.
+	 * @param throwable error
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @throws IOException when there is an error processing the request
+	 * @throws ServletException when there is an error processing the request
+	 */
+	protected void onError(Throwable throwable, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		throw new RuntimeException(throwable);
+	}
+	
 	/**
 	 * Returns the user manager used by this servlet
 	 * @return the user manager used by this servlet
@@ -207,7 +220,15 @@ public class ActionServlet extends HttpServlet {
 			onNotFound(req, resp);
 		} else {
 			beforeAction(req, resp);
-			action.processRequest(req, resp);
+			
+			try {
+				action.processRequest(req, resp);
+			} catch (ServletException | IOException ex) {
+				throw ex;
+			} catch (Throwable t) {
+				onError(t, req, resp);
+			}
+			
 			afterAction(req, resp);
 		}
 	}
