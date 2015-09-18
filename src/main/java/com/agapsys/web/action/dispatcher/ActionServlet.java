@@ -99,9 +99,6 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	private final ActionDispatcher dispatcher = new ActionDispatcher();
-	private Action beforeAction;
-	private Action afterAction;
-	private Action notFoundAction;
 	
 	private volatile boolean initialized = false;
 	
@@ -139,32 +136,45 @@ public class ActionServlet extends HttpServlet {
 						if (webAction.defaultAction()) {
 							dispatcher.registerAction(callerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
 						}
-					} else if (annotation instanceof BeforeAction) {
-						matchSignature(method);
-						if (beforeAction != null)
-							throw new RuntimeException("Duplicate BeforeAction: " + method.getName());
-
-						CallerAction callerAction = new CallerAction(method);
-						beforeAction = callerAction;
-					} else if (annotation instanceof AfterAction) {
-						matchSignature(method);
-						if (afterAction != null)
-							throw new RuntimeException("Duplicate AfterAction: " + method.getName());
-
-						CallerAction callerAction = new CallerAction(method);
-						afterAction = callerAction;
-					} else if (annotation instanceof NotFoundAction) {
-						matchSignature(method);
-						if (notFoundAction != null)
-							throw new RuntimeException("Duplicate NotFoundAction: " + method.getName());
-
-						CallerAction callerAction = new CallerAction(method);
-						notFoundAction = callerAction;
 					}
 				}
 			}
 			initialized = true;
 		}
+	}
+	
+	/** 
+	 * Called before an action. 
+	 * This method will be called only if an action associated to given request is found.
+	 * Default implementation does nothing.
+	 * @param req HTTP request
+	 * @param resp HTTP Response
+	 * @throws IOException when there is an error processing the request
+	 * @throws ServletException when there is an error processing the request
+	 */
+	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {}
+	
+	/** 
+	 * Called after an action. 
+	 * This method will be called only if an action associated to given request is found.
+	 * Default implementation does nothing.
+	 * @param req HTTP request
+	 * @param resp HTTP Response
+	 * @throws IOException when there is an error processing the request
+	 * @throws ServletException when there is an error processing the request
+	 */
+	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {}
+	
+	/** 
+	 * Called when an action is not found.
+	 * Default implementation sends {@linkplain HttpServletResponse#SC_NOT_FOUND} error.
+	 * @param req HTTP request
+	 * @param resp HTTP Response
+	 * @throws IOException when there is an error processing the request
+	 * @throws ServletException when there is an error processing the request
+	 */
+	protected void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {
+		resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 	}
 	
 	/**
@@ -194,19 +204,11 @@ public class ActionServlet extends HttpServlet {
 		
 		Action action = dispatcher.getAction(req);
 		if (action == null) {
-			if (notFoundAction != null) {
-				notFoundAction.processRequest(req, resp);
-			} else {
-				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-			}
+			onNotFound(req, resp);
 		} else {
-			if (beforeAction != null)
-				beforeAction.processRequest(req, resp);
-
+			beforeAction(req, resp);
 			action.processRequest(req, resp);
-
-			if (afterAction != null)
-				afterAction.processRequest(req, resp);
+			afterAction(req, resp);
 		}
 	}
 	// =========================================================================

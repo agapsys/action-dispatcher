@@ -18,9 +18,6 @@ package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServletTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
-import com.agapsys.web.action.dispatcher.AfterAction;
-import com.agapsys.web.action.dispatcher.BeforeAction;
-import com.agapsys.web.action.dispatcher.NotFoundAction;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -31,17 +28,17 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/phase/*")
 public class PhaseActionsServlet extends PublicServlet {
 	
-	@BeforeAction
+	@Override
 	public void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		resp.setHeader(ActionServletTest.PHASE_BEFORE_HEADER, ActionServletTest.PHASE_BEFORE_HEADER);
 	}
 	
-	@AfterAction
+	@Override
 	public void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		resp.setHeader(ActionServletTest.PHASE_AFTER_HEADER, ActionServletTest.PHASE_AFTER_HEADER);
 	}
 	
-	@NotFoundAction
+	@Override
 	public void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 		resp.setHeader(ActionServletTest.PHASE_NOT_FOUND_HEADER, ActionServletTest.PHASE_NOT_FOUND_HEADER);
