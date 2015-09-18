@@ -118,18 +118,18 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		ServletJpaEntityManger em = (ServletJpaEntityManger) req.getAttribute(ATTR_ENTITY_MANAGER);
 		
 		if (em == null) {
-			em = new ServletJpaEntityManger(getApplicationEntityManager());
+			em = new ServletJpaEntityManger(getApplicationEntityManagerFactory().getEntityManager());
 			
 			ServletJpaTransaction transaction = em.getWrappedTransaction();
 			transaction.wrappedBegin();
 			
-			req.setAttribute(ATTR_TRANSACTION, em);
+			req.setAttribute(ATTR_ENTITY_MANAGER, em);
 			req.setAttribute(ATTR_TRANSACTION, transaction);
 		}
 		
 		return em;
 	}
 	
-	protected abstract EntityManager getApplicationEntityManager();
+	protected abstract ApplicationEntityManagerFactory getApplicationEntityManagerFactory();
 	// =========================================================================
 }

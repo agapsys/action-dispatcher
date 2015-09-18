@@ -16,7 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import com.agapsys.web.action.dispatcher.CsrfSecurityHandler;
 import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.HttpClient;
 import com.agapsys.sevlet.test.HttpGet;

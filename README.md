@@ -16,7 +16,10 @@ Web Action Dispatcher project requires Java 7 compatible runtime and depends on 
 
 Testing dependencies:
 * Agapsys Servlet Testing Framework (https://github.com/agapsys/servlet-testing-framework)
+* Agapsys JPA Utilities (https://github.com/agapsys/jpa-utils)
+* H2 Database (http://www.h2database.com)
 * JUnit (http://junit.org/)
+* Hibernate JPA (http://hibernate.org/orm/)
 
 For detailed information on external dependencies please see *pom.xml*.
 
