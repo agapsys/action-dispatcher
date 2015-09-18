@@ -26,8 +26,6 @@ public class TestEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	int id;
-
-	
 	
 	public Integer getId() {
 		return id;
