@@ -63,9 +63,6 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 
 		@Override
 		public EntityTransaction getTransaction() {
-			throw exception;
-		}
-		public ServletJpaTransaction getWrappedTransaction() {
 			if (singleTransaction == null) {
 				singleTransaction = new ServletJpaTransaction(super.getTransaction());
 			}
@@ -120,7 +117,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		if (em == null) {
 			em = new ServletJpaEntityManger(getApplicationEntityManagerFactory().getEntityManager());
 			
-			ServletJpaTransaction transaction = em.getWrappedTransaction();
+			ServletJpaTransaction transaction = (ServletJpaTransaction) em.getTransaction();
 			transaction.wrappedBegin();
 			
 			req.setAttribute(ATTR_ENTITY_MANAGER, em);
