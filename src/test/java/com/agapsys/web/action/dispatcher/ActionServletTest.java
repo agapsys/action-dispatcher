@@ -45,7 +45,7 @@ public class ActionServletTest {
 	
 	
 	// Phase actions -----------------------------------------------------------	
-	public static final String PHASE_DEFAULT_URL = "/phase";
+	public static final String PHASE_DEFAULT_URL       = "/phase";
 	public static final String PHASE_BEFORE_HEADER     = "before-header";
 	public static final String PHASE_AFTER_HEADER      = "before-header";
 	public static final String PHASE_NOT_FOUND_HEADER  = "not-found";
@@ -57,6 +57,7 @@ public class ActionServletTest {
 	public static final String PUBLIC_MAPPED_WITH_SLASH_GET_URL = "/public/mapped/get2";
 	public static final String PUBLIC_POST_URL                  = "/public/post";
 	public static final String PUBLIC_MAPPED_POST_URL           = "/public/mapped/post";
+	public static final String PUBLIC_REPEATABLE_GET_POST_URL   = "/public/repeatableGetOrPost";
 	
 	public static final String SECURED_DEFAULT_URL       = "/secured";
 	public static final String SECURED_GET_URL           = "/secured/get";
@@ -287,6 +288,21 @@ public class ActionServletTest {
 		// POST: PUBLIC MAPPED GET
 		resp = sc.doPost(new HttpPost(sc, PUBLIC_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+	}
+	
+	@Test
+	public void testPublicRepeatble() {
+		HttpResponse resp;
+		
+		// GET:
+		resp = sc.doGet(PUBLIC_REPEATABLE_GET_POST_URL);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_REPEATABLE_GET_POST_URL + "GET", resp.getResponseBody());
+		
+		// POST:
+		resp = sc.doPost(new HttpPost(sc, PUBLIC_REPEATABLE_GET_POST_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_REPEATABLE_GET_POST_URL + "POST", resp.getResponseBody());
 	}
 	
 	@Test

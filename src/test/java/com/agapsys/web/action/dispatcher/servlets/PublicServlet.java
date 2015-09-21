@@ -59,4 +59,10 @@ public class PublicServlet extends ActionServlet {
 	public void mappedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		processRequest(ActionServletTest.PUBLIC_MAPPED_POST_URL, req, resp);
 	}
+	
+	@WebAction(httpMethod = HttpMethod.GET)
+	@WebAction(httpMethod = HttpMethod.POST)
+	public void repeatableGetOrPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		processRequest(ActionServletTest.PUBLIC_REPEATABLE_GET_POST_URL + req.getMethod(), req, resp);
+	}
 }

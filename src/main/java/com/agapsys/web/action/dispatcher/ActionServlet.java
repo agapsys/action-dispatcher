@@ -108,33 +108,42 @@ public class ActionServlet extends HttpServlet {
 			for (Method method : methods) {
 				Annotation[] annotations = method.getAnnotations();
 				for (Annotation annotation : annotations) {
-					if (annotation instanceof WebAction) {
+					if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
 						matchSignature(method);
-						WebAction webAction = (WebAction) annotation;
-
-						String[] requiredRoles = webAction.requiredRoles();
-						Set<String> requiredRoleSet = new LinkedHashSet<>();
-
-						for (String role : requiredRoles) {
-							if (!requiredRoleSet.add(role))
-								throw new RuntimeException("Duplicate role: " + role);
+								
+						WebAction[] webActions;
+						
+						if (annotation instanceof WebActions) {
+							webActions = ((WebActions) annotation).value();
+						} else {
+							webActions = new WebAction[]{(WebAction) annotation};
 						}
 
-						HttpMethod httpMethod = webAction.httpMethod();
-						String url = webAction.mapping();
+						for (WebAction webAction : webActions) {
+							String[] requiredRoles = webAction.requiredRoles();
+							Set<String> requiredRoleSet = new LinkedHashSet<>();
 
-						if (url.trim().isEmpty())
-							url = method.getName();
+							for (String role : requiredRoles) {
+								if (!requiredRoleSet.add(role))
+									throw new RuntimeException("Duplicate role: " + role);
+							}
 
-						if (!url.startsWith("/"))
-							url = "/" + url;
+							HttpMethod httpMethod = webAction.httpMethod();
+							String url = webAction.mapping();
 
-						SecurityHandler handler = getSecurityHandler(requiredRoleSet);
-						CallerAction callerAction = new CallerAction(method, handler);
-						dispatcher.registerAction(callerAction, httpMethod, url);
-						
-						if (webAction.defaultAction()) {
-							dispatcher.registerAction(callerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+							if (url.trim().isEmpty())
+								url = method.getName();
+
+							if (!url.startsWith("/"))
+								url = "/" + url;
+
+							SecurityHandler handler = getSecurityHandler(requiredRoleSet);
+							CallerAction callerAction = new CallerAction(method, handler);
+							dispatcher.registerAction(callerAction, httpMethod, url);
+
+							if (webAction.defaultAction()) {
+								dispatcher.registerAction(callerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+							}
 						}
 					}
 				}
