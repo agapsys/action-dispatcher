@@ -311,19 +311,19 @@ public class ActionServletTest {
 		
 		// GET: SECURED GET
 		resp = sc.doGet(SECURED_GET_URL);
-		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());
+		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// GET: SECURED MAPPED GET
 		resp = sc.doGet(SECURED_MAPPED_GET_URL);
-		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());
+		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// POST: SECURED POST
 		resp = sc.doPost(new HttpPost(sc, SECURED_POST_URL));
-		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());
+		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// POST: SECURED MAPPED POST
 		resp = sc.doPost(new HttpPost(sc, SECURED_MAPPED_POST_URL));
-		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());
+		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		
 		// GET: SECURED POST

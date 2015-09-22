@@ -214,9 +214,18 @@ public class ActionServlet extends HttpServlet {
 	 */
 	protected SecurityHandler getSecurityHandler(Set<String> requiredRoles) {
 		Set<SecurityHandler> handlerSet = new LinkedHashSet<>();
-		handlerSet.add(new UserRoleSecurityHandler(getUserManager(), requiredRoles));
 		handlerSet.add(DEFAULT_CSRF_SECURITY_HANDLER);
-		return new SecurityHandlerSet(handlerSet);
+
+		final UserRoleSecurityHandler userRoleSecurityHandler = new UserRoleSecurityHandler(getUserManager(), requiredRoles);
+		handlerSet.add(userRoleSecurityHandler);
+		
+		return new SecurityHandlerSet(handlerSet) {
+
+			@Override
+			public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+				userRoleSecurityHandler.onNotAllowed(req, resp);
+			}
+		};
 	}
 	
 	@Override

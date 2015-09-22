@@ -49,6 +49,18 @@ public class UserRoleSecurityHandler extends AbstractSecurityHandler {
 		}
 	}
 	
+	@Override
+	public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		User sessionUser = userManager != null ? userManager.getSessionUser(req, resp) : null;
+		if (sessionUser == null) {
+			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+		} else {
+			super.onNotAllowed(req, resp);
+		}
+	}
+	
 	
 	// =========================================================================
+
+	
 }

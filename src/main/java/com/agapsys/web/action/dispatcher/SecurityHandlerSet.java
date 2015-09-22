@@ -29,6 +29,10 @@ public class SecurityHandlerSet extends AbstractSecurityHandler {
 		this.handlerSet = handlerSet;
 	}
 
+	protected Set<SecurityHandler> getSecuredHandlerSet() {
+		return handlerSet;
+	}
+	
 	@Override
 	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		if (handlerSet == null)
