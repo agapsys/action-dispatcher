@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class CsrfSecurityHandler extends AbstractSecurityHandler {
+public class CsrfSecurityHandler implements SecurityHandler {
 	// CLASS SCOPE =============================================================
 	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.csrf";
 	private static final int    CSRF_TOKEN_LENGTH       = 128;

@@ -22,7 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class SecurityHandlerSet extends AbstractSecurityHandler {
+public class SecurityHandlerSet implements SecurityHandler {
 	private final Set<SecurityHandler> handlerSet;
 	
 	public SecurityHandlerSet(Set<SecurityHandler> handlerSet) {

@@ -22,10 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class UserRoleSecurityHandler extends AbstractSecurityHandler {
-	
-	
-	// INSTANCE SCOPE ==========================================================
+public class UserRoleSecurityHandler implements SecurityHandler {
 	private final Set<String> requiredRoles;
 	private final UserManager userManager;
 	
@@ -48,19 +45,4 @@ public class UserRoleSecurityHandler extends AbstractSecurityHandler {
 			return sessionUser != null && sessionUser.getRoles().containsAll(requiredRoles);
 		}
 	}
-	
-	@Override
-	public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		User sessionUser = userManager != null ? userManager.getSessionUser(req, resp) : null;
-		if (sessionUser == null) {
-			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-		} else {
-			super.onNotAllowed(req, resp);
-		}
-	}
-	
-	
-	// =========================================================================
-
-	
 }

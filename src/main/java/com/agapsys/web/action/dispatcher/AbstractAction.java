@@ -52,13 +52,23 @@ public abstract class AbstractAction implements Action {
 	 */
 	protected abstract void onProcessRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
 	
+	/**
+	 * Called when given request is not allowed to be processed.
+	 * Default implementation just sends a 405 error
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 */
+	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+	}
+	
 	@Override
 	public final void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		if (securityHandler != null) {
 			if (securityHandler.isAllowed(req, resp)) {
 				onProcessRequest(req, resp);
 			} else {
-				securityHandler.onNotAllowed(req, resp);
+				onNotAllowed(req, resp);
 			}
 		} else {
 			onProcessRequest(req, resp);

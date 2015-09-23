@@ -28,12 +28,4 @@ public interface SecurityHandler {
 	 * @return a boolean indicating if given request is allowed to be processed.
 	 */
 	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
-	
-	/**
-	 * Called when given request is not allowed to be processed.
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 */
-	public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
-	
 }

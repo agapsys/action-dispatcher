@@ -40,7 +40,6 @@ public class ActionServlet extends HttpServlet {
 			DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, req, resp);
 			DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(csrfToken, req, resp);
 		}
-		
 	};
 	
 	private static void matchSignature(Method method) throws RuntimeException {
@@ -65,17 +64,17 @@ public class ActionServlet extends HttpServlet {
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================	
-	private class CallerAction extends AbstractAction {
+	private class ActionCaller extends AbstractAction {
 		private final Method method;
 		
-		public CallerAction(Method method) {
-			super(null);
-			this.method = method;
-		}
-		
-		public CallerAction(Method method, SecurityHandler securityHandler) {
+		public ActionCaller(Method method, SecurityHandler securityHandler) {
 			super(securityHandler);
 			this.method = method;
+		}
+
+		@Override
+		protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+			ActionServlet.this.onNotAllowed(req, resp);
 		}
 		
 		@Override
@@ -138,11 +137,11 @@ public class ActionServlet extends HttpServlet {
 								url = "/" + url;
 
 							SecurityHandler handler = getSecurityHandler(requiredRoleSet);
-							CallerAction callerAction = new CallerAction(method, handler);
-							dispatcher.registerAction(callerAction, httpMethod, url);
+							ActionCaller actionCaller = new ActionCaller(method, handler);
+							dispatcher.registerAction(actionCaller, httpMethod, url);
 
 							if (webAction.defaultAction()) {
-								dispatcher.registerAction(callerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+								dispatcher.registerAction(actionCaller, httpMethod, ActionDispatcher.DEFAULT_URL);
 							}
 						}
 					}
@@ -200,11 +199,22 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	/**
-	 * Returns the user manager used by this servlet
-	 * @return the user manager used by this servlet
+	 * Called when an action is not allowed to be executed.
+	 * Default implementation sends 401 if called action has required roles an there is no user. 
+	 * If user is registered with session and it does not have required roles, sends 403.
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @throws IOException when there is an error processing the request
+	 * @throws ServletException when there is an error processing the request
 	 */
-	protected UserManager getUserManager() {
-		return DEFAULT_USER_MANAGER;
+	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		User sessionUser = getUserManager().getSessionUser(req, resp);
+		
+		if (sessionUser == null) {
+			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+		} else {
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		}
 	}
 	
 	/**
@@ -219,13 +229,15 @@ public class ActionServlet extends HttpServlet {
 		final UserRoleSecurityHandler userRoleSecurityHandler = new UserRoleSecurityHandler(getUserManager(), requiredRoles);
 		handlerSet.add(userRoleSecurityHandler);
 		
-		return new SecurityHandlerSet(handlerSet) {
-
-			@Override
-			public void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-				userRoleSecurityHandler.onNotAllowed(req, resp);
-			}
-		};
+		return new SecurityHandlerSet(handlerSet);
+	}
+	
+	/**
+	 * Returns the user manager used by this servlet
+	 * @return the user manager used by this servlet
+	 */
+	protected UserManager getUserManager() {
+		return DEFAULT_USER_MANAGER;
 	}
 	
 	@Override
