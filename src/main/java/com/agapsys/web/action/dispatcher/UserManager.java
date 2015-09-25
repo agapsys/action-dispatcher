@@ -30,11 +30,9 @@ public class UserManager {
 	/**
 	 * Returns a user from session
 	 * @param req HTTP request
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
 	 * @return session user or null if there is no user
 	 */
-	public User getSessionUser(HttpServletRequest req) throws IOException, ServletException {
+	public User getSessionUser(HttpServletRequest req) {
 		return (User) req.getSession().getAttribute(SESSION_ATTR_USER);
 	}
 	
