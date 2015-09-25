@@ -16,8 +16,8 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.Collection;
 
 public interface User extends Serializable {
-	public Set<String> getRoles();
+	public Collection<String> getRoles();
 }
