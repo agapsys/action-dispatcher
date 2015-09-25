@@ -41,7 +41,7 @@ public class UserRoleSecurityHandler implements SecurityHandler {
 		if (requiredRoles == null || requiredRoles.isEmpty()) {
 			return true;
 		} else {
-			User sessionUser = userManager != null ? userManager.getSessionUser(req, resp) : null;
+			User sessionUser = userManager != null ? userManager.getSessionUser(req) : null;
 			return sessionUser != null && sessionUser.getRoles().containsAll(requiredRoles);
 		}
 	}
