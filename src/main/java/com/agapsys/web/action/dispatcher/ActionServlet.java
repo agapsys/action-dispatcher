@@ -30,17 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class ActionServlet extends HttpServlet {
 	// CLASS SCOPE =============================================================
-	private static final CsrfSecurityHandler DEFAULT_CSRF_SECURITY_HANDLER = new CsrfSecurityHandler();
-	private static final UserManager         DEFAULT_USER_MANAGER          = new UserManager() {
-
-		@Override
-		public void setSessionUser(User user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-			super.setSessionUser(user, req, resp);
-			String csrfToken = DEFAULT_CSRF_SECURITY_HANDLER.generateCsrfToken();
-			DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, req, resp);
-			DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(csrfToken, req, resp);
-		}
-	};
+	private static final UserManager DEFAULT_USER_MANAGER = new CsrfUserManager();
 	
 	private static void matchSignature(Method method) throws RuntimeException {
 		String signature = method.toGenericString();
@@ -224,7 +214,7 @@ public class ActionServlet extends HttpServlet {
 	 */
 	protected SecurityHandler getSecurityHandler(Set<String> requiredRoles) {
 		Set<SecurityHandler> handlerSet = new LinkedHashSet<>();
-		handlerSet.add(DEFAULT_CSRF_SECURITY_HANDLER);
+		handlerSet.add(((CsrfUserManager)getUserManager()).getCsrfSecurityHandler());
 
 		final UserRoleSecurityHandler userRoleSecurityHandler = new UserRoleSecurityHandler(getUserManager(), requiredRoles);
 		handlerSet.add(userRoleSecurityHandler);
@@ -233,7 +223,8 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	/**
-	 * Returns the user manager used by this servlet
+	 * Returns the user manager used by this servlet.
+	 * Default implementation returns a default instance of {@linkplain CsrfUserManager}
 	 * @return the user manager used by this servlet
 	 */
 	protected UserManager getUserManager() {
