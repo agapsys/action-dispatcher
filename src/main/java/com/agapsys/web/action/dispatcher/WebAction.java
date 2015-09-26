@@ -16,13 +16,11 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(value = WebActions.class)
 @Target(ElementType.METHOD)
 public @interface WebAction {
 	HttpMethod httpMethod()    default HttpMethod.GET;

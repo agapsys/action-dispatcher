@@ -20,6 +20,7 @@ import com.agapsys.web.action.dispatcher.ActionServlet;
 import com.agapsys.web.action.dispatcher.ActionServletTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.WebAction;
+import com.agapsys.web.action.dispatcher.WebActions;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -60,8 +61,7 @@ public class PublicServlet extends ActionServlet {
 		processRequest(ActionServletTest.PUBLIC_MAPPED_POST_URL, req, resp);
 	}
 	
-	@WebAction(httpMethod = HttpMethod.GET)
-	@WebAction(httpMethod = HttpMethod.POST)
+	@WebActions({@WebAction(httpMethod = HttpMethod.GET),@WebAction(httpMethod = HttpMethod.POST)})
 	public void repeatableGetOrPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		processRequest(ActionServletTest.PUBLIC_REPEATABLE_GET_POST_URL + req.getMethod(), req, resp);
 	}
