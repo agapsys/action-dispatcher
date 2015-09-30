@@ -104,11 +104,8 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	/** 
 	 * Clears session CSRF token
 	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	public void clearCsrfToken(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void clearCsrfToken(HttpServletRequest req) {
 		req.getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	

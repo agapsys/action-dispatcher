@@ -34,6 +34,12 @@ public class CsrfUserManager extends UserManager {
 		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, req, resp);
 		DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(csrfToken, req, resp);
 	}
+
+	@Override
+	public void clearSessionUser(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		super.clearSessionUser(req, resp);
+		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(req);
+	}
 	
 	public CsrfSecurityHandler getCsrfSecurityHandler() {
 		return DEFAULT_CSRF_SECURITY_HANDLER;
