@@ -18,6 +18,6 @@ package com.agapsys.web.action.dispatcher;
 import java.io.Serializable;
 import java.util.Collection;
 
-public interface User extends Serializable {
+public interface ApplicationUser extends Serializable {
 	public Collection<String> getRoles();
 }

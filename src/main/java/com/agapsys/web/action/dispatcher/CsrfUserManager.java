@@ -28,7 +28,7 @@ public class CsrfUserManager extends UserManager {
 
 	// INSTANCE SCOPE ==========================================================
 	@Override
-	public void setSessionUser(User user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		super.setSessionUser(user, req, resp);
 		String csrfToken = DEFAULT_CSRF_SECURITY_HANDLER.generateCsrfToken();
 		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, req, resp);

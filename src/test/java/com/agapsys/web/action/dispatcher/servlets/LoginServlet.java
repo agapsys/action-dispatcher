@@ -18,7 +18,7 @@ package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
 import com.agapsys.web.action.dispatcher.ActionServletTest;
-import com.agapsys.web.action.dispatcher.User;
+import com.agapsys.web.action.dispatcher.ApplicationUser;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/login/*")
 public class LoginServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
-	private static class SimpleUser implements User {
+	private static class SimpleUser implements ApplicationUser {
 		private final Set<String> roles = new LinkedHashSet<>();
 		
 		@Override
@@ -45,8 +45,8 @@ public class LoginServlet extends ActionServlet {
 		}
 	}
 	
-	private final User simpleUser      = new SimpleUser();
-	private final User priviledgedUser = new PriviledgedUser();
+	private final ApplicationUser simpleUser      = new SimpleUser();
+	private final ApplicationUser priviledgedUser = new PriviledgedUser();
 	
 	private void sendMessage(String msg, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.getWriter().print(msg);

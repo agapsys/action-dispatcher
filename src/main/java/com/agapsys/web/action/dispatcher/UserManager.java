@@ -32,8 +32,8 @@ public class UserManager {
 	 * @param req HTTP request
 	 * @return session user or null if there is no user
 	 */
-	public User getSessionUser(HttpServletRequest req) {
-		return (User) req.getSession().getAttribute(SESSION_ATTR_USER);
+	public ApplicationUser getSessionUser(HttpServletRequest req) {
+		return (ApplicationUser) req.getSession().getAttribute(SESSION_ATTR_USER);
 	}
 	
 	/**
@@ -44,7 +44,7 @@ public class UserManager {
 	 * @throws ServletException if the HTTP request cannot be handled
 	 * @param user user to be registered.
 	 */
-	public void setSessionUser(User user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		if (user == null)
 			throw new IllegalArgumentException("Null user");
 		

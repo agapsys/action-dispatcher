@@ -198,7 +198,7 @@ public class ActionServlet extends HttpServlet {
 	 * @throws ServletException when there is an error processing the request
 	 */
 	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		User sessionUser = getUserManager().getSessionUser(req);
+		ApplicationUser sessionUser = getUserManager().getSessionUser(req);
 		
 		if (sessionUser == null) {
 			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
