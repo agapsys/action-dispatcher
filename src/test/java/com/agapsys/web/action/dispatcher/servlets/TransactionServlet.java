@@ -31,7 +31,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/jpa/*")
 public class TransactionServlet extends JpaTransactionServlet {
-
+	// CLASS SCOPE =============================================================
+	public static boolean postCommitted = false;
+	// =========================================================================
+	
+	// INSTANCE SCOPE ==========================================================	
 	@Override
 	protected ApplicationEntityManagerFactory getApplicationEntityManagerFactory() {
 		final PersistenceUnit pu = PersistenceUnitFactory.getInstance();
@@ -53,17 +57,33 @@ public class TransactionServlet extends JpaTransactionServlet {
 			em.persist(user);
 		}
 	}
+
+	@Override
+	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		postCommitted = false;
+	}
+	
+	private final Runnable postCommitRunnable = new Runnable() {
+
+		@Override
+		public void run() {
+			postCommitted = true;
+		}
+	
+	};
 	
 	@WebAction
 	public void commit(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		EntityManager em = getEntityManager(req);
 		createEntities(em, false);
+		invokeLater(req, postCommitRunnable);
 	}
 	
 	@WebAction
 	public void rollback(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		EntityManager em = getEntityManager(req);
 		createEntities(em, true);
+		invokeLater(req, postCommitRunnable);
 	}
 	
 	@WebAction

@@ -71,9 +71,13 @@ public class JpaTransactionServletTest {
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		
+		Assert.assertTrue(TransactionServlet.postCommitted);
+		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
+		
+		Assert.assertFalse(TransactionServlet.postCommitted);
 	}
 	
 	@Test
@@ -92,6 +96,8 @@ public class JpaTransactionServletTest {
 		resp = sc.doGet(JPA_COMMIT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+
+		Assert.assertTrue(TransactionServlet.postCommitted);
 		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
@@ -103,6 +109,8 @@ public class JpaTransactionServletTest {
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
+		
+		Assert.assertFalse(TransactionServlet.postCommitted);
 	}
 	// =========================================================================
 }

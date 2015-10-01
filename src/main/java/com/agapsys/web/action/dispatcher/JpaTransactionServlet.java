@@ -17,6 +17,8 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.servlet.ServletException;
@@ -27,6 +29,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
 	private static final String ATTR_ENTITY_MANAGER = "com.agapsys.web.action.dispatcher.entityManager";
 	private static final String ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
+	private static final String ATTR_RUNNABLE_QUEUE = "com.agapsys.web.action.dispatcher.runnableQueue";
 	
 	private static class ServletJpaTransaction extends WrappedEntityTransaction {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException();
@@ -109,6 +112,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		super.afterAction(req, resp);
 		closeTransaction(null, req, resp);
+		processQueue(req);
 	}
 	
 	public EntityManager getEntityManager(HttpServletRequest req) {
@@ -128,5 +132,32 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	}
 	
 	protected abstract ApplicationEntityManagerFactory getApplicationEntityManagerFactory();
+	
+	/**
+	 * Queue given runnable to be processed after transaction is committed.
+	 * @param req HTTP request
+	 * @param runnable runnable to be executed
+	 */
+	public void invokeLater(HttpServletRequest req, Runnable runnable) {
+		if (runnable == null)
+			throw new IllegalArgumentException("Null runnable");
+		
+		List<Runnable> queue = (List<Runnable>) req.getAttribute(ATTR_RUNNABLE_QUEUE);
+		if (queue == null) {
+			queue = new LinkedList<>();
+			req.setAttribute(ATTR_RUNNABLE_QUEUE, queue);
+		}
+		
+		queue.add(runnable);
+	}
+	
+	private void processQueue(HttpServletRequest req) {
+		List<Runnable> queue = (List<Runnable>) req.getAttribute(ATTR_RUNNABLE_QUEUE);
+		if (queue != null) {
+			for (Runnable runnable : queue) {
+				runnable.run();
+			}
+		}
+	}
 	// =========================================================================
 }
