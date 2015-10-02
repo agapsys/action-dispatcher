@@ -77,13 +77,12 @@ public abstract class AbstractAction implements Action {
 	
 	/**
 	 * Sends an error to the client.
-	 * Default implementation sends the status code without calling container's error page mechanism.
+	 * Default implementation uses container's error mechanism if available
 	 * @param resp HTTP response
 	 * @param status status code
 	 * @throws IOException if there is an I/O error
 	 */
 	protected void sendError(HttpServletResponse resp, int status) throws IOException {
-		resp.setStatus(status);
-		resp.flushBuffer();
+		resp.sendError(status);
 	}
 }
