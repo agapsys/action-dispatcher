@@ -30,14 +30,16 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	private static final String ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
 	
 	private static class ServletJpaTransaction extends WrappedEntityTransaction implements RequestTransaction {
-		private final UnsupportedOperationException exception = new UnsupportedOperationException();
+		private final UnsupportedOperationException exception = new UnsupportedOperationException("Transaction is managed by servlet");
 		private final EntityManager em;
+		private final HttpServletRequest req;
 		private final List<Runnable> commitQueue = new LinkedList<>();
 		private final List<Runnable> rollbackQueue = new LinkedList<>();
 		
-		public ServletJpaTransaction(EntityManager em, EntityTransaction wrappedTransaction) {
+		public ServletJpaTransaction(HttpServletRequest req, ServletJpaEntityManger em, EntityTransaction wrappedTransaction) {
 			super(wrappedTransaction);
 			this.em = em;
+			this.req = req;
 		}
 		
 		private void processQueue(List<Runnable> queue) {
@@ -78,6 +80,11 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 			return em;
 		}
 
+		@Override
+		public HttpServletRequest getRequest() {
+			return req;
+		}
+
 		private void invokeAfter(List<Runnable> queue, Runnable runnable) {
 			if (runnable == null)
 				throw new IllegalArgumentException("Null runnable");
@@ -97,19 +104,16 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	}
 	
 	private static class ServletJpaEntityManger extends WrappedEntityManager {
-		private final UnsupportedOperationException exception = new UnsupportedOperationException();
-
-		private ServletJpaTransaction singleTransaction = null;
+		private final UnsupportedOperationException exception = new UnsupportedOperationException("Entity manager is managed by servlet");
+		private final ServletJpaTransaction singleTransaction;
 		
-		public ServletJpaEntityManger(EntityManager wrappedEntityManager) {
+		public ServletJpaEntityManger(HttpServletRequest req, EntityManager wrappedEntityManager) {
 			super(wrappedEntityManager);
+			singleTransaction = new ServletJpaTransaction(req, this, super.getTransaction());
 		}
 
 		@Override
 		public EntityTransaction getTransaction() {
-			if (singleTransaction == null) {
-				singleTransaction = new ServletJpaTransaction(this, super.getTransaction());
-			}
 			return singleTransaction;
 		}
 
@@ -155,7 +159,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
 		
 		if (transaction == null) {
-			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getApplicationEntityManagerFactory().getEntityManager()).getTransaction();
+			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(req, getApplicationEntityManagerFactory().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
 			req.setAttribute(ATTR_TRANSACTION, transaction);
 		}

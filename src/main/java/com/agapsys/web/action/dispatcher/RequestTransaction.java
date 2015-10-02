@@ -17,6 +17,7 @@
 package com.agapsys.web.action.dispatcher;
 
 import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
 
 public interface RequestTransaction {
 	/**
@@ -36,4 +37,10 @@ public interface RequestTransaction {
 	 * @param runnable runnable to be queued
 	 */
 	public void invokeAfterRollback(Runnable runnable);
+	
+	/**
+	 * Returns the HTTP request associated with this instance
+	 * @return HTTP request
+	 */
+	public HttpServletRequest getRequest();
 }
