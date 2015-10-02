@@ -138,7 +138,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	 * @param req HTTP request
 	 * @param runnable runnable to be executed
 	 */
-	public void invokeLater(HttpServletRequest req, Runnable runnable) {
+	public void invokeLater(HttpServletRequest req, HttpServletResponse resp, Runnable runnable) {
 		if (runnable == null)
 			throw new IllegalArgumentException("Null runnable");
 		

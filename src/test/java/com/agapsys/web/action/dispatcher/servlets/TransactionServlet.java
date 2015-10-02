@@ -76,14 +76,14 @@ public class TransactionServlet extends JpaTransactionServlet {
 	public void commit(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		EntityManager em = getEntityManager(req);
 		createEntities(em, false);
-		invokeLater(req, postCommitRunnable);
+		invokeLater(req, resp, postCommitRunnable);
 	}
 	
 	@WebAction
 	public void rollback(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		EntityManager em = getEntityManager(req);
 		createEntities(em, true);
-		invokeLater(req, postCommitRunnable);
+		invokeLater(req, resp, postCommitRunnable);
 	}
 	
 	@WebAction
