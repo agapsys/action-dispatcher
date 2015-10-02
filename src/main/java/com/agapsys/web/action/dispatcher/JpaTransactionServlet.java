@@ -27,15 +27,24 @@ import javax.servlet.http.HttpServletResponse;
 
 public abstract class JpaTransactionServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
-	private static final String ATTR_ENTITY_MANAGER = "com.agapsys.web.action.dispatcher.entityManager";
 	private static final String ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
-	private static final String ATTR_RUNNABLE_QUEUE = "com.agapsys.web.action.dispatcher.runnableQueue";
 	
-	private static class ServletJpaTransaction extends WrappedEntityTransaction {
+	private static class ServletJpaTransaction extends WrappedEntityTransaction implements RequestTransaction {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException();
+		private final EntityManager em;
+		private final List<Runnable> commitQueue = new LinkedList<>();
+		private final List<Runnable> rollbackQueue = new LinkedList<>();
 		
-		public ServletJpaTransaction(EntityTransaction wrappedTransaction) {
+		public ServletJpaTransaction(EntityManager em, EntityTransaction wrappedTransaction) {
 			super(wrappedTransaction);
+			this.em = em;
+		}
+		
+		private void processQueue(List<Runnable> queue) {
+			for (Runnable runnable : queue) {
+				runnable.run();
+			}
+			queue.clear();
 		}
 		
 		@Override
@@ -44,6 +53,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		}
 		public void wrappedCommit() {
 			super.commit();
+			processQueue(commitQueue);
 		}
 		
 		@Override
@@ -52,6 +62,37 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		}
 		public void wrappedBegin() {
 			super.begin();
+		}
+
+		@Override
+		public void rollback() {
+			throw exception;
+		}
+		public void wrappedRollback() {
+			super.rollback();
+			processQueue(rollbackQueue);
+		}
+
+		@Override
+		public EntityManager getEntityManager() {
+			return em;
+		}
+
+		private void invokeAfter(List<Runnable> queue, Runnable runnable) {
+			if (runnable == null)
+				throw new IllegalArgumentException("Null runnable");
+			
+			queue.add(runnable);
+		}
+		
+		@Override
+		public void invokeAfterCommit(Runnable runnable) {
+			invokeAfter(commitQueue, runnable);
+		}
+
+		@Override
+		public void invokeAfterRollback(Runnable runnable) {
+			invokeAfter(rollbackQueue, runnable);
 		}
 	}
 	
@@ -67,7 +108,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		@Override
 		public EntityTransaction getTransaction() {
 			if (singleTransaction == null) {
-				singleTransaction = new ServletJpaTransaction(super.getTransaction());
+				singleTransaction = new ServletJpaTransaction(this, super.getTransaction());
 			}
 			return singleTransaction;
 		}
@@ -83,81 +124,45 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private void closeTransaction(Throwable t, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ServletJpaEntityManger entityManager = (ServletJpaEntityManger) req.getAttribute(ATTR_ENTITY_MANAGER);
+	private void closeTransaction(Throwable t, HttpServletRequest req) throws ServletException, IOException {
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
 		
-		if (transaction != null && transaction.isActive()) {
+		if (transaction != null) {
 			if (t != null) {
-				transaction.rollback();
+				transaction.wrappedRollback();
 			} else {
 				transaction.wrappedCommit();
 			}
+			
+			((ServletJpaEntityManger)transaction.getEntityManager()).wrappedClose();
 			req.removeAttribute(ATTR_TRANSACTION);
-		}
-		
-		if (entityManager != null) {
-			entityManager.wrappedClose();
-			req.removeAttribute(ATTR_ENTITY_MANAGER);
 		}
 	}
 
 	@Override
 	protected void onError(Throwable throwable, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		closeTransaction(throwable, req, resp);
+		closeTransaction(throwable, req);
 		super.onError(throwable, req, resp);
 	}
 	
 	@Override
 	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		closeTransaction(null, req);
 		super.afterAction(req, resp);
-		closeTransaction(null, req, resp);
-		processQueue(req);
 	}
 	
-	public EntityManager getEntityManager(HttpServletRequest req) {
-		ServletJpaEntityManger em = (ServletJpaEntityManger) req.getAttribute(ATTR_ENTITY_MANAGER);
+	public RequestTransaction getTransaction(HttpServletRequest req) {
+		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
 		
-		if (em == null) {
-			em = new ServletJpaEntityManger(getApplicationEntityManagerFactory().getEntityManager());
-			
-			ServletJpaTransaction transaction = (ServletJpaTransaction) em.getTransaction();
+		if (transaction == null) {
+			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getApplicationEntityManagerFactory().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
-			
-			req.setAttribute(ATTR_ENTITY_MANAGER, em);
 			req.setAttribute(ATTR_TRANSACTION, transaction);
 		}
 		
-		return em;
+		return transaction;
 	}
 	
 	protected abstract ApplicationEntityManagerFactory getApplicationEntityManagerFactory();
-	
-	/**
-	 * Queue given runnable to be processed after transaction is committed.
-	 * @param req HTTP request
-	 * @param runnable runnable to be executed
-	 */
-	public void invokeLater(HttpServletRequest req, HttpServletResponse resp, Runnable runnable) {
-		if (runnable == null)
-			throw new IllegalArgumentException("Null runnable");
-		
-		List<Runnable> queue = (List<Runnable>) req.getAttribute(ATTR_RUNNABLE_QUEUE);
-		if (queue == null) {
-			queue = new LinkedList<>();
-			req.setAttribute(ATTR_RUNNABLE_QUEUE, queue);
-		}
-		
-		queue.add(runnable);
-	}
-	
-	private void processQueue(HttpServletRequest req) {
-		List<Runnable> queue = (List<Runnable>) req.getAttribute(ATTR_RUNNABLE_QUEUE);
-		if (queue != null) {
-			for (Runnable runnable : queue) {
-				runnable.run();
-			}
-		}
-	}
 	// =========================================================================
 }

@@ -66,18 +66,21 @@ public class JpaTransactionServletTest {
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("0", resp.getResponseBody());
 		
-		
+		// Test post events ----------------------------------------------------
 		resp = sc.doGet(JPA_COMMIT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		
 		Assert.assertTrue(TransactionServlet.postCommitted);
+		Assert.assertFalse(TransactionServlet.postRollbacked);
+		// ---------------------------------------------------------------------
 		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
 		
 		Assert.assertFalse(TransactionServlet.postCommitted);
+		Assert.assertFalse(TransactionServlet.postRollbacked);
 	}
 	
 	@Test
@@ -92,25 +95,33 @@ public class JpaTransactionServletTest {
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("0", resp.getResponseBody());
 		
-		
+		// Test commit ---------------------------------------------------------
 		resp = sc.doGet(JPA_COMMIT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 
 		Assert.assertTrue(TransactionServlet.postCommitted);
+		Assert.assertFalse(TransactionServlet.postRollbacked);
+		// ---------------------------------------------------------------------
 		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
 		
+		// Test rollback -------------------------------------------------------
 		resp = sc.doGet(JPA_ROLLBACK_URL);
 		System.out.println(resp.getResponseBody());
+		
+		Assert.assertFalse(TransactionServlet.postCommitted);
+		Assert.assertTrue(TransactionServlet.postRollbacked);
+		// ---------------------------------------------------------------------
 		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
 		
 		Assert.assertFalse(TransactionServlet.postCommitted);
+		Assert.assertFalse(TransactionServlet.postRollbacked);
 	}
 	// =========================================================================
 }

@@ -20,6 +20,7 @@ import com.agapsys.jpa.PersistenceUnit;
 import com.agapsys.web.action.dispatcher.ApplicationEntityManagerFactory;
 import com.agapsys.web.action.dispatcher.JpaTransactionServlet;
 import com.agapsys.web.action.dispatcher.PersistenceUnitFactory;
+import com.agapsys.web.action.dispatcher.RequestTransaction;
 import com.agapsys.web.action.dispatcher.WebAction;
 import com.agapsys.web.action.dispatcher.entities.TestEntity;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 public class TransactionServlet extends JpaTransactionServlet {
 	// CLASS SCOPE =============================================================
 	public static boolean postCommitted = false;
+	public static boolean postRollbacked = false;
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================	
@@ -48,19 +50,20 @@ public class TransactionServlet extends JpaTransactionServlet {
 		};
 	}
 
-	private void createEntities(EntityManager em, boolean throwError) {
+	private void createEntities(RequestTransaction rt, boolean throwError) {
 		for(int i = 1; i <= 100; i++) {
 			if (i == 50 && throwError)
 				throw new RuntimeException();
 			
 			TestEntity user = new TestEntity();
-			em.persist(user);
+			rt.getEntityManager().persist(user);
 		}
 	}
 
 	@Override
 	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		postCommitted = false;
+		postRollbacked = false;
 	}
 	
 	private final Runnable postCommitRunnable = new Runnable() {
@@ -69,32 +72,41 @@ public class TransactionServlet extends JpaTransactionServlet {
 		public void run() {
 			postCommitted = true;
 		}
-	
 	};
+	
+	private final Runnable postRollbackRunnable = new Runnable() {
+		@Override
+		public void run() {
+			postRollbacked = true;
+		}
+	};
+	
 	
 	@WebAction
 	public void commit(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		EntityManager em = getEntityManager(req);
-		createEntities(em, false);
-		invokeLater(req, resp, postCommitRunnable);
+		RequestTransaction rt = getTransaction(req);
+		rt.invokeAfterRollback(postRollbackRunnable);
+		createEntities(rt, false);
+		rt.invokeAfterCommit(postCommitRunnable);
 	}
 	
 	@WebAction
 	public void rollback(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		EntityManager em = getEntityManager(req);
-		createEntities(em, true);
-		invokeLater(req, resp, postCommitRunnable);
+		RequestTransaction rt = getTransaction(req);
+		rt.invokeAfterRollback(postRollbackRunnable);
+		createEntities(rt, true);
+		rt.invokeAfterCommit(postCommitRunnable);
 	}
 	
 	@WebAction
 	public void clear(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		getEntityManager(req).createQuery("delete from TestEntity t").executeUpdate();
+		getTransaction(req).getEntityManager().createQuery("delete from TestEntity t").executeUpdate();
 	}
 	
 	@WebAction
 	public void count(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		EntityManager em = getEntityManager(req);
-		Long count = (Long) em.createQuery("select count(1) from TestEntity t)").getSingleResult();
+		RequestTransaction rt = getTransaction(req);
+		Long count = (Long) rt.getEntityManager().createQuery("select count(1) from TestEntity t)").getSingleResult();
 		resp.getWriter().print("" + count);
 	}
 }
