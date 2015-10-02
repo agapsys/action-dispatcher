@@ -59,7 +59,7 @@ public abstract class AbstractAction implements Action {
 	 * @param resp HTTP response
 	 */
 	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		sendError(resp, HttpServletResponse.SC_FORBIDDEN);
 	}
 	
 	@Override
@@ -73,5 +73,17 @@ public abstract class AbstractAction implements Action {
 		} else {
 			onProcessRequest(req, resp);
 		}
+	}
+	
+	/**
+	 * Sends an error to the client.
+	 * Default implementation sends the status code without calling container's error page mechanism.
+	 * @param resp HTTP response
+	 * @param status status code
+	 * @throws IOException if there is an I/O error
+	 */
+	protected void sendError(HttpServletResponse resp, int status) throws IOException {
+		resp.setStatus(status);
+		resp.flushBuffer();
 	}
 }

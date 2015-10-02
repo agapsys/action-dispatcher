@@ -85,6 +85,11 @@ public class ActionServlet extends HttpServlet {
 				throw new RuntimeException(ex);
 			}
 		}
+
+		@Override
+		protected void sendError(HttpServletResponse resp, int status) throws IOException {
+			ActionServlet.this.sendError(resp, status);
+		}
 	}
 	
 	private final ActionDispatcher dispatcher = new ActionDispatcher();
@@ -172,7 +177,7 @@ public class ActionServlet extends HttpServlet {
 	 * @throws ServletException when there is an error processing the request
 	 */
 	protected void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {
-		resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+		sendError(resp, HttpServletResponse.SC_NOT_FOUND);
 	}
 	
 	/** 
@@ -201,9 +206,9 @@ public class ActionServlet extends HttpServlet {
 		ApplicationUser sessionUser = getUserManager().getSessionUser(req);
 		
 		if (sessionUser == null) {
-			resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED);
 		} else {
-			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+			sendError(resp, HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 	
@@ -252,6 +257,18 @@ public class ActionServlet extends HttpServlet {
 			
 			afterAction(req, resp);
 		}
+	}
+	
+	/**
+	 * Sends an error to the client.
+	 * Default implementation sends the status code without calling container's error page mechanism.
+	 * @param resp HTTP response
+	 * @param status status code
+	 * @throws IOException if there is an I/O error
+	 */
+	protected void sendError(HttpServletResponse resp, int status) throws IOException {
+		resp.setStatus(status);
+		resp.flushBuffer();
 	}
 	// =========================================================================
 }
