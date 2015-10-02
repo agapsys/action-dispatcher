@@ -18,7 +18,6 @@ package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -54,49 +53,11 @@ public class ActionServlet extends HttpServlet {
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================	
-	private class ActionCaller extends AbstractAction {
-		private final Method method;
-		
-		public ActionCaller(Method method, SecurityHandler securityHandler) {
-			super(securityHandler);
-			this.method = method;
-		}
-
-		@Override
-		protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-			ActionServlet.this.onNotAllowed(req, resp);
-		}
-		
-		@Override
-		protected void onProcessRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-			try {
-				method.invoke(ActionServlet.this, req, resp);
-			} catch (InvocationTargetException ex) {
-				Throwable cause = ex.getCause();
-				
-				if (cause instanceof IOException)
-					throw (IOException) cause;
-				
-				if (cause instanceof ServletException)
-					throw (ServletException) cause;
-				
-				throw new RuntimeException(cause);
-			} catch (IllegalAccessException | IllegalArgumentException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
-
-		@Override
-		protected void sendError(HttpServletResponse resp, int status) throws IOException {
-			ActionServlet.this.sendError(resp, status);
-		}
-	}
-	
 	private final ActionDispatcher dispatcher = new ActionDispatcher();
 	
 	private volatile boolean initialized = false;
 	
-	protected synchronized void initialize() {
+	private synchronized void initialize() {
 		if (!initialized) {
 			Method[] methods = this.getClass().getDeclaredMethods();
 			for (Method method : methods) {
@@ -132,7 +93,7 @@ public class ActionServlet extends HttpServlet {
 								url = "/" + url;
 
 							SecurityHandler handler = getSecurityHandler(requiredRoleSet);
-							ActionCaller actionCaller = new ActionCaller(method, handler);
+							ActionCaller actionCaller = getActionCaller(method, handler);
 							dispatcher.registerAction(actionCaller, httpMethod, url);
 
 							if (webAction.defaultAction()) {
@@ -144,6 +105,18 @@ public class ActionServlet extends HttpServlet {
 			}
 			initialized = true;
 		}
+	}
+	
+	/**
+	 * Returns an action associated with given method.
+	 * This method is called during servlet initialization when {@linkplain WebAction} or {@linkplain WebActions} annotation
+	 * is found.
+	 * @param method annotated method
+	 * @param securityHandler identifier security handler
+	 * @return Action caller managed by servlet
+	 */
+	protected ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
+		return new ActionCaller(this, method, securityHandler);
 	}
 	
 	/** 
