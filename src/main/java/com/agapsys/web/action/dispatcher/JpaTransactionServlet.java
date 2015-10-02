@@ -33,13 +33,15 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Transaction is managed by servlet");
 		private final EntityManager em;
 		private final HttpServletRequest req;
+		private final UserManager userManager;
 		private final List<Runnable> commitQueue = new LinkedList<>();
 		private final List<Runnable> rollbackQueue = new LinkedList<>();
 		
-		public ServletJpaTransaction(HttpServletRequest req, ServletJpaEntityManger em, EntityTransaction wrappedTransaction) {
+		public ServletJpaTransaction(UserManager userManager, HttpServletRequest req, ServletJpaEntityManger em, EntityTransaction wrappedTransaction) {
 			super(wrappedTransaction);
-			this.em = em;
+			this.userManager = userManager;
 			this.req = req;
+			this.em = em;			
 		}
 		
 		private void processQueue(List<Runnable> queue) {
@@ -81,8 +83,8 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		}
 
 		@Override
-		public HttpServletRequest getRequest() {
-			return req;
+		public ApplicationUser getSessionUser() {
+			return userManager.getSessionUser(req);
 		}
 
 		private void invokeAfter(List<Runnable> queue, Runnable runnable) {
@@ -107,9 +109,9 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Entity manager is managed by servlet");
 		private final ServletJpaTransaction singleTransaction;
 		
-		public ServletJpaEntityManger(HttpServletRequest req, EntityManager wrappedEntityManager) {
+		public ServletJpaEntityManger(UserManager userManager, HttpServletRequest req, EntityManager wrappedEntityManager) {
 			super(wrappedEntityManager);
-			singleTransaction = new ServletJpaTransaction(req, this, super.getTransaction());
+			singleTransaction = new ServletJpaTransaction(userManager, req, this, super.getTransaction());
 		}
 
 		@Override
@@ -159,7 +161,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
 		
 		if (transaction == null) {
-			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(req, getApplicationEntityManagerFactory().getEntityManager()).getTransaction();
+			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getUserManager(), req, getApplicationEntityManagerFactory().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
 			req.setAttribute(ATTR_TRANSACTION, transaction);
 		}
