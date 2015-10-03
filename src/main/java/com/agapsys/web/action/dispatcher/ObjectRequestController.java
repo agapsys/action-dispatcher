@@ -32,16 +32,14 @@ public abstract class ObjectRequestController {
 	
 	// INSTANCE SCOPE ==========================================================
 	private final ActionServlet servlet;
-	private volatile boolean initialized = false;
-	private ObjectSerializer serializer;
-	
-	private synchronized void init() {
-		if (!initialized) {
-			serializer = getSerializer();
-			initialized = true;
+	private final LazyInitializer<ObjectSerializer> serializerLazyInitializer = new LazyInitializer<ObjectSerializer>() {
+
+		@Override
+		protected ObjectSerializer getLazyInstance() {
+			return ObjectRequestController.this.getSerializer();
 		}
-	}
-	
+	};	
+
 	/**
 	 * Constructor
 	 * @param servlet an action servlet
@@ -51,21 +49,15 @@ public abstract class ObjectRequestController {
 		if (servlet == null)
 			throw new IllegalArgumentException("Null servlet");
 		
-		if (serializer == null)
-			throw new IllegalArgumentException("Null serializer");
-		
 		this.servlet = servlet;
 	}
 	
+	/**
+	 * Returns the serializer used by this controller. 
+	 * It is safe to return a new instance, since this method will be called only once during application execution.
+	 * @return the serializer used by this controller. 
+	 */
 	protected abstract ObjectSerializer getSerializer();
-	
-	private ObjectSerializer _getSerializer() {
-		if (!initialized) {
-			init();
-		}
-		
-		return serializer;
-	}
 	
 	/**
 	 * Gets the action caller associated with a method
@@ -82,7 +74,7 @@ public abstract class ObjectRequestController {
 		if (objectRequestAnnotation != null) {
 			targetClass = objectRequestAnnotation.targetClass();
 		}
-		return new ObjectRequestActionCaller(_getSerializer(), targetClass, servlet, method, securityHandler);
+		return new ObjectRequestActionCaller(serializerLazyInitializer.getInstance(), targetClass, servlet, method, securityHandler);
 	}
 	
 	/** @return the instance of a class specified in {@linkplain ObjectRequest}. */

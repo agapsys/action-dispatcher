@@ -24,20 +24,28 @@ import javax.servlet.http.HttpServletRequest;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public abstract class JpaObjectRequestServlet extends JpaTransactionServlet {
+	private final LazyInitializer<ObjectRequestController> controllerLazyInitializer = new LazyInitializer<ObjectRequestController>() {
+
+		@Override
+		protected ObjectRequestController getLazyInstance() {
+			return JpaObjectRequestServlet.this.getController();
+		}
+	};
 	
 	@Override
 	protected ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
-		return getController().getActionCaller(method, securityHandler);
+		return controllerLazyInitializer.getInstance().getActionCaller(method, securityHandler);
 	}
 	
 	/**
 	 * Return the controller associated with this servlet.
+	 * It is safe to return a new instance, since this method will be called only once during application execution.
 	 * @return the controller associated with this servlet.
 	 */
 	protected abstract ObjectRequestController getController();
 	
 	/** @return the instance of a class specified in {@linkplain ObjectRequest}. */
 	public Object getObject(HttpServletRequest req) {
-		return getController().getObject(req);
+		return controllerLazyInitializer.getInstance().getObject(req);
 	}
 }

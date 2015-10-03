@@ -58,12 +58,10 @@ public class ActionServlet extends HttpServlet {
 	
 	// INSTANCE SCOPE ==========================================================	
 	private final ActionDispatcher dispatcher = new ActionDispatcher();
-	
-	private volatile boolean initialized = false;
-	
-	private synchronized void initialize() {
-		if (!initialized) {
-			Method[] methods = this.getClass().getDeclaredMethods();
+	private final LazyInitializer lazyInitializer = new LazyInitializer() {
+		@Override
+		protected void onInitialize() {
+			Method[] methods = ActionServlet.this.getClass().getDeclaredMethods();
 			for (Method method : methods) {
 				Annotation[] annotations = method.getAnnotations();
 				for (Annotation annotation : annotations) {
@@ -107,9 +105,8 @@ public class ActionServlet extends HttpServlet {
 					}
 				}
 			}
-			initialized = true;
 		}
-	}
+	};
 	
 	/**
 	 * Returns the action caller which will be responsible by call a method in servlet.
@@ -212,9 +209,10 @@ public class ActionServlet extends HttpServlet {
 			return new SecurityHandlerSet(handlerSet);
 		}
 	}
-	
+		
 	/**
 	 * Returns the user manager used by this servlet.
+	 * <b>ATTENTION:</b>This method may be called multiple times during runtime. Do not create a new instance after each call in order to improve performance.
 	 * Default implementation returns a default instance of {@linkplain CsrfUserManager}
 	 * @return the user manager used by this servlet
 	 */
@@ -224,8 +222,8 @@ public class ActionServlet extends HttpServlet {
 	
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!initialized)
-			initialize();
+		if (!lazyInitializer.isInitialized())
+			lazyInitializer.initialize();
 		
 		Action action = dispatcher.getAction(req);
 		if (action == null) {

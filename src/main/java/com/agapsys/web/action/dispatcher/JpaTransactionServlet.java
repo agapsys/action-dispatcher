@@ -182,6 +182,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	
 	/** 
 	 * Return the factory of entity managers used by this servlet. 
+	 * <b>ATTENTION:</b>This method may be called multiple times during runtime. Do not create a new instance after each call in order to improve performance.
 	 * @return {@linkplain ApplicationEntityManagerFactory} instance used by this servlet
 	 */
 	protected abstract ApplicationEntityManagerFactory getApplicationEntityManagerFactory();
