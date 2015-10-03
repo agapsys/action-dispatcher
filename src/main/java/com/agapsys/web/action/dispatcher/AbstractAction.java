@@ -95,7 +95,9 @@ public abstract class AbstractAction implements Action {
 				onNotAllowed(req, resp);
 			}
 		} else {
+			beforeAction(req, resp);
 			onProcessRequest(req, resp);
+			afterAction(req, resp);
 		}
 	}
 	
