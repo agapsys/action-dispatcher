@@ -19,7 +19,6 @@ package com.agapsys.web.action.dispatcher;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -84,10 +83,8 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	 * @param req HTTP request
 	 * @param resp HTTP response
 	 * @return the CSRF token stored in session
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	public String getSessionCsrfToken(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public String getSessionCsrfToken(HttpServletRequest req, HttpServletResponse resp) {
 		return (String) req.getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	
@@ -96,10 +93,8 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	 * @param csrfToken token to be stored
 	 * @param req HTTP request
 	 * @param resp HTTP response
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	public void setSessionCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {	
+	public void setSessionCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp) {	
 		if (csrfToken == null || csrfToken.isEmpty())
 			throw new IllegalArgumentException("Null/Empty CSRF token");
 		
@@ -120,14 +115,28 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	 * @param csrfToken token to be sent
 	 * @param req HTTP request
 	 * @param resp HTTP response
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param flush defines if response shall be flushed
+	 * @throws IOException if an input or output error occurs while sending the HTTP response
 	 */
-	public void sendCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void sendCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp, boolean flush) throws IOException {
 		if (csrfToken == null || csrfToken.isEmpty())
 			throw new IllegalArgumentException("Null/Empty CSRF token");
 		
 		resp.setHeader(CSRF_HEADER, csrfToken);
+		
+		if (flush)
+			resp.flushBuffer();
+	}
+	
+	/**
+	 * Convenience method for sendCsrfToken(csrfToken, req, resp, false)
+	 * @param csrfToken token to be sent
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @throws IOException if an input or output error occurs while sending the HTTP response
+	 */
+	public void sendCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		sendCsrfToken(csrfToken, req, resp, false);
 	}
 	
 	@Override

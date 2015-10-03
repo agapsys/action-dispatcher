@@ -17,7 +17,6 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,7 +31,7 @@ public class CsrfUserManager extends UserManager {
 
 	// INSTANCE SCOPE ==========================================================
 	@Override
-	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		super.setSessionUser(user, req, resp);
 		String csrfToken = DEFAULT_CSRF_SECURITY_HANDLER.generateCsrfToken();
 		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, req, resp);
@@ -40,8 +39,8 @@ public class CsrfUserManager extends UserManager {
 	}
 
 	@Override
-	public void clearSessionUser(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		super.clearSessionUser(req, resp);
+	public void clearSessionUser(HttpServletRequest req) {
+		super.clearSessionUser(req);
 		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(req);
 	}
 	

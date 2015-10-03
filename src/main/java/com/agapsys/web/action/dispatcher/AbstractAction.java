@@ -104,7 +104,7 @@ public abstract class AbstractAction implements Action {
 	 * Default implementation uses container's error mechanism if available
 	 * @param resp HTTP response
 	 * @param status status code
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws IOException if an input or output error occurs while sending the HTTP response
 	 */
 	protected void sendError(HttpServletResponse resp, int status) throws IOException {
 		resp.sendError(status);

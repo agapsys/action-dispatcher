@@ -17,7 +17,6 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,12 +43,11 @@ public class UserManager {
 	/**
 	 * Sets a user in a session
 	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
 	 * @param user user to be registered.
+	 * @param resp HTTP response (used when there is a need to send data to user after setting the user in request session)
+	 * @throws IOException when there is an I/O error while send the response.
 	 */
-	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if (user == null)
 			throw new IllegalArgumentException("Null user");
 		
@@ -59,11 +57,8 @@ public class UserManager {
 	/**
 	 * Clears session user
 	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException when there is an I/O error while processing the request
-	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	public void clearSessionUser(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public void clearSessionUser(HttpServletRequest req) {
 		req.getSession().removeAttribute(SESSION_ATTR_USER);
 	}
 	// =========================================================================
