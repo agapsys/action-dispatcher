@@ -20,8 +20,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Web action annotation group.
+ * Every method of an {@linkplain ActionServlet} (with the signature <code>public void methodName(HttpServletRequest, HttpServletResponse) throws ServletException, IOException</code>) annotated with {@linkplain WebAction} or {@linkplain WebActions} will be mapped to an {@linkplain ActionCaller}
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface WebActions {
-	WebAction[] value() default {};
+	
+	/** @return the group of web actions associated with this annotation instance. */
+	WebAction[] value();
 }

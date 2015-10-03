@@ -21,6 +21,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * User manager.
+ * A user manager is the object responsible by handling user in a request session
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class UserManager {
 	// CLASS SCOPE =============================================================
 	private static final String SESSION_ATTR_USER = "com.agapsys.web.user";
@@ -37,7 +42,7 @@ public class UserManager {
 	}
 	
 	/**
-	 * Sets user session
+	 * Sets a user in a session
 	 * @param req HTTP request
 	 * @param resp HTTP response
 	 * @throws IOException when there is an I/O error while processing the request

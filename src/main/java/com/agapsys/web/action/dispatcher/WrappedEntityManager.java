@@ -33,9 +33,17 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 
+/**
+ * Wrapper for an {@linkplain EntityManager} instance.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 class WrappedEntityManager implements EntityManager {
 	private final EntityManager wrappedEntityManager;
 
+	/**
+	 * Constructor.
+	 * @param wrappedEntityManager wrapped instance.
+	 */
 	public WrappedEntityManager(EntityManager wrappedEntityManager) {
 		if (wrappedEntityManager == null)
 			throw new IllegalArgumentException("Null entityManager");

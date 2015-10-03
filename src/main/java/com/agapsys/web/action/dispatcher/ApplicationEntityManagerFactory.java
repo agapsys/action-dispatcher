@@ -17,6 +17,14 @@ package com.agapsys.web.action.dispatcher;
 
 import javax.persistence.EntityManager;
 
+/**
+ * This is the factory of {@linkplain EntityManager} instances used by application
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public interface ApplicationEntityManagerFactory {
+	/**
+	 * Returns an {@linkplain EntityManager} instance to be used by application.
+	 * @return {@linkplain EntityManager} instance.
+	 */
 	public EntityManager getEntityManager();
 }

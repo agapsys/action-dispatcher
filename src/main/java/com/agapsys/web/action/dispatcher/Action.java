@@ -21,6 +21,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Represents an action to be processed by application
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public interface Action {
+	
+	/**
+	 * Processes the action.
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
+	 */
 	public void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
 }

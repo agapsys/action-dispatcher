@@ -18,21 +18,28 @@ package com.agapsys.web.action.dispatcher;
 
 import javax.persistence.EntityManager;
 
+/** 
+ * Represents a transaction managed by a {@linkplain JpaTransactionServlet}
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public interface RequestTransaction {
 	/**
 	 * Returns entity manager associated with this transaction.
+	 * Multiple calls to this method will return the same instance.
 	 * @return the entity manager associated with this transaction
 	 */
 	public EntityManager getEntityManager();
 	
 	/**
-	 * Queues given runnable to be executed after transaction commit
+	 * Queues given runnable to be executed after transaction commit.
+	 * If this transaction is not committed, given runnable will not be executed.
 	 * @param runnable runnable to be queued
 	 */
 	public void invokeAfterCommit(Runnable runnable);
 	
 	/**
-	 * Queues given runnable to be executed after transaction rollback
+	 * Queues given runnable to be executed after transaction rollback.
+	 * If this transaction is not rollbacked, given runnable will not be executed.
 	 * @param runnable runnable to be queued
 	 */
 	public void invokeAfterRollback(Runnable runnable);

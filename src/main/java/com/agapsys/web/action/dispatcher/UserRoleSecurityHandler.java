@@ -16,12 +16,14 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.util.Set;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Security handler responsible by checking if a user is allowed to process an action
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class UserRoleSecurityHandler implements SecurityHandler {
 	private final Set<String> requiredRoles;
 	private final UserManager userManager;
@@ -29,6 +31,7 @@ public class UserRoleSecurityHandler implements SecurityHandler {
 	/**
 	 * Constructor.
 	 * Creates a security handler with given required roles
+	 * @param userManager user manager which will be used by this instance whiling getting the user from a session.
 	 * @param requiredRoles required roles. Passing null or an empty set implies in no security
 	 */
 	public UserRoleSecurityHandler(UserManager userManager, Set<String> requiredRoles) {
@@ -37,7 +40,7 @@ public class UserRoleSecurityHandler implements SecurityHandler {
 	}
 		
 	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) {
 		if (requiredRoles == null || requiredRoles.isEmpty()) {
 			return true;
 		} else {

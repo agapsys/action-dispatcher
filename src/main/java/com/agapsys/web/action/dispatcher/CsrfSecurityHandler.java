@@ -23,11 +23,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Security handler responsible by checking for CSRF attacks
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class CsrfSecurityHandler implements SecurityHandler {
 	// CLASS SCOPE =============================================================
-	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.csrf";
+	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.csrfToken";
 	private static final int    CSRF_TOKEN_LENGTH       = 128;
 	
+	/** Name of the header used to send/retrieve a CSRF token. */
 	public static final String CSRF_HEADER  = "X-Csrf-Token";
 
 	/** 
@@ -126,7 +131,7 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	}
 	
 	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) {
 		String sessionCsrfToken = (String) req.getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 		String requestCsrfToken = req.getHeader(CSRF_HEADER);
 			

@@ -15,11 +15,14 @@
  */
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Represents a security handler.
+ * A security handler is an object responsible to allow or reject request according to its internal logic.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public interface SecurityHandler {
 	/**
 	 * Returns a boolean indicating if given request is allowed to be processed.
@@ -27,5 +30,5 @@ public interface SecurityHandler {
 	 * @param resp HTTP response
 	 * @return a boolean indicating if given request is allowed to be processed.
 	 */
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
+	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp);
 }

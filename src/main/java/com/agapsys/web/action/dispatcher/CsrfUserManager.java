@@ -21,6 +21,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * User manager which handles CSRF security
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class CsrfUserManager extends UserManager {
 	// CLASS SCOPE =============================================================
 	private static final CsrfSecurityHandler DEFAULT_CSRF_SECURITY_HANDLER = new CsrfSecurityHandler();
@@ -41,6 +45,10 @@ public class CsrfUserManager extends UserManager {
 		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(req);
 	}
 	
+	/**
+	 * Returns the CSRF security handler used by this instance.
+	 * @return the CSRF security handler used by this instance.
+	 */
 	public CsrfSecurityHandler getCsrfSecurityHandler() {
 		return DEFAULT_CSRF_SECURITY_HANDLER;
 	}

@@ -16,25 +16,38 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.util.Set;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Security handler which groups multiple security handlers together.
+ * If any of the handlers reject the request, the request will be reject.
+ * A request will be accepted only if ALL handlers accept the request of if there is no handler in associated set of handlers.
+ * If there is no handler in the set, the request is allowed to be processed.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class SecurityHandlerSet implements SecurityHandler {
 	private final Set<SecurityHandler> handlerSet;
 	
+	/**
+	 * Constructor
+	 * @param handlerSet set of security handlers
+	 */
 	public SecurityHandlerSet(Set<SecurityHandler> handlerSet) {
 		this.handlerSet = handlerSet;
 	}
 
+	/**
+	 * Return the set of security handlers passed in constructor.
+	 * @return the set of security handlers passed in constructor.
+	 */
 	protected Set<SecurityHandler> getSecuredHandlerSet() {
 		return handlerSet;
 	}
 	
 	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) {
 		if (handlerSet == null)
 			return true;
 		

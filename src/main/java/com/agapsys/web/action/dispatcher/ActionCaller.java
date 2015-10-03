@@ -23,10 +23,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Action caller used by action servlet.
+ * Each method annotated with {@linkplain WebAction} or {@linkplain WebActions}
+ * will be internally called by a instance of an action caller.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class ActionCaller extends AbstractAction {
 	private final Method method;
 	private final ActionServlet servlet;
 	
+	/**
+	 * Constructor.
+	 * @param servlet Action servlet responsible by handling of this action caller
+	 * @param method mapped method
+	 * @param securityHandler the security handler used by action
+	 */
 	public ActionCaller(ActionServlet servlet, Method method, SecurityHandler securityHandler) {
 		super(securityHandler);
 		
@@ -40,8 +52,22 @@ public class ActionCaller extends AbstractAction {
 		this.method = method;
 	}
 
+	/** 
+	 * Returns the servlet passed in constructor.
+	 * @return the servlet passed in constructor.
+	 */
 	public final ActionServlet getServlet() {
 		return servlet;
+	}
+
+	@Override
+	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		getServlet().beforeAction(req, resp);
+	}
+
+	@Override
+	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		getServlet().afterAction(req, resp);
 	}
 	
 	@Override

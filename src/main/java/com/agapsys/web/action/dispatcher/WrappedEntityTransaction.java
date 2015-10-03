@@ -18,9 +18,17 @@ package com.agapsys.web.action.dispatcher;
 
 import javax.persistence.EntityTransaction;
 
+/**
+ * Wrapper for an {@linkplain EntityTransaction} instance.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 class WrappedEntityTransaction implements EntityTransaction {
 	private final EntityTransaction wrappedTransaction;
 	
+	/**
+	 * Constructor
+	 * @param wrappedTransaction wrapped instance.
+	 */
 	public WrappedEntityTransaction(EntityTransaction wrappedTransaction) {
 		this.wrappedTransaction = wrappedTransaction;
 	}

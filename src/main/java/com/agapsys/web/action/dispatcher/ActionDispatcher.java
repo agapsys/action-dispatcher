@@ -20,6 +20,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Action dispatcher.
+ * The dispatcher is responsible by mapping request to actions.
+ * <p><b>ATTENTION:</b> This class is NOT thread-safe</p>
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class ActionDispatcher {
 	public static final String DEFAULT_URL = "/";
 	
@@ -59,16 +65,14 @@ public class ActionDispatcher {
 		map.put(url, action);
 	}
 
-	/**
-	 * Removes all registered actions.
-	 */
+	/** Removes all registered actions. */
 	public void clearActions() {
 		ACTION_MAP.clear();
 	}
 	
 	/**
-	 * @return the action associated with given request and respective URL
-	 * parameter map. If there is no mapping, returns null
+	 * Return the action associated with given request
+	 * @return the action associated with given request. If there is no mapping, returns null
 	 * @param req HTTP request
 	 */
 	public Action getAction(HttpServletRequest req) {

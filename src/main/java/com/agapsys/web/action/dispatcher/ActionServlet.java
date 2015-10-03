@@ -27,6 +27,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Servlet responsible by mapping methods to actions
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public class ActionServlet extends HttpServlet {
 	// CLASS SCOPE =============================================================
 	private static final UserManager DEFAULT_USER_MANAGER = new CsrfUserManager();
@@ -108,12 +112,11 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	/**
-	 * Returns an action associated with given method.
-	 * This method is called during servlet initialization when {@linkplain WebAction} or {@linkplain WebActions} annotation
-	 * is found.
+	 * Returns the action caller which will be responsible by call a method in servlet.
+	 * This method is called during servlet initialization when there is a method annotated with either {@linkplain WebAction} or {@linkplain WebActions}
 	 * @param method annotated method
-	 * @param securityHandler identifier security handler
-	 * @return Action caller managed by servlet
+	 * @param securityHandler security handler used by mapped method
+	 * @return action caller which will actually call a servlet method
 	 */
 	protected ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
 		return new ActionCaller(this, method, securityHandler);
@@ -121,33 +124,34 @@ public class ActionServlet extends HttpServlet {
 	
 	/** 
 	 * Called before an action. 
-	 * This method will be called only if an action associated to given request is found.
+	 * This method will be called only if an action associated to given request is found and it it allowed to be processed (see {@linkplain SecurityHandler}).
 	 * Default implementation does nothing.
 	 * @param req HTTP request
 	 * @param resp HTTP Response
-	 * @throws IOException when there is an error processing the request
-	 * @throws ServletException when there is an error processing the request
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {}
 	
 	/** 
 	 * Called after an action. 
-	 * This method will be called only if an action associated to given request is found.
+	 * This method will be called only if an action associated to given request is found, the action is allowed to be processed (see {@linkplain SecurityHandler}), and the action was successfully processed.
 	 * Default implementation does nothing.
 	 * @param req HTTP request
 	 * @param resp HTTP Response
-	 * @throws IOException when there is an error processing the request
-	 * @throws ServletException when there is an error processing the request
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {}
 	
 	/** 
 	 * Called when an action is not found.
-	 * Default implementation sends {@linkplain HttpServletResponse#SC_NOT_FOUND} error.
+	 * An action is not found when there is no method mapped to given request.
+	 * Default implementation sends a {@linkplain HttpServletResponse#SC_NOT_FOUND} error.
 	 * @param req HTTP request
 	 * @param resp HTTP Response
-	 * @throws IOException when there is an error processing the request
-	 * @throws ServletException when there is an error processing the request
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {
 		sendError(resp, HttpServletResponse.SC_NOT_FOUND);
@@ -155,12 +159,12 @@ public class ActionServlet extends HttpServlet {
 	
 	/** 
 	 * Called when there is an error processing an action.
-	 * Default just throws given exception (wrapped into a {@linkplain RuntimeException}.
+	 * Default implementation just throws given exception (wrapped into a {@linkplain RuntimeException}).
 	 * @param throwable error
 	 * @param req HTTP request
 	 * @param resp HTTP response
-	 * @throws IOException when there is an error processing the request
-	 * @throws ServletException when there is an error processing the request
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected void onError(Throwable throwable, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		throw new RuntimeException(throwable);
@@ -168,12 +172,16 @@ public class ActionServlet extends HttpServlet {
 	
 	/**
 	 * Called when an action is not allowed to be executed.
-	 * Default implementation sends 401 if called action has required roles an there is no user. 
-	 * If user is registered with session and it does not have required roles, sends 403.
+	 * Default implementation sends:
+	 * <ul>
+	 *		<li> {@linkplain HttpServletResponse#SC_UNAUTHORIZED} if called action has required roles an there is no user registered with request session.</li>
+	 *		<li> {@linkplain HttpServletResponse#SC_FORBIDDEN} if there is an user registered with request session but the user does not fulfill required roles</li>
+	 * </ul>
 	 * @param req HTTP request
 	 * @param resp HTTP response
-	 * @throws IOException when there is an error processing the request
-	 * @throws ServletException when there is an error processing the request
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
+	 * @see ActionServlet#getUserManager()
 	 */
 	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		ApplicationUser sessionUser = getUserManager().getSessionUser(req);
@@ -186,18 +194,23 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	/**
-	 * Returns the security manager used by this servlet
-	 * @param requiredRoles required roles
-	 * @return the security manager used by this servlet
+	 * Returns the security manager used by an action handled by this servlet.
+	 * Default implementation returns a non-null security handler if there is no required roles. Otherwise, returns null
+	 * @param requiredRoles action required roles
+	 * @return the security manager used by an action
 	 */
 	protected SecurityHandler getSecurityHandler(Set<String> requiredRoles) {
-		Set<SecurityHandler> handlerSet = new LinkedHashSet<>();
-		handlerSet.add(((CsrfUserManager)getUserManager()).getCsrfSecurityHandler());
+		if (requiredRoles == null || requiredRoles.isEmpty()) { // Ignores CSRF token if there is no required roles
+			return null;
+		} else {
+			Set<SecurityHandler> handlerSet = new LinkedHashSet<>();
+			handlerSet.add(((CsrfUserManager)getUserManager()).getCsrfSecurityHandler());
 
-		final UserRoleSecurityHandler userRoleSecurityHandler = new UserRoleSecurityHandler(getUserManager(), requiredRoles);
-		handlerSet.add(userRoleSecurityHandler);
-		
-		return new SecurityHandlerSet(handlerSet);
+			final UserRoleSecurityHandler userRoleSecurityHandler = new UserRoleSecurityHandler(getUserManager(), requiredRoles);
+			handlerSet.add(userRoleSecurityHandler);
+
+			return new SecurityHandlerSet(handlerSet);
+		}
 	}
 	
 	/**
@@ -218,8 +231,6 @@ public class ActionServlet extends HttpServlet {
 		if (action == null) {
 			onNotFound(req, resp);
 		} else {
-			beforeAction(req, resp);
-			
 			try {
 				action.processRequest(req, resp);
 			} catch (ServletException | IOException ex) {
@@ -227,8 +238,6 @@ public class ActionServlet extends HttpServlet {
 			} catch (Throwable t) {
 				onError(t, req, resp);
 			}
-			
-			afterAction(req, resp);
 		}
 	}
 	
@@ -237,7 +246,7 @@ public class ActionServlet extends HttpServlet {
 	 * Default implementation uses container's error mechanism if available
 	 * @param resp HTTP response
 	 * @param status status code
-	 * @throws IOException if there is an I/O error
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
 	 */
 	protected void sendError(HttpServletResponse resp, int status) throws IOException {
 		resp.sendError(status);

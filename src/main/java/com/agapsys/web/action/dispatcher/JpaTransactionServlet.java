@@ -25,6 +25,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Specialization of Action servlet to manage transactions.
+ * A transaction will be initialized after each mapped action and will be committed (when action is successfully processed) or rollbacked (if there is an error while processing an acation).
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public abstract class JpaTransactionServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
 	private static final String ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
@@ -157,6 +162,12 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		super.afterAction(req, resp);
 	}
 	
+	/**
+	 * Returns the transaction associated with given request.
+	 * Multiple calls to this methods passing the same request will return the same transaction instance.
+	 * @param req HTTP request
+	 * @return the transaction associated with given request
+	 */
 	public RequestTransaction getTransaction(HttpServletRequest req) {
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
 		
@@ -169,6 +180,10 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		return transaction;
 	}
 	
+	/** 
+	 * Return the factory of entity managers used by this servlet. 
+	 * @return {@linkplain ApplicationEntityManagerFactory} instance used by this servlet
+	 */
 	protected abstract ApplicationEntityManagerFactory getApplicationEntityManagerFactory();
 	// =========================================================================
 }

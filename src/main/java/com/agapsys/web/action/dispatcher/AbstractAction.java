@@ -41,22 +41,44 @@ public abstract class AbstractAction implements Action {
 		this(null);
 	}
 	
+	/** 
+	 * Called before action processing.
+	 * This method will be called only if action is allowed to be processed. Default implementation does nothing.
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
+	 */
+	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {}
+	
 	/**
 	 * Actual action code.
 	 * This method will be called only if given request is allowed to be processed.
 	 * @param req HTTP request
 	 * @param resp HTTP response
 	 * @see SecurityHandler#isAllowed(HttpServletRequest, HttpServletResponse)
-	 * @throws IOException when there is an error processing the request
-	 * @throws ServletException when there is an error processing the request
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected abstract void onProcessRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
 	
-	/**
-	 * Called when given request is not allowed to be processed.
-	 * Default implementation just sends a 405 error
+	/** 
+	 * Called after action processing.
+	 * This method will be called only if action is allowed to be processed and the action was processed successfully. Default implementation does nothing.
 	 * @param req HTTP request
 	 * @param resp HTTP response
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
+	 */
+	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {}
+	
+	/**
+	 * Called when given request is not allowed to be processed.
+	 * Default implementation just sends a {@linkplain HttpServletResponse#SC_FORBIDDEN} error
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		sendError(resp, HttpServletResponse.SC_FORBIDDEN);
@@ -66,7 +88,9 @@ public abstract class AbstractAction implements Action {
 	public final void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		if (securityHandler != null) {
 			if (securityHandler.isAllowed(req, resp)) {
+				beforeAction(req, resp);
 				onProcessRequest(req, resp);
+				afterAction(req, resp);
 			} else {
 				onNotAllowed(req, resp);
 			}
@@ -80,7 +104,7 @@ public abstract class AbstractAction implements Action {
 	 * Default implementation uses container's error mechanism if available
 	 * @param resp HTTP response
 	 * @param status status code
-	 * @throws IOException if there is an I/O error
+	 * @throws IOException if an input or output error occurs while handling the HTTP request
 	 */
 	protected void sendError(HttpServletResponse resp, int status) throws IOException {
 		resp.sendError(status);
