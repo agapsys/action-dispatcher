@@ -25,21 +25,29 @@ import javax.servlet.http.HttpServletRequest;
  * handles all the similarities among classes
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class ObjectRequestController {
+public abstract class ObjectRequestController {
 	// CLASS SCOPE =============================================================
 	public static final String ATTR_TARGET_OBJECT = "com.agapsys.angular.demo.targetObject";
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
 	private final ActionServlet servlet;
-	private final ObjectSerializer serializer;
+	private volatile boolean initialized = false;
+	private ObjectSerializer serializer;
+	
+	private synchronized void init() {
+		if (!initialized) {
+			serializer = getSerializer();
+			initialized = true;
+		}
+	}
 	
 	/**
 	 * Constructor
 	 * @param servlet an action servlet
 	 * @param serializer object serializer / deserializer
 	 */
-	public ObjectRequestController(ActionServlet servlet, ObjectSerializer serializer) {
+	public ObjectRequestController(ActionServlet servlet) {
 		if (servlet == null)
 			throw new IllegalArgumentException("Null servlet");
 		
@@ -47,7 +55,16 @@ public class ObjectRequestController {
 			throw new IllegalArgumentException("Null serializer");
 		
 		this.servlet = servlet;
-		this.serializer = serializer;
+	}
+	
+	protected abstract ObjectSerializer getSerializer();
+	
+	private ObjectSerializer _getSerializer() {
+		if (!initialized) {
+			init();
+		}
+		
+		return serializer;
 	}
 	
 	/**
@@ -56,7 +73,7 @@ public class ObjectRequestController {
 	 * @param securityHandler associated security handler
 	 * @return action caller
 	 */
-	public ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
+	public final ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
 		ObjectRequest[] objectRequestAnnotations = method.getAnnotationsByType(ObjectRequest.class);
 		ObjectRequest objectRequestAnnotation = objectRequestAnnotations.length > 0 ? objectRequestAnnotations[0] : null;
 		
@@ -65,11 +82,11 @@ public class ObjectRequestController {
 		if (objectRequestAnnotation != null) {
 			targetClass = objectRequestAnnotation.targetClass();
 		}
-		return new ObjectRequestActionCaller(serializer, targetClass, servlet, method, securityHandler);
+		return new ObjectRequestActionCaller(_getSerializer(), targetClass, servlet, method, securityHandler);
 	}
 	
 	/** @return the instance of a class specified in {@linkplain ObjectRequest}. */
-	public Object getObject(HttpServletRequest req) {
+	public final Object getObject(HttpServletRequest req) {
 		return req.getAttribute(ATTR_TARGET_OBJECT);
 	}
 	// =========================================================================
