@@ -16,8 +16,10 @@
 
 package com.agapsys.web.action.dispatcher;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Custom {@linkplain ActionServlet} to handle {@linkplain ObjectRequest} methods.
@@ -47,5 +49,15 @@ public abstract class ObjectRequestServlet extends ActionServlet {
 	/** @return the instance of a class specified in {@linkplain ObjectRequest}. */
 	public Object getObject(HttpServletRequest req) {
 		return controllerLazyInitializer.getInstance().getObject(req);
+	}
+	
+	/**
+	 * Sends an object to the client
+	 * @param resp HTTP response
+	 * @param obj object to be sent
+	 * @throws IOException 
+	 */
+	public void sendObject(HttpServletResponse resp, Object obj) throws IOException {
+		controllerLazyInitializer.getInstance().sendObject(resp, obj);
 	}
 }
