@@ -46,7 +46,10 @@ public abstract class JpaObjectRequestServlet extends JpaTransactionServlet {
 	 */
 	protected abstract ObjectRequestController getController();
 	
-	/** @return the instance of a class specified in {@linkplain ObjectRequest}. */
+	/**
+	 * @return the instance of a class specified in {@linkplain ObjectRequest}.
+	 * @param req HTTP request
+	 */
 	public Object getObject(HttpServletRequest req) {
 		return controllerLazyInitializer.getInstance().getObject(req);
 	}
@@ -55,7 +58,7 @@ public abstract class JpaObjectRequestServlet extends JpaTransactionServlet {
 	 * Sends an object to the client
 	 * @param resp HTTP response
 	 * @param obj object to be sent
-	 * @throws IOException 
+	 * @throws IOException if there is an I/O errro while sending the response
 	 */
 	public void sendObject(HttpServletResponse resp, Object obj) throws IOException {
 		controllerLazyInitializer.getInstance().sendObject(resp, obj);

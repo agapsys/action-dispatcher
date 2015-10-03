@@ -49,7 +49,10 @@ public abstract class LazyInitializer<T> {
 		return initialized;
 	}
 	
-	/** Return a instance returned by {@linkplain LazyInitializer#getLazyInstance}. */
+	/** 
+	 * Return a instance returned by {@linkplain LazyInitializer#getLazyInstance}.
+	 * @return instance returned by {@linkplain LazyInitializer#getLazyInstance}.
+	 */
 	public final T getInstance() {
 		if (!initialized) {
 			initialize();

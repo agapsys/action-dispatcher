@@ -45,7 +45,6 @@ public abstract class ObjectRequestController {
 	/**
 	 * Constructor
 	 * @param servlet an action servlet
-	 * @param serializer object serializer / deserializer
 	 */
 	public ObjectRequestController(ActionServlet servlet) {
 		if (servlet == null)
@@ -79,7 +78,10 @@ public abstract class ObjectRequestController {
 		return new ObjectRequestActionCaller(serializerLazyInitializer.getInstance(), targetClass, servlet, method, securityHandler);
 	}
 	
-	/** @return the instance of a class specified in {@linkplain ObjectRequest}. */
+	/**
+	 * @return the instance of a class specified in {@linkplain ObjectRequest}.
+	 * @param req HTTP request
+	 */
 	public final Object getObject(HttpServletRequest req) {
 		return req.getAttribute(ATTR_TARGET_OBJECT);
 	}
@@ -88,7 +90,7 @@ public abstract class ObjectRequestController {
 	 * Sends an object to the client
 	 * @param resp HTTP response
 	 * @param obj object to be sent
-	 * @throws IOException 
+	 * @throws IOException if there is an error while sending the response
 	 */
 	public final void sendObject(HttpServletResponse resp, Object obj) throws IOException {
 		serializerLazyInitializer.getInstance().sendObject(resp, obj);
