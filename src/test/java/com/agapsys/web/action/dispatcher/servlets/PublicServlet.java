@@ -17,7 +17,7 @@
 package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.WebAction;
 import com.agapsys.web.action.dispatcher.WebActions;
@@ -37,32 +37,32 @@ public class PublicServlet extends ActionServlet {
 	
 	@WebAction
 	public void get(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletTest.PUBLIC_GET_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PUBLIC_GET_URL, req, resp);
 	}
 	
 	@WebAction(mapping = "mapped/get")
 	public void mappedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletTest.PUBLIC_MAPPED_GET_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_GET_URL, req, resp);
 	}
 	
 	@WebAction(mapping = "/mapped/get2")
 	public void mappedWithSlash(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, req, resp);
 	}
 	
 	
 	@WebAction(httpMethod = HttpMethod.POST)
 	public void post(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletTest.PUBLIC_POST_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, req, resp);
 	}
 	
 	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post")
 	public void mappedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletTest.PUBLIC_MAPPED_POST_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, req, resp);
 	}
 	
 	@WebActions({@WebAction(httpMethod = HttpMethod.GET),@WebAction(httpMethod = HttpMethod.POST)})
 	public void repeatableGetOrPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletTest.PUBLIC_REPEATABLE_GET_POST_URL + req.getMethod(), req, resp);
+		processRequest(ActionServletGeneralTest.PUBLIC_REPEATABLE_GET_POST_URL + req.getMethod(), req, resp);
 	}
 }

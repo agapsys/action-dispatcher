@@ -16,7 +16,7 @@
 
 package com.agapsys.web.action.dispatcher.servlets;
 
-import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
@@ -30,29 +30,29 @@ public class PhaseActionsServlet extends PublicServlet {
 	
 	@Override
 	public void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		resp.setHeader(ActionServletTest.PHASE_BEFORE_HEADER, ActionServletTest.PHASE_BEFORE_HEADER);
+		resp.setHeader(ActionServletGeneralTest.PHASE_BEFORE_HEADER, ActionServletGeneralTest.PHASE_BEFORE_HEADER);
 	}
 	
 	@Override
 	public void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		resp.setHeader(ActionServletTest.PHASE_AFTER_HEADER, ActionServletTest.PHASE_AFTER_HEADER);
+		resp.setHeader(ActionServletGeneralTest.PHASE_AFTER_HEADER, ActionServletGeneralTest.PHASE_AFTER_HEADER);
 	}
 	
 	@Override
 	public void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		resp.setHeader(ActionServletTest.PHASE_NOT_FOUND_HEADER, ActionServletTest.PHASE_NOT_FOUND_HEADER);
+		resp.setHeader(ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER, ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER);
 	}
 	
 	@Override
 	@WebAction(httpMethod = HttpMethod.GET, defaultAction = true)
 	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletTest.PHASE_DEFAULT_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, req, resp);
 	}
 	
 	@Override
 	@WebAction(httpMethod = HttpMethod.POST, defaultAction = true)
 	public void post(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletTest.PHASE_DEFAULT_URL, req, resp);
+		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, req, resp);
 	}
 }

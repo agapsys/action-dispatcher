@@ -17,7 +17,7 @@
 package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
@@ -40,23 +40,23 @@ public class SecuredServlet extends ActionServlet {
 	// INSTANCE SCOPE ==========================================================
 	@WebAction(requiredRoles = {SECURED_ROLE})
 	public void get(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletTest.SECURED_GET_URL, req, resp);
+		processAction(ActionServletGeneralTest.SECURED_GET_URL, req, resp);
 	}
 	
 	@WebAction(mapping = "mapped/get", requiredRoles = {SECURED_ROLE})
 	public void mappedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletTest.SECURED_MAPPED_GET_URL, req, resp);
+		processAction(ActionServletGeneralTest.SECURED_MAPPED_GET_URL, req, resp);
 	}
 	
 	
 	@WebAction(httpMethod = HttpMethod.POST, requiredRoles = {SECURED_ROLE})
 	public void post(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletTest.SECURED_POST_URL, req, resp);
+		processAction(ActionServletGeneralTest.SECURED_POST_URL, req, resp);
 	}
 	
 	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post", requiredRoles = {SECURED_ROLE})
 	public void mappedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletTest.SECURED_MAPPED_POST_URL, req, resp);
+		processAction(ActionServletGeneralTest.SECURED_MAPPED_POST_URL, req, resp);
 	}
 	// =========================================================================
 }

@@ -17,7 +17,7 @@
 package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.ApplicationUser;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
@@ -55,12 +55,12 @@ public class LoginServlet extends ActionServlet {
 	@WebAction
 	public void simple(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		getUserManager().setSessionUser(simpleUser, req, resp);
-		sendMessage(ActionServletTest.LOGIN_SIMPLE_USER_URL, req, resp);
+		sendMessage(ActionServletGeneralTest.LOGIN_SIMPLE_USER_URL, req, resp);
 	}
 	
 	@WebAction
 	public void priviledged(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		getUserManager().setSessionUser(priviledgedUser, req, resp);
-		sendMessage(ActionServletTest.LOGIN_PRIVILDGED_USER_URL, req, resp);
+		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, req, resp);
 	}
 }

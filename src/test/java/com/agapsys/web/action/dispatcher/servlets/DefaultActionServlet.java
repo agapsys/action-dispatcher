@@ -16,7 +16,7 @@
 
 package com.agapsys.web.action.dispatcher.servlets;
 
-import com.agapsys.web.action.dispatcher.ActionServletTest;
+import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.SecurityHandler;
 import com.agapsys.web.action.dispatcher.WebAction;
@@ -32,13 +32,13 @@ public class DefaultActionServlet extends PublicServlet {
 	@Override
 	@WebAction(httpMethod = HttpMethod.GET, defaultAction = true)
 	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletTest.DEFAULT_ACTION_GET_URL, req, resp);
+		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_GET_URL, req, resp);
 	}
 	
 	@Override
 	@WebAction(httpMethod = HttpMethod.POST, defaultAction = true)
 	public void post(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletTest.DEFAULT_ACTION_POST_URL, req, resp);
+		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_POST_URL, req, resp);
 	}
 
 	@Override

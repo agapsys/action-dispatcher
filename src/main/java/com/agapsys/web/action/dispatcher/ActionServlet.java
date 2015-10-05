@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,7 +62,32 @@ public class ActionServlet extends HttpServlet {
 	private final LazyInitializer lazyInitializer = new LazyInitializer() {
 		@Override
 		protected void onInitialize() {
-			Method[] methods = ActionServlet.this.getClass().getDeclaredMethods();
+			Class<? extends ActionServlet> actionServletClass = ActionServlet.this.getClass();
+			
+			String thisClassName = actionServletClass.getName();
+			
+			// Check if this class uses WebServlet annotation...
+			WebServlet[] webServletAnnotationArray = actionServletClass.getAnnotationsByType(WebServlet.class);
+			if (webServletAnnotationArray.length == 0)
+				throw new RuntimeException(String.format("Class '%s' is not annotated with '%s'", thisClassName, WebServlet.class.getName()));
+			
+			WebServlet webServletAnnotation = webServletAnnotationArray[0];
+			String[] urlPatternArray = webServletAnnotation.urlPatterns();
+			if (urlPatternArray.length == 0) {
+				urlPatternArray = webServletAnnotation.value();
+			}
+			
+			if (urlPatternArray.length == 0)
+				throw new RuntimeException(String.format("Servlet class '%s' does not have any URL pattern", thisClassName));
+			
+			for (String urlPattern : urlPatternArray) {
+				if (!urlPattern.endsWith("/*")) {
+					throw new RuntimeException(String.format("Invalid URL pattern '%s' for class '%s' (pattern must end with '/*')", urlPattern, thisClassName));
+				}
+			}
+			
+			// Check for WebAction annotations...
+			Method[] methods = actionServletClass.getDeclaredMethods();
 			for (Method method : methods) {
 				Annotation[] annotations = method.getAnnotations();
 				for (Annotation annotation : annotations) {
