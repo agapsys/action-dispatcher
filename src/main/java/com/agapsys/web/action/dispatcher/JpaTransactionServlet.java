@@ -172,7 +172,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
 		
 		if (transaction == null) {
-			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getUserManager(), req, getApplicationEntityManagerFactory().getEntityManager()).getTransaction();
+			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getUserManager(), req, getEntityManagerFactory().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
 			req.setAttribute(ATTR_TRANSACTION, transaction);
 		}
@@ -183,8 +183,8 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	/** 
 	 * Return the factory of entity managers used by this servlet. 
 	 * <b>ATTENTION:</b>This method may be called multiple times during runtime. Do not create a new instance after each call in order to improve performance.
-	 * @return {@linkplain ApplicationEntityManagerFactory} instance used by this servlet
+	 * @return {@link EntityManagerFactory} instance used by this servlet
 	 */
-	protected abstract ApplicationEntityManagerFactory getApplicationEntityManagerFactory();
+	protected abstract EntityManagerFactory getEntityManagerFactory();
 	// =========================================================================
 }
