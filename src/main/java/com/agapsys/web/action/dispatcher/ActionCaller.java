@@ -75,9 +75,7 @@ public class ActionCaller extends AbstractAction {
 	protected void onProcessRequest(RequestResponsePair rrp){
 		try {
 			method.invoke(getServlet(), rrp);
-		} catch (InvocationTargetException ex) {
-			throw new RuntimeException(ex);
-		} catch (IllegalAccessException | IllegalArgumentException ex) {
+		} catch (InvocationTargetException | IllegalAccessException ex) {
 			throw new RuntimeException(ex);
 		}
 	}

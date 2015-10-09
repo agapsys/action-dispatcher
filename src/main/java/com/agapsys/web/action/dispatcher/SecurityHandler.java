@@ -15,8 +15,6 @@
  */
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
-
 /**
  * Represents a security handler.
  * A security handler is an object responsible to allow or reject request according to its internal logic.

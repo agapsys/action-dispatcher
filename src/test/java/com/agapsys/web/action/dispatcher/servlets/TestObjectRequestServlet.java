@@ -25,16 +25,9 @@ import com.agapsys.web.action.dispatcher.ObjectSerializer;
 import com.agapsys.web.action.dispatcher.RequestResponsePair;
 import com.agapsys.web.action.dispatcher.WebAction;
 import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/*")
 public class TestObjectRequestServlet extends ObjectRequestServlet {

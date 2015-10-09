@@ -167,7 +167,7 @@ public class ActionServlet extends HttpServlet {
 	
 	/** 
 	 * Called when there is an error processing an action.
-	 * Default implementation just throws given exception (wrapped into a {@linkplain RuntimeException}).
+	 * Default implementation just throws given exception.
 	 * @param throwable error
 	 * @param rrp request-response pair
 	 */

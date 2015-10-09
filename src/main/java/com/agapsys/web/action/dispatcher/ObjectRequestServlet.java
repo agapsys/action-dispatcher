@@ -16,7 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 
 /**
