@@ -16,12 +16,8 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Action caller used by action servlet.
@@ -61,41 +57,33 @@ public class ActionCaller extends AbstractAction {
 	}
 
 	@Override
-	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		getServlet().beforeAction(req, resp);
+	protected void beforeAction(RequestResponsePair rrp){
+		getServlet().beforeAction(rrp);
 	}
 
 	@Override
-	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		getServlet().afterAction(req, resp);
+	protected void afterAction(RequestResponsePair rrp){
+		getServlet().afterAction(rrp);
 	}
 	
 	@Override
-	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		getServlet().onNotAllowed(req, resp);
+	protected void onNotAllowed(RequestResponsePair rrp){
+		getServlet().onNotAllowed(rrp);
 	}
 
 	@Override
-	protected void onProcessRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	protected void onProcessRequest(RequestResponsePair rrp){
 		try {
-			method.invoke(getServlet(), req, resp);
+			method.invoke(getServlet(), rrp);
 		} catch (InvocationTargetException ex) {
-			Throwable cause = ex.getCause();
-
-			if (cause instanceof IOException)
-				throw (IOException) cause;
-
-			if (cause instanceof ServletException)
-				throw (ServletException) cause;
-
-			throw new RuntimeException(cause);
+			throw new RuntimeException(ex);
 		} catch (IllegalAccessException | IllegalArgumentException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
 	@Override
-	protected void sendError(HttpServletResponse resp, int status) throws IOException {
-		getServlet().sendError(resp, status);
+	protected void sendError(RequestResponsePair rrp, int status){
+		getServlet().sendError(rrp, status);
 	}
 }

@@ -16,10 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * Serializer/Deserializer of objects in HTTP communication
  * @author Leandro Oliveira (leandro@agapsys.com)
@@ -54,20 +50,18 @@ public interface ObjectSerializer {
 	/**
 	 * Return an object sent from client (contained in the request)
 	 * @param <T> Type of the returned object
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 * @param targetClass class of returned object
 	 * @return returned object
 	 * @throws BadRequestException if it was not possible to retrieve an object instance from given request
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
 	 */
-	public <T> T getObject(HttpServletRequest req, Class<T> targetClass) throws BadRequestException, IOException;
+	public <T> T getObject(RequestResponsePair rrp, Class<T> targetClass) throws BadRequestException;
 	
 	/**
 	 * Sends an object to the client (contained in the response)
-	 * @param resp HTTP object
+	 * @param rrp request-response pair
 	 * @param object object to be sent
-	 * @throws IOException if an input or output error occurs while sending the object.
 	 */
-	public void sendObject(HttpServletResponse resp, Object object) throws IOException;
+	public void sendObject(RequestResponsePair rrp, Object object);
 	// =========================================================================
 }

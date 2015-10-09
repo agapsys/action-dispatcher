@@ -16,10 +16,7 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller to be used by {@linkplain ObjectRequestServlet} and/or {@linkplain JpaObjectRequestServlet}.
@@ -80,20 +77,19 @@ public abstract class ObjectRequestController {
 	
 	/**
 	 * @return the instance of a class specified in {@linkplain ObjectRequest}.
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 */
-	public final Object getObject(HttpServletRequest req) {
-		return req.getAttribute(ATTR_TARGET_OBJECT);
+	public final Object getObject(RequestResponsePair rrp) {
+		return rrp.getRequest().getAttribute(ATTR_TARGET_OBJECT);
 	}
 	
 	/**
 	 * Sends an object to the client
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @param obj object to be sent
-	 * @throws IOException if there is an error while sending the response
 	 */
-	public final void sendObject(HttpServletResponse resp, Object obj) throws IOException {
-		serializerLazyInitializer.getInstance().sendObject(resp, obj);
+	public final void sendObject(RequestResponsePair rrp, Object obj) {
+		serializerLazyInitializer.getInstance().sendObject(rrp, obj);
 	}
 	// =========================================================================
 }

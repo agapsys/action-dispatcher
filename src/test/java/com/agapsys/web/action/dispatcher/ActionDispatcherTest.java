@@ -15,9 +15,6 @@
  */
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +23,8 @@ public class ActionDispatcherTest {
 	// CLASS SCOPE =============================================================
 	private static class SimpleAction implements Action {
 		@Override
-		public void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-			resp.setStatus(HttpServletResponse.SC_OK);
+		public void processRequest(RequestResponsePair rrp) {
+			rrp.getResponse().setStatus(HttpServletResponse.SC_OK);
 		}
 	}
 	// =========================================================================

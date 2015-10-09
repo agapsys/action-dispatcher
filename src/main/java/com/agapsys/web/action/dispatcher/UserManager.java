@@ -16,10 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * User manager.
  * A user manager is the object responsible by handling user in a request session
@@ -33,33 +29,31 @@ public class UserManager {
 	// INSTANCE SCOPE ==========================================================
 	/**
 	 * Returns a user from session
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 * @return session user or null if there is no user
 	 */
-	public ApplicationUser getSessionUser(HttpServletRequest req) {
-		return (ApplicationUser) req.getSession().getAttribute(SESSION_ATTR_USER);
+	public ApplicationUser getSessionUser(RequestResponsePair rrp) {
+		return (ApplicationUser) rrp.getRequest().getSession().getAttribute(SESSION_ATTR_USER);
 	}
 	
 	/**
 	 * Sets a user in a session
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 * @param user user to be registered.
-	 * @param resp HTTP response (used when there is a need to send data to user after setting the user in request session)
-	 * @throws IOException when there is an I/O error while send the response.
 	 */
-	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	public void setSessionUser(ApplicationUser user, RequestResponsePair rrp) {
 		if (user == null)
 			throw new IllegalArgumentException("Null user");
 		
-		req.getSession().setAttribute(SESSION_ATTR_USER, user);
+		rrp.getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
 	}
 	
 	/**
 	 * Clears session user
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 */
-	public void clearSessionUser(HttpServletRequest req) {
-		req.getSession().removeAttribute(SESSION_ATTR_USER);
+	public void clearSessionUser(RequestResponsePair rrp) {
+		rrp.getRequest().getSession().removeAttribute(SESSION_ATTR_USER);
 	}
 	// =========================================================================
 }

@@ -17,8 +17,6 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public abstract class AbstractAction implements Action {
@@ -44,71 +42,62 @@ public abstract class AbstractAction implements Action {
 	/** 
 	 * Called before action processing.
 	 * This method will be called only if action is allowed to be processed. Default implementation does nothing.
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {}
+	protected void beforeAction(RequestResponsePair rrp) {}
 	
 	/**
 	 * Actual action code.
 	 * This method will be called only if given request is allowed to be processed.
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @see SecurityHandler#isAllowed(HttpServletRequest, HttpServletResponse)
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
+	 * @see SecurityHandler#isAllowed(RequestResponsePair)
 	 */
-	protected abstract void onProcessRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException;
+	protected abstract void onProcessRequest(RequestResponsePair rrp);
 	
 	/** 
 	 * Called after action processing.
 	 * This method will be called only if action is allowed to be processed and the action was processed successfully. Default implementation does nothing.
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {}
+	protected void afterAction(RequestResponsePair rrp) {}
 	
 	/**
 	 * Called when given request is not allowed to be processed.
 	 * Default implementation just sends a {@linkplain HttpServletResponse#SC_FORBIDDEN} error
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		sendError(resp, HttpServletResponse.SC_FORBIDDEN);
+	protected void onNotAllowed(RequestResponsePair rrp) {
+		sendError(rrp, HttpServletResponse.SC_FORBIDDEN);
 	}
 	
 	@Override
-	public final void processRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	public final void processRequest(RequestResponsePair rrp) {
 		if (securityHandler != null) {
-			if (securityHandler.isAllowed(req, resp)) {
-				beforeAction(req, resp);
-				onProcessRequest(req, resp);
-				afterAction(req, resp);
+			if (securityHandler.isAllowed(rrp)) {
+				beforeAction(rrp);
+				onProcessRequest(rrp);
+				afterAction(rrp);
 			} else {
-				onNotAllowed(req, resp);
+				onNotAllowed(rrp);
 			}
 		} else {
-			beforeAction(req, resp);
-			onProcessRequest(req, resp);
-			afterAction(req, resp);
+			beforeAction(rrp);
+			onProcessRequest(rrp);
+			afterAction(rrp);
 		}
 	}
 	
 	/**
 	 * Sends an error to the client.
 	 * Default implementation uses container's error mechanism if available
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @param status status code
-	 * @throws IOException if an input or output error occurs while sending the HTTP response
 	 */
-	protected void sendError(HttpServletResponse resp, int status) throws IOException {
-		resp.sendError(status);
+	protected void sendError(RequestResponsePair rrp, int status) {
+		try {
+			rrp.getResponse().sendError(status);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 }

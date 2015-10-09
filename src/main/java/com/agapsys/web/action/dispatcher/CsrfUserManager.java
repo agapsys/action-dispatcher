@@ -16,10 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * User manager which handles CSRF security
  * @author Leandro Oliveira (leandro@agapsys.com)
@@ -31,17 +27,17 @@ public class CsrfUserManager extends UserManager {
 
 	// INSTANCE SCOPE ==========================================================
 	@Override
-	public void setSessionUser(ApplicationUser user, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		super.setSessionUser(user, req, resp);
+	public void setSessionUser(ApplicationUser user, RequestResponsePair rrp) {
+		super.setSessionUser(user, rrp);
 		String csrfToken = DEFAULT_CSRF_SECURITY_HANDLER.generateCsrfToken();
-		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, req, resp);
-		DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(csrfToken, req, resp);
+		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, rrp);
+		DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(csrfToken, rrp);
 	}
 
 	@Override
-	public void clearSessionUser(HttpServletRequest req) {
-		super.clearSessionUser(req);
-		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(req);
+	public void clearSessionUser(RequestResponsePair rrp) {
+		super.clearSessionUser(rrp);
+		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(rrp);
 	}
 	
 	/**

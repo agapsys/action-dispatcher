@@ -15,8 +15,7 @@
  */
 package com.agapsys.web.action.dispatcher;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Represents a security handler.
@@ -26,9 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 public interface SecurityHandler {
 	/**
 	 * Returns a boolean indicating if given request is allowed to be processed.
-	 * @param req HTTP request
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @return a boolean indicating if given request is allowed to be processed.
 	 */
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp);
+	public boolean isAllowed(RequestResponsePair rrp);
 }

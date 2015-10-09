@@ -16,10 +16,7 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Custom {@linkplain JpaTransactionServlet} to handle {@linkplain ObjectRequest} methods
@@ -48,19 +45,18 @@ public abstract class JpaObjectRequestServlet extends JpaTransactionServlet {
 	
 	/**
 	 * @return the instance of a class specified in {@linkplain ObjectRequest}.
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 */
-	public Object getObject(HttpServletRequest req) {
-		return controllerLazyInitializer.getInstance().getObject(req);
+	public Object getObject(RequestResponsePair rrp) {
+		return controllerLazyInitializer.getInstance().getObject(rrp);
 	}
 	
 	/**
 	 * Sends an object to the client
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @param obj object to be sent
-	 * @throws IOException if there is an I/O errro while sending the response
 	 */
-	public void sendObject(HttpServletResponse resp, Object obj) throws IOException {
-		controllerLazyInitializer.getInstance().sendObject(resp, obj);
+	public void sendObject(RequestResponsePair rrp, Object obj) {
+		controllerLazyInitializer.getInstance().sendObject(rrp, obj);
 	}
 }

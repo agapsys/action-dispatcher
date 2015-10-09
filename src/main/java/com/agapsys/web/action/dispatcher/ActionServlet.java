@@ -19,10 +19,8 @@ package com.agapsys.web.action.dispatcher;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,8 +36,8 @@ public class ActionServlet extends HttpServlet {
 	
 	private static void matchSignature(Method method) throws RuntimeException {
 		String signature = method.toGenericString();
-
-		String errMsg = String.format("Invalid signature (%s). Required: public void <method_name>(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws javax.servlet.ServletException,java.io.IOException", signature);
+		
+		String errMsg = String.format("Invalid signature (%s). Required: public void <method_name>(com.agapsys.web.action.dispatcher.RequestResponsePair)", signature);
 		
 		if (!signature.startsWith("public void "))
 			throw new RuntimeException(errMsg);
@@ -48,11 +46,7 @@ public class ActionServlet extends HttpServlet {
 		int indexOfCloseParenthesis = signature.indexOf(")");
 		
 		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis);
-		if (!args.equals("javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse"))
-			throw new RuntimeException(errMsg);
-		
-		Set<String> thrownExceptions = new LinkedHashSet<>(Arrays.asList(signature.substring(indexOfCloseParenthesis + 1).trim().replace("throws ", "").split(",")));
-		if (!(thrownExceptions.size() == 2 && thrownExceptions.contains("javax.servlet.ServletException") && thrownExceptions.contains("java.io.IOException")))
+		if (!args.equals("com.agapsys.web.action.dispatcher.RequestResponsePair"))
 			throw new RuntimeException(errMsg);
 	}
 	// =========================================================================
@@ -149,47 +143,38 @@ public class ActionServlet extends HttpServlet {
 	 * Called before an action. 
 	 * This method will be called only if an action associated to given request is found and it it allowed to be processed (see {@linkplain SecurityHandler}).
 	 * Default implementation does nothing.
-	 * @param req HTTP request
-	 * @param resp HTTP Response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {}
+	protected void beforeAction(RequestResponsePair rrp) {}
 	
 	/** 
 	 * Called after an action. 
 	 * This method will be called only if an action associated to given request is found, the action is allowed to be processed (see {@linkplain SecurityHandler}), and the action was successfully processed.
 	 * Default implementation does nothing.
-	 * @param req HTTP request
-	 * @param resp HTTP Response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {}
+	protected void afterAction(RequestResponsePair rrp) {}
 	
 	/** 
 	 * Called when an action is not found.
 	 * An action is not found when there is no method mapped to given request.
 	 * Default implementation sends a {@linkplain HttpServletResponse#SC_NOT_FOUND} error.
-	 * @param req HTTP request
-	 * @param resp HTTP Response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException  {
-		sendError(resp, HttpServletResponse.SC_NOT_FOUND);
+	protected void onNotFound(RequestResponsePair rrp) {
+		sendError(rrp, HttpServletResponse.SC_NOT_FOUND);
 	}
 	
 	/** 
 	 * Called when there is an error processing an action.
 	 * Default implementation just throws given exception (wrapped into a {@linkplain RuntimeException}).
 	 * @param throwable error
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 */
-	protected void onError(Throwable throwable, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void onError(Throwable throwable, RequestResponsePair rrp) {
+		if (throwable instanceof RuntimeException)
+			throw (RuntimeException) throwable;
+		
 		throw new RuntimeException(throwable);
 	}
 	
@@ -200,19 +185,16 @@ public class ActionServlet extends HttpServlet {
 	 *		<li> {@linkplain HttpServletResponse#SC_UNAUTHORIZED} if called action has required roles an there is no user registered with request session.</li>
 	 *		<li> {@linkplain HttpServletResponse#SC_FORBIDDEN} if there is an user registered with request session but the user does not fulfill required roles</li>
 	 * </ul>
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException if an input or output error occurs while handling the HTTP request
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param rrp request-response pair
 	 * @see ActionServlet#getUserManager()
 	 */
-	protected void onNotAllowed(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ApplicationUser sessionUser = getUserManager().getSessionUser(req);
+	protected void onNotAllowed(RequestResponsePair rrp) {
+		ApplicationUser sessionUser = getUserManager().getSessionUser(rrp);
 		
 		if (sessionUser == null) {
-			sendError(resp, HttpServletResponse.SC_UNAUTHORIZED);
+			sendError(rrp, HttpServletResponse.SC_UNAUTHORIZED);
 		} else {
-			sendError(resp, HttpServletResponse.SC_FORBIDDEN);
+			sendError(rrp, HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 	
@@ -247,20 +229,21 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	@Override
-	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected final void service(HttpServletRequest req, HttpServletResponse resp) {
 		if (!lazyInitializer.isInitialized())
 			lazyInitializer.initialize();
 		
 		Action action = dispatcher.getAction(req);
+		
+		RequestResponsePair rrp = new RequestResponsePair(req, resp);
+		
 		if (action == null) {
-			onNotFound(req, resp);
+			onNotFound(rrp);
 		} else {
 			try {
-				action.processRequest(req, resp);
-			} catch (ServletException | IOException ex) {
-				throw ex;
+				action.processRequest(rrp);
 			} catch (Throwable t) {
-				onError(t, req, resp);
+				onError(t, rrp);
 			}
 		}
 	}
@@ -268,12 +251,15 @@ public class ActionServlet extends HttpServlet {
 	/**
 	 * Sends an error to the client.
 	 * Default implementation uses container's error mechanism if available
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @param status status code
-	 * @throws IOException if an input or output error occurs while sending the HTTP response
 	 */
-	protected void sendError(HttpServletResponse resp, int status) throws IOException {
-		resp.sendError(status);
+	protected void sendError(RequestResponsePair rrp, int status) {
+		try {
+			rrp.getResponse().sendError(status);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 	// =========================================================================
 }

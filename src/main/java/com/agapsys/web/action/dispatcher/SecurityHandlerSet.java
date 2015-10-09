@@ -17,8 +17,6 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.util.Set;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Security handler which groups multiple security handlers together.
@@ -47,12 +45,12 @@ public class SecurityHandlerSet implements SecurityHandler {
 	}
 	
 	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) {
+	public boolean isAllowed(RequestResponsePair rrp) {
 		if (handlerSet == null)
 			return true;
 		
 		for (SecurityHandler handler : handlerSet) {
-			if (!handler.isAllowed(req, resp))
+			if (!handler.isAllowed(rrp))
 				return false;
 		}
 		

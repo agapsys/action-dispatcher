@@ -22,12 +22,15 @@ import com.agapsys.web.action.dispatcher.ObjectRequest;
 import com.agapsys.web.action.dispatcher.ObjectRequestController;
 import com.agapsys.web.action.dispatcher.ObjectRequestServlet;
 import com.agapsys.web.action.dispatcher.ObjectSerializer;
+import com.agapsys.web.action.dispatcher.RequestResponsePair;
 import com.agapsys.web.action.dispatcher.WebAction;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -42,8 +45,8 @@ public class TestObjectRequestServlet extends ObjectRequestServlet {
 		public static final String JSON_ENCODING     = "UTF-8";
 
 		// Check if given request is valid for GSON parsing
-		private static void checkJsonContentType(HttpServletRequest req) throws BadRequestException {
-			String reqContentType = req.getContentType();
+		private static void checkJsonContentType(RequestResponsePair rrp) throws BadRequestException {
+			String reqContentType = rrp.getRequest().getContentType();
 
 			if(!reqContentType.startsWith(JSON_CONTENT_TYPE))
 				throw new BadRequestException("Invalid content-type: " + reqContentType);
@@ -65,27 +68,30 @@ public class TestObjectRequestServlet extends ObjectRequestServlet {
 		}
 		
 		@Override
-		public <T> T getObject(HttpServletRequest req, Class<T> targetClass) throws BadRequestException, IOException {
+		public <T> T getObject(RequestResponsePair rrp, Class<T> targetClass) throws BadRequestException {
 			if (targetClass == null)
 				throw new IllegalArgumentException("Null targetClass");
 		
-			checkJsonContentType(req);
+			checkJsonContentType(rrp);
 
 			try {
-				return gson.fromJson(req.getReader(), targetClass);
-			} catch (JsonIOException ex) {
-				throw new IOException(ex);
-			} catch (JsonSyntaxException ex) {
-				throw new BadRequestException("Malformed JSON", ex);
+				return gson.fromJson(rrp.getRequest().getReader(), targetClass);
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
 			}
 		}
 
 		@Override
-		public void sendObject(HttpServletResponse resp, Object object) throws IOException {
-			resp.setContentType(JSON_CONTENT_TYPE);
-			resp.setCharacterEncoding(JSON_ENCODING);
+		public void sendObject(RequestResponsePair rrp, Object object) {
+			rrp.getResponse().setContentType(JSON_CONTENT_TYPE);
+			rrp.getResponse().setCharacterEncoding(JSON_ENCODING);
 
-			PrintWriter out = resp.getWriter();
+			PrintWriter out;
+			try {
+				out = rrp.getResponse().getWriter();
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
 			String json = gson.toJson(object);
 			out.write(json);
 		}
@@ -125,10 +131,10 @@ public class TestObjectRequestServlet extends ObjectRequestServlet {
 	// Actions -----------------------------------------------------------------
 	@WebAction(httpMethod = HttpMethod.POST)
 	@ObjectRequest(targetClass = RequestObject.class)
-	public void post(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		RequestObject reqObj = (RequestObject) getObject(req);
+	public void post(RequestResponsePair rrp) {
+		RequestObject reqObj = (RequestObject) getObject(rrp);
 		ResponseObject respObj = new ResponseObject(reqObj);
-		sendObject(resp, respObj);
+		sendObject(rrp, respObj);
 	}
 	// -------------------------------------------------------------------------
 	// =========================================================================

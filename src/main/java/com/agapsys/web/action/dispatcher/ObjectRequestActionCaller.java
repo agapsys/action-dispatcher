@@ -16,10 +16,7 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -51,17 +48,17 @@ class ObjectRequestActionCaller extends ActionCaller {
 	}
 
 	@Override
-	protected void onProcessRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	protected void onProcessRequest(RequestResponsePair rrp) {
 		if (targetClass != null) {
 			try {
-				Object targetObject = serializer.getObject(req, targetClass);
-				req.setAttribute(ObjectRequestController.ATTR_TARGET_OBJECT, targetObject);
-				super.onProcessRequest(req, resp);
+				Object targetObject = serializer.getObject(rrp, targetClass);
+				rrp.getRequest().setAttribute(ObjectRequestController.ATTR_TARGET_OBJECT, targetObject);
+				super.onProcessRequest(rrp);
 			} catch (ObjectSerializer.BadRequestException ex) {
-				sendError(resp, HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request
+				sendError(rrp, HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request
 			}
 		} else {
-			super.onProcessRequest(req, resp);
+			super.onProcessRequest(rrp);
 		}
 	}
 }

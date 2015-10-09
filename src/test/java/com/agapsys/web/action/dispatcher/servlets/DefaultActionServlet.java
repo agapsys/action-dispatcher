@@ -18,27 +18,24 @@ package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.web.action.dispatcher.RequestResponsePair;
 import com.agapsys.web.action.dispatcher.SecurityHandler;
 import com.agapsys.web.action.dispatcher.WebAction;
-import java.io.IOException;
 import java.util.Set;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/default/*")
 public class DefaultActionServlet extends PublicServlet {
 	@Override
 	@WebAction(httpMethod = HttpMethod.GET, defaultAction = true)
-	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_GET_URL, req, resp);
+	public void get(RequestResponsePair rrp) {
+		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_GET_URL, rrp);
 	}
 	
 	@Override
 	@WebAction(httpMethod = HttpMethod.POST, defaultAction = true)
-	public void post(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_POST_URL, req, resp);
+	public void post(RequestResponsePair rrp) {
+		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_POST_URL, rrp);
 	}
 
 	@Override

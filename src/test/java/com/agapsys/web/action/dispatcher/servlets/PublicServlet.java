@@ -19,50 +19,53 @@ package com.agapsys.web.action.dispatcher.servlets;
 import com.agapsys.web.action.dispatcher.ActionServlet;
 import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.web.action.dispatcher.RequestResponsePair;
 import com.agapsys.web.action.dispatcher.WebAction;
 import com.agapsys.web.action.dispatcher.WebActions;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/public/*")
 public class PublicServlet extends ActionServlet {
 	
-	protected void processRequest(String msg, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.getWriter().print(msg);
+	protected void processRequest(String msg, RequestResponsePair rrp){
+		rrp.getResponse().setStatus(HttpServletResponse.SC_OK);
+		try {
+			rrp.getResponse().getWriter().print(msg);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 	
 	@WebAction
-	public void get(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletGeneralTest.PUBLIC_GET_URL, req, resp);
+	public void get(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PUBLIC_GET_URL, rrp);
 	}
 	
 	@WebAction(mapping = "mapped/get")
-	public void mappedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_GET_URL, req, resp);
+	public void mappedGet(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_GET_URL, rrp);
 	}
 	
 	@WebAction(mapping = "/mapped/get2")
-	public void mappedWithSlash(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, req, resp);
+	public void mappedWithSlash(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, rrp);
 	}
 	
 	
 	@WebAction(httpMethod = HttpMethod.POST)
-	public void post(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, req, resp);
+	public void post(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, rrp);
 	}
 	
 	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post")
-	public void mappedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, req, resp);
+	public void mappedPost(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, rrp);
 	}
 	
 	@WebActions({@WebAction(httpMethod = HttpMethod.GET),@WebAction(httpMethod = HttpMethod.POST)})
-	public void repeatableGetOrPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processRequest(ActionServletGeneralTest.PUBLIC_REPEATABLE_GET_POST_URL + req.getMethod(), req, resp);
+	public void repeatableGetOrPost(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PUBLIC_REPEATABLE_GET_POST_URL + rrp.getRequest().getMethod(), rrp);
 	}
 }

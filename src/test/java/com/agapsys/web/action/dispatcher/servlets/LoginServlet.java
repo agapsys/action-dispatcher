@@ -19,14 +19,12 @@ package com.agapsys.web.action.dispatcher.servlets;
 import com.agapsys.web.action.dispatcher.ActionServlet;
 import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.ApplicationUser;
+import com.agapsys.web.action.dispatcher.RequestResponsePair;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/login/*")
 public class LoginServlet extends ActionServlet {
@@ -48,19 +46,23 @@ public class LoginServlet extends ActionServlet {
 	private final ApplicationUser simpleUser      = new SimpleUser();
 	private final ApplicationUser priviledgedUser = new PriviledgedUser();
 	
-	private void sendMessage(String msg, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.getWriter().print(msg);
+	private void sendMessage(String msg, RequestResponsePair rrp) {
+		try {
+			rrp.getResponse().getWriter().print(msg);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 	
 	@WebAction
-	public void simple(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		getUserManager().setSessionUser(simpleUser, req, resp);
-		sendMessage(ActionServletGeneralTest.LOGIN_SIMPLE_USER_URL, req, resp);
+	public void simple(RequestResponsePair rrp) {
+		getUserManager().setSessionUser(simpleUser, rrp);
+		sendMessage(ActionServletGeneralTest.LOGIN_SIMPLE_USER_URL, rrp);
 	}
 	
 	@WebAction
-	public void priviledged(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		getUserManager().setSessionUser(priviledgedUser, req, resp);
-		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, req, resp);
+	public void priviledged(RequestResponsePair rrp) {
+		getUserManager().setSessionUser(priviledgedUser, rrp);
+		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, rrp);
 	}
 }

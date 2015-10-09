@@ -80,67 +80,70 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	
 	/**
 	 * Returns the CSRF token stored in session
-	 * @param req HTTP request
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @return the CSRF token stored in session
 	 */
-	public String getSessionCsrfToken(HttpServletRequest req, HttpServletResponse resp) {
-		return (String) req.getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
+	public String getSessionCsrfToken(RequestResponsePair rrp) {
+		return (String) rrp.getRequest().getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	
 	/**
 	 * Stores a CSRF token in the session
 	 * @param csrfToken token to be stored
-	 * @param req HTTP request
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 */
-	public void setSessionCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp) {	
+	public void setSessionCsrfToken(String csrfToken, RequestResponsePair rrp) {	
 		if (csrfToken == null || csrfToken.isEmpty())
 			throw new IllegalArgumentException("Null/Empty CSRF token");
 		
-		req.getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
+		rrp.getRequest().getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
 	}
 	
 	/** 
 	 * Clears session CSRF token
-	 * @param req HTTP request
+	 * @param rrp request-response pair
 	 */
-	public void clearCsrfToken(HttpServletRequest req) {
-		req.getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
+	public void clearCsrfToken(RequestResponsePair rrp) {
+		rrp.getRequest().getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	
 	/**
 	 * Sends a CSRF token to the client.
 	 * Default implementation sends a {@linkplain CsrfSecurityHandler#CSRF_HEADER header} with given token.
 	 * @param csrfToken token to be sent
-	 * @param req HTTP request
-	 * @param resp HTTP response
+	 * @param rrp request-response pair
 	 * @param flush defines if response shall be flushed
-	 * @throws IOException if an input or output error occurs while sending the HTTP response
 	 */
-	public void sendCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp, boolean flush) throws IOException {
+	public void sendCsrfToken(String csrfToken, RequestResponsePair rrp, boolean flush) {
 		if (csrfToken == null || csrfToken.isEmpty())
 			throw new IllegalArgumentException("Null/Empty CSRF token");
 		
+		HttpServletResponse resp = rrp.getResponse();
+		
 		resp.setHeader(CSRF_HEADER, csrfToken);
 		
-		if (flush)
-			resp.flushBuffer();
+		if (flush) {
+			try {
+				resp.flushBuffer();
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
+		}
 	}
 	
 	/**
-	 * Convenience method for sendCsrfToken(csrfToken, req, resp, false)
+	 * Convenience method for sendCsrfToken(csrfToken, rrp, false)
 	 * @param csrfToken token to be sent
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 * @throws IOException if an input or output error occurs while sending the HTTP response
+	 * @param rrp request-response pair
 	 */
-	public void sendCsrfToken(String csrfToken, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		sendCsrfToken(csrfToken, req, resp, false);
+	public void sendCsrfToken(String csrfToken, RequestResponsePair rrp) {
+		sendCsrfToken(csrfToken, rrp, false);
 	}
 	
 	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) {
+	public boolean isAllowed(RequestResponsePair rrp) {
+		HttpServletRequest req = rrp.getRequest();
+		
 		String sessionCsrfToken = (String) req.getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 		String requestCsrfToken = req.getHeader(CSRF_HEADER);
 			

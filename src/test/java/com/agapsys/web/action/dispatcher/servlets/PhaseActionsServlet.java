@@ -18,41 +18,39 @@ package com.agapsys.web.action.dispatcher.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.web.action.dispatcher.RequestResponsePair;
 import com.agapsys.web.action.dispatcher.WebAction;
-import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/phase/*")
 public class PhaseActionsServlet extends PublicServlet {
 	
 	@Override
-	public void beforeAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		resp.setHeader(ActionServletGeneralTest.PHASE_BEFORE_HEADER, ActionServletGeneralTest.PHASE_BEFORE_HEADER);
+	public void beforeAction(RequestResponsePair rrp){
+		rrp.getResponse().setHeader(ActionServletGeneralTest.PHASE_BEFORE_HEADER, ActionServletGeneralTest.PHASE_BEFORE_HEADER);
 	}
 	
 	@Override
-	public void afterAction(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		resp.setHeader(ActionServletGeneralTest.PHASE_AFTER_HEADER, ActionServletGeneralTest.PHASE_AFTER_HEADER);
+	public void afterAction(RequestResponsePair rrp){
+		rrp.getResponse().setHeader(ActionServletGeneralTest.PHASE_AFTER_HEADER, ActionServletGeneralTest.PHASE_AFTER_HEADER);
 	}
 	
 	@Override
-	public void onNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		resp.setHeader(ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER, ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER);
+	public void onNotFound(RequestResponsePair rrp){
+		rrp.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
+		rrp.getResponse().setHeader(ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER, ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER);
 	}
 	
 	@Override
 	@WebAction(httpMethod = HttpMethod.GET, defaultAction = true)
-	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, req, resp);
+	public void get(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, rrp);
 	}
 	
 	@Override
 	@WebAction(httpMethod = HttpMethod.POST, defaultAction = true)
-	public void post(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, req, resp);
+	public void post(RequestResponsePair rrp){
+		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, rrp);
 	}
 }

@@ -17,8 +17,6 @@
 package com.agapsys.web.action.dispatcher;
 
 import java.util.Set;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Security handler responsible by checking if a user is allowed to process an action
@@ -40,11 +38,11 @@ public class UserRoleSecurityHandler implements SecurityHandler {
 	}
 		
 	@Override
-	public boolean isAllowed(HttpServletRequest req, HttpServletResponse resp) {
+	public boolean isAllowed(RequestResponsePair rrp) {
 		if (requiredRoles == null || requiredRoles.isEmpty()) {
 			return true;
 		} else {
-			ApplicationUser sessionUser = userManager != null ? userManager.getSessionUser(req) : null;
+			ApplicationUser sessionUser = userManager != null ? userManager.getSessionUser(rrp) : null;
 			return sessionUser != null && sessionUser.getRoles().containsAll(requiredRoles);
 		}
 	}

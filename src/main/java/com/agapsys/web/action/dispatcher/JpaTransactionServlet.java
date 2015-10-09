@@ -16,14 +16,11 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Specialization of Action servlet to manage transactions.
@@ -38,15 +35,15 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	private static class ServletJpaTransaction extends WrappedEntityTransaction implements RequestTransaction {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Transaction is managed by servlet");
 		private final EntityManager em;
-		private final HttpServletRequest req;
+		private final RequestResponsePair rrp;
 		private final UserManager userManager;
 		private final List<Runnable> commitQueue = new LinkedList<>();
 		private final List<Runnable> rollbackQueue = new LinkedList<>();
 		
-		public ServletJpaTransaction(UserManager userManager, HttpServletRequest req, ServletJpaEntityManger em, EntityTransaction wrappedTransaction) {
+		public ServletJpaTransaction(UserManager userManager, RequestResponsePair rrp, ServletJpaEntityManger em, EntityTransaction wrappedTransaction) {
 			super(wrappedTransaction);
 			this.userManager = userManager;
-			this.req = req;
+			this.rrp = rrp;
 			this.em = em;			
 		}
 		
@@ -90,7 +87,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 
 		@Override
 		public ApplicationUser getSessionUser() {
-			return userManager.getSessionUser(req);
+			return userManager.getSessionUser(rrp);
 		}
 
 		private void invokeAfter(List<Runnable> queue, Runnable runnable) {
@@ -115,9 +112,9 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Entity manager is managed by servlet");
 		private final ServletJpaTransaction singleTransaction;
 		
-		public ServletJpaEntityManger(UserManager userManager, HttpServletRequest req, EntityManager wrappedEntityManager) {
+		public ServletJpaEntityManger(UserManager userManager, RequestResponsePair rrp, EntityManager wrappedEntityManager) {
 			super(wrappedEntityManager);
-			singleTransaction = new ServletJpaTransaction(userManager, req, this, super.getTransaction());
+			singleTransaction = new ServletJpaTransaction(userManager, rrp, this, super.getTransaction());
 		}
 
 		@Override
@@ -136,7 +133,8 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private void closeTransaction(Throwable t, HttpServletRequest req) throws ServletException, IOException {
+	private void closeTransaction(Throwable t, RequestResponsePair rrp) {
+		HttpServletRequest req = rrp.getRequest();
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
 		
 		if (transaction != null) {
@@ -152,15 +150,15 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	}
 
 	@Override
-	protected void onError(Throwable throwable, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		closeTransaction(throwable, req);
-		super.onError(throwable, req, resp);
+	protected void onError(Throwable throwable, RequestResponsePair rrp) {
+		closeTransaction(throwable, rrp);
+		super.onError(throwable, rrp);
 	}
 	
 	@Override
-	protected void afterAction(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		closeTransaction(null, req);
-		super.afterAction(req, resp);
+	protected void afterAction(RequestResponsePair rrp) {
+		closeTransaction(null, rrp);
+		super.afterAction(rrp);
 	}
 	
 	/**
@@ -169,11 +167,12 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	 * @param req HTTP request
 	 * @return the transaction associated with given request
 	 */
-	public RequestTransaction getTransaction(HttpServletRequest req) {
+	public RequestTransaction getTransaction(RequestResponsePair rrp) {
+		HttpServletRequest req = rrp.getRequest();
 		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
 		
 		if (transaction == null) {
-			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getUserManager(), req, getEntityManagerFactory().getEntityManager()).getTransaction();
+			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getUserManager(), rrp, getEntityManagerFactory().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
 			req.setAttribute(REQ_ATTR_TRANSACTION, transaction);
 		}
