@@ -32,7 +32,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class JpaTransactionServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
-	private static final String ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
+	/** Name of request attribute containing the transaction. */
+	public static final String REQ_ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
 	
 	private static class ServletJpaTransaction extends WrappedEntityTransaction implements RequestTransaction {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Transaction is managed by servlet");
@@ -136,7 +137,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 
 	// INSTANCE SCOPE ==========================================================
 	private void closeTransaction(Throwable t, HttpServletRequest req) throws ServletException, IOException {
-		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
+		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
 		
 		if (transaction != null) {
 			if (t != null) {
@@ -146,7 +147,7 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 			}
 			
 			((ServletJpaEntityManger)transaction.getEntityManager()).wrappedClose();
-			req.removeAttribute(ATTR_TRANSACTION);
+			req.removeAttribute(REQ_ATTR_TRANSACTION);
 		}
 	}
 
@@ -169,12 +170,12 @@ public abstract class JpaTransactionServlet extends ActionServlet {
 	 * @return the transaction associated with given request
 	 */
 	public RequestTransaction getTransaction(HttpServletRequest req) {
-		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(ATTR_TRANSACTION);
+		ServletJpaTransaction transaction = (ServletJpaTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
 		
 		if (transaction == null) {
 			transaction = (ServletJpaTransaction) new ServletJpaEntityManger(getUserManager(), req, getEntityManagerFactory().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
-			req.setAttribute(ATTR_TRANSACTION, transaction);
+			req.setAttribute(REQ_ATTR_TRANSACTION, transaction);
 		}
 		
 		return transaction;
