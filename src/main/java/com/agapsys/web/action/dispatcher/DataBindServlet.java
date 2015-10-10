@@ -19,7 +19,7 @@ package com.agapsys.web.action.dispatcher;
 import java.lang.reflect.Method;
 
 /**
- * Custom {@linkplain ActionServlet} to handle {@linkplain ObjectRequest} methods.
+ * Custom {@linkplain ActionServlet} to handle {@linkplain DataBindRequest} methods.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public abstract class DataBindServlet extends ActionServlet {

@@ -19,7 +19,7 @@ package com.agapsys.web.action.dispatcher;
 import javax.persistence.EntityManager;
 
 /** 
- * Represents a transaction managed by a {@linkplain JpaTransactionServlet}
+ * Represents a transaction managed by a {@linkplain TransactionalServlet}
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface Transaction {
