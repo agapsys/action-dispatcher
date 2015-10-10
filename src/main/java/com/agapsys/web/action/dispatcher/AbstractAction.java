@@ -62,7 +62,7 @@ public abstract class AbstractAction implements Action {
 	
 	/**
 	 * Called when given request is not allowed to be processed.
-	 * Default implementation just sends a {@linkplain HttpServletResponse#SC_FORBIDDEN} error
+	 * Default implementation just set a {@linkplain HttpServletResponse#SC_FORBIDDEN} status in the response
 	 * @param exchange HTTP exchange
 	 */
 	protected void onNotAllowed(HttpExchange exchange) {

@@ -17,14 +17,14 @@ package com.agapsys.web.action.dispatcher;
 
 /**
  * Represents a security handler.
- * A security handler is an object responsible to allow or reject request according to its internal logic.
+ * A security handler is an object responsible to allow or reject a HTTP exchange according to its internal logic.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface SecurityHandler {
 	/**
-	 * Returns a boolean indicating if given request is allowed to be processed.
+	 * Returns a boolean indicating if given HTTP exchange is allowed to be processed.
 	 * @param exchange HTTP exchange
-	 * @return a boolean indicating if given request is allowed to be processed.
+	 * @return a boolean indicating if given exchange is allowed to be processed.
 	 */
 	public boolean isAllowed(HttpExchange exchange);
 }
