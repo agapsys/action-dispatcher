@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher.servlets;
+package action.dispatcher.integration.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
 import com.agapsys.web.action.dispatcher.HttpMethod;
-import com.agapsys.web.action.dispatcher.RequestResponsePair;
+import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.WebAction;
 import com.agapsys.web.action.dispatcher.WebActions;
+import action.dispatcher.integration.ActionServletGeneralTest;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletResponse;
@@ -29,43 +29,43 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/public/*")
 public class PublicServlet extends ActionServlet {
 	
-	protected void processRequest(String msg, RequestResponsePair rrp){
-		rrp.getResponse().setStatus(HttpServletResponse.SC_OK);
+	protected void processRequest(String msg, HttpExchange exchange){
+		exchange.getResponse().setStatus(HttpServletResponse.SC_OK);
 		try {
-			rrp.getResponse().getWriter().print(msg);
+			exchange.getResponse().getWriter().print(msg);
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 	
 	@WebAction
-	public void get(RequestResponsePair rrp){
-		processRequest(ActionServletGeneralTest.PUBLIC_GET_URL, rrp);
+	public void get(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_GET_URL, exchange);
 	}
 	
 	@WebAction(mapping = "mapped/get")
-	public void mappedGet(RequestResponsePair rrp){
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_GET_URL, rrp);
+	public void mappedGet(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_GET_URL, exchange);
 	}
 	
 	@WebAction(mapping = "/mapped/get2")
-	public void mappedWithSlash(RequestResponsePair rrp){
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, rrp);
+	public void mappedWithSlash(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, exchange);
 	}
 	
 	
 	@WebAction(httpMethod = HttpMethod.POST)
-	public void post(RequestResponsePair rrp){
-		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, rrp);
+	public void post(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, exchange);
 	}
 	
 	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post")
-	public void mappedPost(RequestResponsePair rrp){
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, rrp);
+	public void mappedPost(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, exchange);
 	}
 	
 	@WebActions({@WebAction(httpMethod = HttpMethod.GET),@WebAction(httpMethod = HttpMethod.POST)})
-	public void repeatableGetOrPost(RequestResponsePair rrp){
-		processRequest(ActionServletGeneralTest.PUBLIC_REPEATABLE_GET_POST_URL + rrp.getRequest().getMethod(), rrp);
+	public void repeatableGetOrPost(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_REPEATABLE_GET_POST_URL + exchange.getRequest().getMethod(), exchange);
 	}
 }

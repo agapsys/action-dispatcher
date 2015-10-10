@@ -48,20 +48,20 @@ public interface ObjectSerializer {
 	
 	// INSTANCE SCOPE ==========================================================
 	/**
-	 * Return an object sent from client (contained in the request)
+	 * Return an object sent from client (contained in the request).
 	 * @param <T> Type of the returned object
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 * @param targetClass class of returned object
 	 * @return returned object
 	 * @throws BadRequestException if it was not possible to retrieve an object instance from given request
 	 */
-	public <T> T getObject(RequestResponsePair rrp, Class<T> targetClass) throws BadRequestException;
+	public <T> T readObject(HttpExchange exchange, Class<T> targetClass) throws BadRequestException;
 	
 	/**
-	 * Sends an object to the client (contained in the response)
-	 * @param rrp request-response pair
+	 * Sends given object to the client (contained in the response).
+	 * @param exchange HTTP exchange
 	 * @param object object to be sent
 	 */
-	public void sendObject(RequestResponsePair rrp, Object object);
+	public void writeObject(HttpExchange exchange, Object object);
 	// =========================================================================
 }

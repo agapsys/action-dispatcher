@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher.servlets;
+package action.dispatcher.integration.servlets;
 
 import com.agapsys.jpa.PersistenceUnit;
 import com.agapsys.web.action.dispatcher.EntityManagerFactory;
-import com.agapsys.web.action.dispatcher.JpaTransactionServlet;
-import com.agapsys.web.action.dispatcher.PersistenceUnitFactory;
-import com.agapsys.web.action.dispatcher.RequestResponsePair;
-import com.agapsys.web.action.dispatcher.RequestTransaction;
+import com.agapsys.web.action.dispatcher.TransactionalServlet;
+import action.dispatcher.integration.jpa.PersistenceUnitFactory;
+import com.agapsys.web.action.dispatcher.HttpExchange;
+import com.agapsys.web.action.dispatcher.Transaction;
 import com.agapsys.web.action.dispatcher.WebAction;
-import com.agapsys.web.action.dispatcher.entities.TestEntity;
+import action.dispatcher.integration.jpa.TestEntity;
 import java.io.IOException;
 import javax.persistence.EntityManager;
 import javax.servlet.annotation.WebServlet;
 
 @WebServlet("/jpa/*")
-public class TransactionServlet extends JpaTransactionServlet {
+public class TransactionalTestServlet extends TransactionalServlet {
 	// CLASS SCOPE =============================================================
 	public static boolean postCommitted = false;
 	public static boolean postRollbacked = false;
@@ -48,7 +48,7 @@ public class TransactionServlet extends JpaTransactionServlet {
 		};
 	}
 
-	private void createEntities(RequestTransaction rt, boolean throwError) {
+	private void createEntities(Transaction rt, boolean throwError) {
 		for(int i = 1; i <= 100; i++) {
 			if (i == 50 && throwError)
 				throw new RuntimeException();
@@ -59,7 +59,7 @@ public class TransactionServlet extends JpaTransactionServlet {
 	}
 
 	@Override
-	protected void beforeAction(RequestResponsePair rrp){
+	protected void beforeAction(HttpExchange exchange){
 		postCommitted = false;
 		postRollbacked = false;
 	}
@@ -81,32 +81,32 @@ public class TransactionServlet extends JpaTransactionServlet {
 	
 	
 	@WebAction
-	public void commit(RequestResponsePair rrp) {
-		RequestTransaction rt = getTransaction(rrp);
+	public void commit(HttpExchange exchange) {
+		Transaction rt = getTransaction(exchange);
 		rt.invokeAfterRollback(postRollbackRunnable);
 		createEntities(rt, false);
 		rt.invokeAfterCommit(postCommitRunnable);
 	}
 	
 	@WebAction
-	public void rollback(RequestResponsePair rrp) {
-		RequestTransaction rt = getTransaction(rrp);
+	public void rollback(HttpExchange exchange) {
+		Transaction rt = getTransaction(exchange);
 		rt.invokeAfterRollback(postRollbackRunnable);
 		createEntities(rt, true);
 		rt.invokeAfterCommit(postCommitRunnable);
 	}
 	
 	@WebAction
-	public void clear(RequestResponsePair rrp) {
-		getTransaction(rrp).getEntityManager().createQuery("delete from TestEntity t").executeUpdate();
+	public void clear(HttpExchange exchange) {
+		getTransaction(exchange).getEntityManager().createQuery("delete from TestEntity t").executeUpdate();
 	}
 	
 	@WebAction
-	public void count(RequestResponsePair rrp) {
-		RequestTransaction rt = getTransaction(rrp);
+	public void count(HttpExchange exchange) {
+		Transaction rt = getTransaction(exchange);
 		Long count = (Long) rt.getEntityManager().createQuery("select count(1) from TestEntity t)").getSingleResult();
 		try {
-			rrp.getResponse().getWriter().print("" + count);
+			exchange.getResponse().getWriter().print("" + count);
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}

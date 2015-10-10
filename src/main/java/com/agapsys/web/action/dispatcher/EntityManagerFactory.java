@@ -22,6 +22,7 @@ import javax.persistence.EntityManager;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface EntityManagerFactory {
+	
 	/**
 	 * Returns an {@linkplain EntityManager} instance to be used by application.
 	 * @return {@linkplain EntityManager} instance.

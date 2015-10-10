@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher.servlets;
+package action.dispatcher.integration.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
+import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.WebAction;
+import action.dispatcher.integration.ActionServletGeneralTest;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/secured/*")
@@ -32,31 +31,37 @@ public class SecuredServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
 
 	// =========================================================================
-	private void processAction(String msg, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setStatus(HttpServletResponse.SC_OK);
-		resp.getWriter().print(msg);
+	private void processAction(String msg, HttpExchange exchange) {
+		HttpServletResponse resp = exchange.getResponse();
+		
+		try {
+			resp.setStatus(HttpServletResponse.SC_OK);
+			resp.getWriter().print(msg);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 	
 	// INSTANCE SCOPE ==========================================================
 	@WebAction(requiredRoles = {SECURED_ROLE})
-	public void get(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletGeneralTest.SECURED_GET_URL, req, resp);
+	public void get(HttpExchange exchange) {
+		processAction(ActionServletGeneralTest.SECURED_GET_URL, exchange);
 	}
 	
 	@WebAction(mapping = "mapped/get", requiredRoles = {SECURED_ROLE})
-	public void mappedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletGeneralTest.SECURED_MAPPED_GET_URL, req, resp);
+	public void mappedGet(HttpExchange exchange) {
+		processAction(ActionServletGeneralTest.SECURED_MAPPED_GET_URL, exchange);
 	}
 	
 	
 	@WebAction(httpMethod = HttpMethod.POST, requiredRoles = {SECURED_ROLE})
-	public void post(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletGeneralTest.SECURED_POST_URL, req, resp);
+	public void post(HttpExchange exchange) {
+		processAction(ActionServletGeneralTest.SECURED_POST_URL, exchange);
 	}
 	
 	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post", requiredRoles = {SECURED_ROLE})
-	public void mappedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		processAction(ActionServletGeneralTest.SECURED_MAPPED_POST_URL, req, resp);
+	public void mappedPost(HttpExchange exchange) {
+		processAction(ActionServletGeneralTest.SECURED_MAPPED_POST_URL, exchange);
 	}
 	// =========================================================================
 }

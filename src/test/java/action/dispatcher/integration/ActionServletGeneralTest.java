@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package action.dispatcher.integration;
 
 import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.HttpClient;
@@ -25,11 +25,14 @@ import com.agapsys.sevlet.test.HttpRequest.HttpHeader;
 import com.agapsys.sevlet.test.HttpResponse;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
-import com.agapsys.web.action.dispatcher.servlets.DefaultActionServlet;
-import com.agapsys.web.action.dispatcher.servlets.LoginServlet;
-import com.agapsys.web.action.dispatcher.servlets.PhaseActionsServlet;
-import com.agapsys.web.action.dispatcher.servlets.PublicServlet;
-import com.agapsys.web.action.dispatcher.servlets.SecuredServlet;
+import com.agapsys.web.action.dispatcher.ActionServlet;
+import com.agapsys.web.action.dispatcher.CsrfSecurityHandler;
+import com.agapsys.web.action.dispatcher.WebAction;
+import action.dispatcher.integration.servlets.DefaultActionServlet;
+import action.dispatcher.integration.servlets.LoginServlet;
+import action.dispatcher.integration.servlets.PhaseActionsServlet;
+import action.dispatcher.integration.servlets.PublicServlet;
+import action.dispatcher.integration.servlets.SecuredServlet;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.web.action.dispatcher;
+package action.dispatcher.unit;
 
+import com.agapsys.web.action.dispatcher.Action;
+import com.agapsys.web.action.dispatcher.ActionDispatcher;
+import com.agapsys.web.action.dispatcher.HttpExchange;
+import com.agapsys.web.action.dispatcher.HttpMethod;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ActionDispatcherTest {
 	// CLASS SCOPE =============================================================
-	private static class SimpleAction implements Action {
+	private static class TestAction implements Action {
 		@Override
-		public void processRequest(RequestResponsePair rrp) {
-			rrp.getResponse().setStatus(HttpServletResponse.SC_OK);
+		public void processRequest(HttpExchange exchange) {
+			exchange.getResponse().setStatus(HttpServletResponse.SC_OK);
 		}
 	}
 	// =========================================================================
@@ -44,20 +48,20 @@ public class ActionDispatcherTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testPassNullMethod() {
-		SimpleAction action = new SimpleAction();
+		TestAction action = new TestAction();
 		dispatcher.registerAction(action, null, "/test");
 	}
 
 	@Test
 	public void testSameUrlDistinctMethods() {
-		SimpleAction action = new SimpleAction();
+		TestAction action = new TestAction();
 		dispatcher.registerAction(action, HttpMethod.GET, "/test");
 		dispatcher.registerAction(action, HttpMethod.POST, "/test");
 	}
 	
 	@Test (expected = IllegalArgumentException.class)
 	public void testSameUrlSameMethod() {
-		SimpleAction action = new SimpleAction();
+		TestAction action = new TestAction();
 		dispatcher.registerAction(action, HttpMethod.GET, "/test");
 		dispatcher.registerAction(action, HttpMethod.GET, "/test");
 	}

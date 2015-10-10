@@ -16,7 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
 public abstract class AbstractAction implements Action {
@@ -42,62 +41,48 @@ public abstract class AbstractAction implements Action {
 	/** 
 	 * Called before action processing.
 	 * This method will be called only if action is allowed to be processed. Default implementation does nothing.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void beforeAction(RequestResponsePair rrp) {}
+	protected void beforeAction(HttpExchange exchange) {}
 	
 	/**
 	 * Actual action code.
 	 * This method will be called only if given request is allowed to be processed.
-	 * @param rrp request-response pair
-	 * @see SecurityHandler#isAllowed(RequestResponsePair)
+	 * @param exchange HTTP exchange
+	 * @see SecurityHandler#isAllowed(HttpExchange)
 	 */
-	protected abstract void onProcessRequest(RequestResponsePair rrp);
+	protected abstract void onProcessRequest(HttpExchange exchange);
 	
 	/** 
 	 * Called after action processing.
 	 * This method will be called only if action is allowed to be processed and the action was processed successfully. Default implementation does nothing.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void afterAction(RequestResponsePair rrp) {}
+	protected void afterAction(HttpExchange exchange) {}
 	
 	/**
 	 * Called when given request is not allowed to be processed.
 	 * Default implementation just sends a {@linkplain HttpServletResponse#SC_FORBIDDEN} error
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void onNotAllowed(RequestResponsePair rrp) {
-		sendError(rrp, HttpServletResponse.SC_FORBIDDEN);
+	protected void onNotAllowed(HttpExchange exchange) {
+		exchange.getResponse().setStatus(HttpServletResponse.SC_FORBIDDEN);
 	}
 	
 	@Override
-	public final void processRequest(RequestResponsePair rrp) {
+	public final void processRequest(HttpExchange exchange) {
 		if (securityHandler != null) {
-			if (securityHandler.isAllowed(rrp)) {
-				beforeAction(rrp);
-				onProcessRequest(rrp);
-				afterAction(rrp);
+			if (securityHandler.isAllowed(exchange)) {
+				beforeAction(exchange);
+				onProcessRequest(exchange);
+				afterAction(exchange);
 			} else {
-				onNotAllowed(rrp);
+				onNotAllowed(exchange);
 			}
 		} else {
-			beforeAction(rrp);
-			onProcessRequest(rrp);
-			afterAction(rrp);
-		}
-	}
-	
-	/**
-	 * Sends an error to the client.
-	 * Default implementation uses container's error mechanism if available
-	 * @param rrp request-response pair
-	 * @param status status code
-	 */
-	protected void sendError(RequestResponsePair rrp, int status) {
-		try {
-			rrp.getResponse().sendError(status);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
+			beforeAction(exchange);
+			onProcessRequest(exchange);
+			afterAction(exchange);
 		}
 	}
 }

@@ -45,12 +45,12 @@ public class SecurityHandlerSet implements SecurityHandler {
 	}
 	
 	@Override
-	public boolean isAllowed(RequestResponsePair rrp) {
+	public boolean isAllowed(HttpExchange exchange) {
 		if (handlerSet == null)
 			return true;
 		
 		for (SecurityHandler handler : handlerSet) {
-			if (!handler.isAllowed(rrp))
+			if (!handler.isAllowed(exchange))
 				return false;
 		}
 		

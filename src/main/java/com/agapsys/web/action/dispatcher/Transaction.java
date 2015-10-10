@@ -22,7 +22,7 @@ import javax.persistence.EntityManager;
  * Represents a transaction managed by a {@linkplain JpaTransactionServlet}
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface RequestTransaction {
+public interface Transaction {
 	/**
 	 * Returns entity manager associated with this transaction.
 	 * Multiple calls to this method will return the same instance.
@@ -39,14 +39,8 @@ public interface RequestTransaction {
 	
 	/**
 	 * Queues given runnable to be executed after transaction rollback.
-	 * If this transaction is not rollbacked, given runnable will not be executed.
+	 * If this transaction is not rolled back, given runnable will not be executed.
 	 * @param runnable runnable to be queued
 	 */
 	public void invokeAfterRollback(Runnable runnable);
-	
-	/**
-	 * Returns the application user associated with this request
-	 * @return application user associated with this request or null if there is no user
-	 */
-	public ApplicationUser getSessionUser();
 }

@@ -24,7 +24,7 @@ public interface Action {
 	
 	/**
 	 * Processes the action.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	public void processRequest(RequestResponsePair rrp);
+	public void processRequest(HttpExchange exchange);
 }

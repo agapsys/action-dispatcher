@@ -16,7 +16,6 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
@@ -80,69 +79,49 @@ public class CsrfSecurityHandler implements SecurityHandler {
 	
 	/**
 	 * Returns the CSRF token stored in session
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 * @return the CSRF token stored in session
 	 */
-	public String getSessionCsrfToken(RequestResponsePair rrp) {
-		return (String) rrp.getRequest().getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
+	public String getSessionCsrfToken(HttpExchange exchange) {
+		return (String) exchange.getRequest().getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	
 	/**
 	 * Stores a CSRF token in the session
 	 * @param csrfToken token to be stored
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	public void setSessionCsrfToken(String csrfToken, RequestResponsePair rrp) {	
+	public void setSessionCsrfToken(HttpExchange exchange, String csrfToken) {	
 		if (csrfToken == null || csrfToken.isEmpty())
 			throw new IllegalArgumentException("Null/Empty CSRF token");
 		
-		rrp.getRequest().getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
+		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
 	}
 	
 	/** 
 	 * Clears session CSRF token
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	public void clearCsrfToken(RequestResponsePair rrp) {
-		rrp.getRequest().getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
+	public void clearCsrfToken(HttpExchange exchange) {
+		exchange.getRequest().getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	
 	/**
-	 * Sends a CSRF token to the client.
-	 * Default implementation sends a {@linkplain CsrfSecurityHandler#CSRF_HEADER header} with given token.
+	 * Convenience method for sendCsrfToken(csrfToken, he, false)
 	 * @param csrfToken token to be sent
-	 * @param rrp request-response pair
-	 * @param flush defines if response shall be flushed
+	 * @param exchange HTTP exchange
 	 */
-	public void sendCsrfToken(String csrfToken, RequestResponsePair rrp, boolean flush) {
+	public void sendCsrfToken(HttpExchange exchange, String csrfToken) {
 		if (csrfToken == null || csrfToken.isEmpty())
 			throw new IllegalArgumentException("Null/Empty CSRF token");
 		
-		HttpServletResponse resp = rrp.getResponse();
-		
+		HttpServletResponse resp = exchange.getResponse();
 		resp.setHeader(CSRF_HEADER, csrfToken);
-		
-		if (flush) {
-			try {
-				resp.flushBuffer();
-			} catch (IOException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
-	}
-	
-	/**
-	 * Convenience method for sendCsrfToken(csrfToken, rrp, false)
-	 * @param csrfToken token to be sent
-	 * @param rrp request-response pair
-	 */
-	public void sendCsrfToken(String csrfToken, RequestResponsePair rrp) {
-		sendCsrfToken(csrfToken, rrp, false);
 	}
 	
 	@Override
-	public boolean isAllowed(RequestResponsePair rrp) {
-		HttpServletRequest req = rrp.getRequest();
+	public boolean isAllowed(HttpExchange exchange) {
+		HttpServletRequest req = exchange.getRequest();
 		
 		String sessionCsrfToken = (String) req.getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 		String requestCsrfToken = req.getHeader(CSRF_HEADER);

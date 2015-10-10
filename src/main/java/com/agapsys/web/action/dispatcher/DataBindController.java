@@ -16,26 +16,25 @@
 
 package com.agapsys.web.action.dispatcher;
 
+import com.agapsys.web.action.dispatcher.ActionCaller.DataBindActionCaller;
 import java.lang.reflect.Method;
 
 /**
- * Controller to be used by {@linkplain ObjectRequestServlet} and/or {@linkplain JpaObjectRequestServlet}.
- * Since both servlet classes handles common code, in order to avoid code duplication, a common controller
- * handles all the similarities among classes
+ * Controller to be used by {@linkplain DataBindServlet} and/or {@linkplain TransactionalDataBindServlet}.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class ObjectRequestController {
+public abstract class DataBindController {
 	// CLASS SCOPE =============================================================
 	public static final String ATTR_TARGET_OBJECT = "com.agapsys.angular.demo.targetObject";
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
 	private final ActionServlet servlet;
-	private final LazyInitializer<ObjectSerializer> serializerLazyInitializer = new LazyInitializer<ObjectSerializer>() {
+	private final LazyInitializer<ObjectSerializer> objectSerializer = new LazyInitializer<ObjectSerializer>() {
 
 		@Override
 		protected ObjectSerializer getLazyInstance() {
-			return ObjectRequestController.this.getSerializer();
+			return DataBindController.this.getSerializer();
 		}
 	};	
 
@@ -43,9 +42,12 @@ public abstract class ObjectRequestController {
 	 * Constructor
 	 * @param servlet an action servlet
 	 */
-	public ObjectRequestController(ActionServlet servlet) {
+	public DataBindController(ActionServlet servlet) {
 		if (servlet == null)
 			throw new IllegalArgumentException("Null servlet");
+		
+		if (!(servlet instanceof DataBindServlet) && !(servlet instanceof TransactionalDataBindServlet))
+			throw new IllegalArgumentException(String.format("servlet is not an instance of %s nor %s", DataBindServlet.class.getName(), TransactionalDataBindServlet.class.getName()));
 		
 		this.servlet = servlet;
 	}
@@ -63,33 +65,34 @@ public abstract class ObjectRequestController {
 	 * @param securityHandler associated security handler
 	 * @return action caller
 	 */
-	public final ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
-		ObjectRequest[] objectRequestAnnotations = method.getAnnotationsByType(ObjectRequest.class);
-		ObjectRequest objectRequestAnnotation = objectRequestAnnotations.length > 0 ? objectRequestAnnotations[0] : null;
+	public ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
+		DataBindRequest[] objectRequestAnnotations = method.getAnnotationsByType(DataBindRequest.class);
+		DataBindRequest objectRequestAnnotation = objectRequestAnnotations.length > 0 ? objectRequestAnnotations[0] : null;
 		
 		Class targetClass = null;
 		
 		if (objectRequestAnnotation != null) {
 			targetClass = objectRequestAnnotation.targetClass();
 		}
-		return new ObjectRequestActionCaller(serializerLazyInitializer.getInstance(), targetClass, servlet, method, securityHandler);
+		return new DataBindActionCaller(objectSerializer.getInstance(), targetClass, servlet, method, securityHandler);
 	}
 	
-	/**
-	 * @return the instance of a class specified in {@linkplain ObjectRequest}.
-	 * @param rrp request-response pair
+	/** 
+	 * Return the object sent from client (contained in the request)
+	 * @return the object sent from client (contained in the request)
+	 * @param exchange HTTP exchange
 	 */
-	public final Object getObject(RequestResponsePair rrp) {
-		return rrp.getRequest().getAttribute(ATTR_TARGET_OBJECT);
+	public final Object readObject(HttpExchange exchange) {
+		return exchange.getRequest().getAttribute(ATTR_TARGET_OBJECT);
 	}
 	
 	/**
-	 * Sends an object to the client
-	 * @param rrp request-response pair
+	 * Sends given object to the client (contained in the response).
+	 * @param exchange HTTP exchange
 	 * @param obj object to be sent
 	 */
-	public final void sendObject(RequestResponsePair rrp, Object obj) {
-		serializerLazyInitializer.getInstance().sendObject(rrp, obj);
+	public final void writeObject(HttpExchange exchange, Object obj) {
+		objectSerializer.getInstance().writeObject(exchange, obj);
 	}
 	// =========================================================================
 }

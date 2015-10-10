@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package action.dispatcher.integration;
 
 import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.HttpResponse;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
-import com.agapsys.web.action.dispatcher.servlets.TransactionServlet;
+import action.dispatcher.integration.servlets.TransactionalTestServlet;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class JpaTransactionServletTest {
+public class TransactionalServletTest {
 	// CLASS SCOPE =============================================================
 	public static final String JPA_SERVLET_URL  = "/jpa";
 	public static final String JPA_COMMIT_URL   = JPA_SERVLET_URL + "/commit";
@@ -44,7 +44,7 @@ public class JpaTransactionServletTest {
 		sc = new ServletContainer();
 		ApplicationContext app = new ApplicationContext();
 		app.setErrorHandler(new StacktraceErrorHandler());
-		app.registerServlet(TransactionServlet.class);
+		app.registerServlet(TransactionalTestServlet.class);
 		sc.registerContext(app);
 		sc.startServer();
 	}
@@ -71,16 +71,16 @@ public class JpaTransactionServletTest {
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		
-		Assert.assertTrue(TransactionServlet.postCommitted);
-		Assert.assertFalse(TransactionServlet.postRollbacked);
+		Assert.assertTrue(TransactionalTestServlet.postCommitted);
+		Assert.assertFalse(TransactionalTestServlet.postRollbacked);
 		// ---------------------------------------------------------------------
 		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
 		
-		Assert.assertFalse(TransactionServlet.postCommitted);
-		Assert.assertFalse(TransactionServlet.postRollbacked);
+		Assert.assertFalse(TransactionalTestServlet.postCommitted);
+		Assert.assertFalse(TransactionalTestServlet.postRollbacked);
 	}
 	
 	@Test
@@ -100,8 +100,8 @@ public class JpaTransactionServletTest {
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 
-		Assert.assertTrue(TransactionServlet.postCommitted);
-		Assert.assertFalse(TransactionServlet.postRollbacked);
+		Assert.assertTrue(TransactionalTestServlet.postCommitted);
+		Assert.assertFalse(TransactionalTestServlet.postRollbacked);
 		// ---------------------------------------------------------------------
 		
 		resp = sc.doGet(JPA_COUNT_URL);
@@ -112,16 +112,16 @@ public class JpaTransactionServletTest {
 		resp = sc.doGet(JPA_ROLLBACK_URL);
 		System.out.println(resp.getResponseBody());
 		
-		Assert.assertFalse(TransactionServlet.postCommitted);
-		Assert.assertTrue(TransactionServlet.postRollbacked);
+		Assert.assertFalse(TransactionalTestServlet.postCommitted);
+		Assert.assertTrue(TransactionalTestServlet.postRollbacked);
 		// ---------------------------------------------------------------------
 		
 		resp = sc.doGet(JPA_COUNT_URL);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals("100", resp.getResponseBody());
 		
-		Assert.assertFalse(TransactionServlet.postCommitted);
-		Assert.assertFalse(TransactionServlet.postRollbacked);
+		Assert.assertFalse(TransactionalTestServlet.postCommitted);
+		Assert.assertFalse(TransactionalTestServlet.postRollbacked);
 	}
 	// =========================================================================
 }

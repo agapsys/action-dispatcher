@@ -29,31 +29,31 @@ public class UserManager {
 	// INSTANCE SCOPE ==========================================================
 	/**
 	 * Returns a user from session
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 * @return session user or null if there is no user
 	 */
-	public ApplicationUser getSessionUser(RequestResponsePair rrp) {
-		return (ApplicationUser) rrp.getRequest().getSession().getAttribute(SESSION_ATTR_USER);
+	public SessionUser getSessionUser(HttpExchange exchange) {
+		return (SessionUser) exchange.getRequest().getSession().getAttribute(SESSION_ATTR_USER);
 	}
 	
 	/**
 	 * Sets a user in a session
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 * @param user user to be registered.
 	 */
-	public void setSessionUser(ApplicationUser user, RequestResponsePair rrp) {
+	public void setSessionUser(HttpExchange exchange, SessionUser user) {
 		if (user == null)
 			throw new IllegalArgumentException("Null user");
 		
-		rrp.getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
+		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
 	}
 	
 	/**
 	 * Clears session user
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	public void clearSessionUser(RequestResponsePair rrp) {
-		rrp.getRequest().getSession().removeAttribute(SESSION_ATTR_USER);
+	public void clearSessionUser(HttpExchange exchange) {
+		exchange.getRequest().getSession().removeAttribute(SESSION_ATTR_USER);
 	}
 	// =========================================================================
 }

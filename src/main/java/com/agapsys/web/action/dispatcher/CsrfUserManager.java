@@ -27,17 +27,17 @@ public class CsrfUserManager extends UserManager {
 
 	// INSTANCE SCOPE ==========================================================
 	@Override
-	public void setSessionUser(ApplicationUser user, RequestResponsePair rrp) {
-		super.setSessionUser(user, rrp);
+	public void setSessionUser(HttpExchange exchange, SessionUser user) {
+		super.setSessionUser(exchange, user);
 		String csrfToken = DEFAULT_CSRF_SECURITY_HANDLER.generateCsrfToken();
-		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(csrfToken, rrp);
-		DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(csrfToken, rrp);
+		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(exchange, csrfToken);
+		DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(exchange, csrfToken);
 	}
 
 	@Override
-	public void clearSessionUser(RequestResponsePair rrp) {
-		super.clearSessionUser(rrp);
-		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(rrp);
+	public void clearSessionUser(HttpExchange exchange) {
+		super.clearSessionUser(exchange);
+		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(exchange);
 	}
 	
 	/**

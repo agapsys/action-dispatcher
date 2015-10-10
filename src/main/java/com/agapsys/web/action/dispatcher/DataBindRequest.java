@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher.entities;
+package com.agapsys.web.action.dispatcher;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Entity
-public class TestEntity {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	int id;
-	
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-	
+/**
+ * Marks a mapped action-method as an request which contains an embedded object.
+ * @see WebAction
+ * @see WebActions
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface DataBindRequest {
+	/** @return The class of the object embedded in the request. */
+	Class targetClass();
 }

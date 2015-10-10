@@ -19,21 +19,21 @@ package com.agapsys.web.action.dispatcher;
 import java.lang.reflect.Method;
 
 /**
- * Custom {@linkplain JpaTransactionServlet} to handle {@linkplain ObjectRequest} methods
+ * Custom {@linkplain ActionServlet} to handle {@linkplain ObjectRequest} methods.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class JpaObjectRequestServlet extends JpaTransactionServlet {
-	private final LazyInitializer<ObjectRequestController> controllerLazyInitializer = new LazyInitializer<ObjectRequestController>() {
+public abstract class DataBindServlet extends ActionServlet {
+	private final LazyInitializer<DataBindController> dataBindController = new LazyInitializer<DataBindController>() {
 
 		@Override
-		protected ObjectRequestController getLazyInstance() {
-			return JpaObjectRequestServlet.this.getController();
+		protected DataBindController getLazyInstance() {
+			return DataBindServlet.this.getController();
 		}
 	};
 	
 	@Override
 	protected ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
-		return controllerLazyInitializer.getInstance().getActionCaller(method, securityHandler);
+		return dataBindController.getInstance().getActionCaller(method, securityHandler);
 	}
 	
 	/**
@@ -41,22 +41,23 @@ public abstract class JpaObjectRequestServlet extends JpaTransactionServlet {
 	 * It is safe to return a new instance, since this method will be called only once during application execution.
 	 * @return the controller associated with this servlet.
 	 */
-	protected abstract ObjectRequestController getController();
+	protected abstract DataBindController getController();
 	
-	/**
-	 * @return the instance of a class specified in {@linkplain ObjectRequest}.
-	 * @param rrp request-response pair
+	/** 
+	 * Return the object sent from client (contained in the request)
+	 * @return the object sent from client (contained in the request)
+	 * @param exchange HTTP exchange
 	 */
-	public Object getObject(RequestResponsePair rrp) {
-		return controllerLazyInitializer.getInstance().getObject(rrp);
+	public Object readObject(HttpExchange exchange) {
+		return dataBindController.getInstance().readObject(exchange);
 	}
 	
 	/**
-	 * Sends an object to the client
-	 * @param rrp request-response pair
+	 * Sends given object to the client (contained in the response).
+	 * @param exchange HTTP exchange
 	 * @param obj object to be sent
 	 */
-	public void sendObject(RequestResponsePair rrp, Object obj) {
-		controllerLazyInitializer.getInstance().sendObject(rrp, obj);
+	public void writeObject(HttpExchange exchange, Object obj) {
+		dataBindController.getInstance().writeObject(exchange, obj);
 	}
 }

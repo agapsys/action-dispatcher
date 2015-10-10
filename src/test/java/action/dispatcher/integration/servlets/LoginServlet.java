@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher.servlets;
+package action.dispatcher.integration.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ActionServletGeneralTest;
-import com.agapsys.web.action.dispatcher.ApplicationUser;
-import com.agapsys.web.action.dispatcher.RequestResponsePair;
+import com.agapsys.web.action.dispatcher.SessionUser;
+import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.WebAction;
+import action.dispatcher.integration.ActionServletGeneralTest;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -29,7 +29,7 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet("/login/*")
 public class LoginServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
-	private static class SimpleUser implements ApplicationUser {
+	private static class SimpleUser implements SessionUser {
 		private final Set<String> roles = new LinkedHashSet<>();
 		
 		@Override
@@ -43,26 +43,26 @@ public class LoginServlet extends ActionServlet {
 		}
 	}
 	
-	private final ApplicationUser simpleUser      = new SimpleUser();
-	private final ApplicationUser priviledgedUser = new PriviledgedUser();
+	private final SessionUser simpleUser      = new SimpleUser();
+	private final SessionUser priviledgedUser = new PriviledgedUser();
 	
-	private void sendMessage(String msg, RequestResponsePair rrp) {
+	private void sendMessage(String msg, HttpExchange exchange) {
 		try {
-			rrp.getResponse().getWriter().print(msg);
+			exchange.getResponse().getWriter().print(msg);
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 	
 	@WebAction
-	public void simple(RequestResponsePair rrp) {
-		getUserManager().setSessionUser(simpleUser, rrp);
-		sendMessage(ActionServletGeneralTest.LOGIN_SIMPLE_USER_URL, rrp);
+	public void simple(HttpExchange exchange) {
+		getUserManager().setSessionUser(exchange, simpleUser);
+		sendMessage(ActionServletGeneralTest.LOGIN_SIMPLE_USER_URL, exchange);
 	}
 	
 	@WebAction
-	public void priviledged(RequestResponsePair rrp) {
-		getUserManager().setSessionUser(priviledgedUser, rrp);
-		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, rrp);
+	public void priviledged(HttpExchange exchange) {
+		getUserManager().setSessionUser(exchange, priviledgedUser);
+		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, exchange);
 	}
 }

@@ -38,11 +38,11 @@ public class UserRoleSecurityHandler implements SecurityHandler {
 	}
 		
 	@Override
-	public boolean isAllowed(RequestResponsePair rrp) {
+	public boolean isAllowed(HttpExchange exchange) {
 		if (requiredRoles == null || requiredRoles.isEmpty()) {
 			return true;
 		} else {
-			ApplicationUser sessionUser = userManager != null ? userManager.getSessionUser(rrp) : null;
+			SessionUser sessionUser = userManager != null ? userManager.getSessionUser(exchange) : null;
 			return sessionUser != null && sessionUser.getRoles().containsAll(requiredRoles);
 		}
 	}

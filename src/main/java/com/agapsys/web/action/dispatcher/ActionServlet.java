@@ -16,7 +16,7 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import java.io.IOException;
+import com.agapsys.web.action.dispatcher.HttpExchange.DefaultHttpExchange;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
@@ -36,8 +36,8 @@ public class ActionServlet extends HttpServlet {
 	
 	private static void matchSignature(Method method) throws RuntimeException {
 		String signature = method.toGenericString();
-		
-		String errMsg = String.format("Invalid signature (%s). Required: public void <method_name>(com.agapsys.web.action.dispatcher.RequestResponsePair)", signature);
+		String paramType = HttpExchange.class.getName();
+		String errMsg = String.format("Invalid signature (%s). Required: public void <method_name>(%s)", signature, paramType);
 		
 		if (!signature.startsWith("public void "))
 			throw new RuntimeException(errMsg);
@@ -46,7 +46,7 @@ public class ActionServlet extends HttpServlet {
 		int indexOfCloseParenthesis = signature.indexOf(")");
 		
 		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis);
-		if (!args.equals("com.agapsys.web.action.dispatcher.RequestResponsePair"))
+		if (!args.equals(paramType))
 			throw new RuntimeException(errMsg);
 	}
 	// =========================================================================
@@ -127,6 +127,13 @@ public class ActionServlet extends HttpServlet {
 			}
 		}
 	};
+	private final LazyInitializer<UserManager> userManager = new LazyInitializer<UserManager>() {
+
+		@Override
+		protected UserManager getLazyInstance() {
+			return ActionServlet.this.getUserManagerFactory().getUserManager();
+		}
+	};
 	
 	/**
 	 * Returns the action caller which will be responsible by call a method in servlet.
@@ -143,35 +150,35 @@ public class ActionServlet extends HttpServlet {
 	 * Called before an action. 
 	 * This method will be called only if an action associated to given request is found and it it allowed to be processed (see {@linkplain SecurityHandler}).
 	 * Default implementation does nothing.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void beforeAction(RequestResponsePair rrp) {}
+	protected void beforeAction(HttpExchange exchange) {}
 	
 	/** 
 	 * Called after an action. 
 	 * This method will be called only if an action associated to given request is found, the action is allowed to be processed (see {@linkplain SecurityHandler}), and the action was successfully processed.
 	 * Default implementation does nothing.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void afterAction(RequestResponsePair rrp) {}
+	protected void afterAction(HttpExchange exchange) {}
 	
 	/** 
 	 * Called when an action is not found.
 	 * An action is not found when there is no method mapped to given request.
 	 * Default implementation sends a {@linkplain HttpServletResponse#SC_NOT_FOUND} error.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void onNotFound(RequestResponsePair rrp) {
-		sendError(rrp, HttpServletResponse.SC_NOT_FOUND);
+	protected void onNotFound(HttpExchange exchange) {
+		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 	
 	/** 
 	 * Called when there is an error processing an action.
 	 * Default implementation just throws given exception.
 	 * @param throwable error
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 */
-	protected void onError(Throwable throwable, RequestResponsePair rrp) {
+	protected void onError(HttpExchange exchange, Throwable throwable) {
 		if (throwable instanceof RuntimeException)
 			throw (RuntimeException) throwable;
 		
@@ -185,16 +192,16 @@ public class ActionServlet extends HttpServlet {
 	 *		<li> {@linkplain HttpServletResponse#SC_UNAUTHORIZED} if called action has required roles an there is no user registered with request session.</li>
 	 *		<li> {@linkplain HttpServletResponse#SC_FORBIDDEN} if there is an user registered with request session but the user does not fulfill required roles</li>
 	 * </ul>
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 * @see ActionServlet#getUserManager()
 	 */
-	protected void onNotAllowed(RequestResponsePair rrp) {
-		ApplicationUser sessionUser = getUserManager().getSessionUser(rrp);
+	protected void onNotAllowed(HttpExchange exchange) {
+		SessionUser sessionUser = getUserManager().getSessionUser(exchange);
 		
 		if (sessionUser == null) {
-			sendError(rrp, HttpServletResponse.SC_UNAUTHORIZED);
+			exchange.getResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		} else {
-			sendError(rrp, HttpServletResponse.SC_FORBIDDEN);
+			exchange.getResponse().setStatus(HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 	
@@ -217,15 +224,38 @@ public class ActionServlet extends HttpServlet {
 			return new SecurityHandlerSet(handlerSet);
 		}
 	}
-		
+	
+	/**
+	 * Return the user manager factory used by this servlet.
+	 * @return the user manager factory used by this servlet.
+	 */
+	protected UserManagerFactory getUserManagerFactory() {
+		return new UserManagerFactory() {
+
+			@Override
+			public UserManager getUserManager() {
+				return DEFAULT_USER_MANAGER;
+			}
+		};
+	}
+	
 	/**
 	 * Returns the user manager used by this servlet.
-	 * <b>ATTENTION:</b>This method may be called multiple times during runtime. Do not create a new instance after each call in order to improve performance.
 	 * Default implementation returns a default instance of {@linkplain CsrfUserManager}
 	 * @return the user manager used by this servlet
 	 */
-	protected UserManager getUserManager() {
-		return DEFAULT_USER_MANAGER;
+	public final UserManager getUserManager() {
+		return userManager.getInstance();
+	}
+	
+	/**
+	 * Return The HTTP exchange used by this servlet
+	 * @return The HTTP exchange used by this servlet
+	 * @param req HTTP request
+	 * @param resp HTTP response
+	 */
+	protected HttpExchange getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
+		return new DefaultHttpExchange(this, req, resp);
 	}
 	
 	@Override
@@ -235,30 +265,16 @@ public class ActionServlet extends HttpServlet {
 		
 		Action action = dispatcher.getAction(req);
 		
-		RequestResponsePair rrp = new RequestResponsePair(req, resp);
+		HttpExchange exchange = getHttpExchange(req, resp);
 		
 		if (action == null) {
-			onNotFound(rrp);
+			onNotFound(exchange);
 		} else {
 			try {
-				action.processRequest(rrp);
+				action.processRequest(exchange);
 			} catch (Throwable t) {
-				onError(t, rrp);
+				onError(exchange, t);
 			}
-		}
-	}
-	
-	/**
-	 * Sends an error to the client.
-	 * Default implementation uses container's error mechanism if available
-	 * @param rrp request-response pair
-	 * @param status status code
-	 */
-	protected void sendError(RequestResponsePair rrp, int status) {
-		try {
-			rrp.getResponse().sendError(status);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
 		}
 	}
 	// =========================================================================

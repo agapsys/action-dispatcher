@@ -23,8 +23,8 @@ package com.agapsys.web.action.dispatcher;
 public interface SecurityHandler {
 	/**
 	 * Returns a boolean indicating if given request is allowed to be processed.
-	 * @param rrp request-response pair
+	 * @param exchange HTTP exchange
 	 * @return a boolean indicating if given request is allowed to be processed.
 	 */
-	public boolean isAllowed(RequestResponsePair rrp);
+	public boolean isAllowed(HttpExchange exchange);
 }

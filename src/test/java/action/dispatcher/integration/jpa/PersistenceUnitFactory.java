@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package action.dispatcher.integration.jpa;
 
 import com.agapsys.jpa.PersistenceUnit;
 import java.io.File;

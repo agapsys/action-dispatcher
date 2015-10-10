@@ -18,6 +18,7 @@ package com.agapsys.web.action.dispatcher;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Action caller used by action servlet.
@@ -26,6 +27,50 @@ import java.lang.reflect.Method;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class ActionCaller extends AbstractAction {
+	// CLASS SCOPE =============================================================
+	/** Custom action caller to handle {@linkplain DataBindRequest} methods. */
+	static class DataBindActionCaller extends ActionCaller {
+		private final Class targetClass;
+		private final ObjectSerializer serializer;
+
+		/**
+		 * Constructor.
+		 * @param serializer object serializer
+		 * @param targetClass target class
+		 * @param servlet action servlet
+		 * @param method mapped method
+		 * @param securityHandler security handler
+		 */
+		public DataBindActionCaller(
+			ObjectSerializer serializer,
+			Class targetClass, 
+			ActionServlet servlet, 
+			Method method, 
+			SecurityHandler securityHandler
+		) {
+			super(servlet, method, securityHandler);
+			this.targetClass = targetClass;
+			this.serializer = serializer;
+		}
+
+		@Override
+		protected void onProcessRequest(HttpExchange exchange) {
+			if (targetClass != null) {
+				try {
+					Object targetObject = serializer.readObject(exchange, targetClass);
+					exchange.getRequest().setAttribute(DataBindController.ATTR_TARGET_OBJECT, targetObject);
+					super.onProcessRequest(exchange);
+				} catch (ObjectSerializer.BadRequestException ex) {
+					exchange.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request
+				}
+			} else {
+				super.onProcessRequest(exchange);
+			}
+		}
+	}
+	// =========================================================================
+	
+	// INSTANCE SCOPE ==========================================================
 	private final Method method;
 	private final ActionServlet servlet;
 	
@@ -57,31 +102,27 @@ public class ActionCaller extends AbstractAction {
 	}
 
 	@Override
-	protected void beforeAction(RequestResponsePair rrp){
-		getServlet().beforeAction(rrp);
+	protected void beforeAction(HttpExchange exchange){
+		getServlet().beforeAction(exchange);
 	}
 
 	@Override
-	protected void afterAction(RequestResponsePair rrp){
-		getServlet().afterAction(rrp);
+	protected void afterAction(HttpExchange exchange){
+		getServlet().afterAction(exchange);
 	}
 	
 	@Override
-	protected void onNotAllowed(RequestResponsePair rrp){
-		getServlet().onNotAllowed(rrp);
+	protected void onNotAllowed(HttpExchange exchange){
+		getServlet().onNotAllowed(exchange);
 	}
 
 	@Override
-	protected void onProcessRequest(RequestResponsePair rrp){
+	protected void onProcessRequest(HttpExchange exchange){
 		try {
-			method.invoke(getServlet(), rrp);
+			method.invoke(getServlet(), exchange);
 		} catch (InvocationTargetException | IllegalAccessException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
-
-	@Override
-	protected void sendError(RequestResponsePair rrp, int status){
-		getServlet().sendError(rrp, status);
-	}
+	// =========================================================================
 }
