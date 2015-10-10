@@ -43,7 +43,7 @@ public class UserRoleSecurityHandler implements SecurityHandler {
 			return true;
 		} else {
 			SessionUser sessionUser = userManager != null ? userManager.getSessionUser(exchange) : null;
-			return sessionUser != null && sessionUser.getRoles().containsAll(requiredRoles);
+			return sessionUser != null && (sessionUser.isAdmin() || sessionUser.getRoles().containsAll(requiredRoles));
 		}
 	}
 }

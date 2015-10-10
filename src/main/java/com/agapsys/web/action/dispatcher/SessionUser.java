@@ -28,4 +28,7 @@ public interface SessionUser extends Serializable {
 	 * @return collection roles associated with this user
 	 */
 	public Collection<String> getRoles();
+	
+	/** @return a boolean indicating if this user is a system administrator. */
+	public boolean isAdmin();
 }

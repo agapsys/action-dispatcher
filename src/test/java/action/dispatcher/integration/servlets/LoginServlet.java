@@ -36,15 +36,28 @@ public class LoginServlet extends ActionServlet {
 		public Set<String> getRoles() {
 			return roles;
 		}
+
+		@Override
+		public boolean isAdmin() {
+			return false;
+		}
 	}
 	private static class PriviledgedUser extends SimpleUser {
 		public PriviledgedUser() {
 			super.getRoles().add(SecuredServlet.SECURED_ROLE);
 		}
 	}
+	private static class AdminUser extends SimpleUser {
+
+		@Override
+		public boolean isAdmin() {
+			return true;
+		}
+	}
 	
 	private final SessionUser simpleUser      = new SimpleUser();
 	private final SessionUser priviledgedUser = new PriviledgedUser();
+	private final SessionUser adminUser       = new AdminUser();
 	
 	private void sendMessage(String msg, HttpExchange exchange) {
 		try {
@@ -64,5 +77,11 @@ public class LoginServlet extends ActionServlet {
 	public void priviledged(HttpExchange exchange) {
 		getUserManager().setSessionUser(exchange, priviledgedUser);
 		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, exchange);
+	}
+	
+	@WebAction
+	public void admin(HttpExchange exchange) {
+		getUserManager().setSessionUser(exchange, adminUser);
+		sendMessage(ActionServletGeneralTest.LOGIN_ADMIN_USER_URL, exchange);
 	}
 }

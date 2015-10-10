@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ActionServletGeneralTest {
@@ -79,6 +80,7 @@ public class ActionServletGeneralTest {
 	
 	public static final String LOGIN_SIMPLE_USER_URL     = "/login/simple";
 	public static final String LOGIN_PRIVILDGED_USER_URL = "/login/priviledged";
+	public static final String LOGIN_ADMIN_USER_URL     = "/login/admin";
 	
 	// INSTANCE SCOPE ==========================================================	
 	private ServletContainer sc;
@@ -381,17 +383,23 @@ public class ActionServletGeneralTest {
 		Assert.assertNotNull(resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER));
 		Assert.assertEquals(LOGIN_PRIVILDGED_USER_URL, resp.getResponseBody());
 		expectNullPhaseHeaders(resp);
+		
+		resp = sc.doGet(LOGIN_ADMIN_USER_URL);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertNotNull(resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER));
+		Assert.assertEquals(LOGIN_ADMIN_USER_URL, resp.getResponseBody());
+		expectNullPhaseHeaders(resp);
 	}
 	
 	@Test
 	public void testAccessWithLoggedUsers() {
+		HttpHeader csrfHeader;
+				
 		HttpClient simpleClient;
 		HttpClient priviledgedClient;
+		HttpClient adminClient;
 		
 		HttpResponse resp;
-		
-		HttpHeader simpleCsrfHeader;
-		HttpHeader priviledgedCsrfHeader;
 		
 		HttpGet simpleSecuredGet;
 		HttpGet priviledgedSecuredGet;
@@ -403,29 +411,25 @@ public class ActionServletGeneralTest {
 		// Logging in...
 		simpleClient = new HttpClient();
 		resp = sc.doGet(simpleClient, LOGIN_SIMPLE_USER_URL);
-		simpleCsrfHeader = resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER);
+		simpleClient.addDefaultHeaders(resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER)); // <-- Adds CSRF token to default headers
 		
 		// GET: SECURED GET
 		simpleSecuredGet = new HttpGet(sc, SECURED_GET_URL);
-		simpleSecuredGet.addHeaders(simpleCsrfHeader);
 		resp = sc.doGet(simpleClient, simpleSecuredGet);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // SECURED GET requires a role
 		
 		// GET: SECURED MAPPED GET
 		simpleSecuredGet = new HttpGet(sc, SECURED_MAPPED_GET_URL);
-		simpleSecuredGet.addHeaders(simpleCsrfHeader);
 		resp = sc.doGet(simpleClient, simpleSecuredGet);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // SECURED MAPPED GET requires a role
 		
 		// POST: SECURED POST
 		simpleSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		simpleSecuredPost.addHeaders(simpleCsrfHeader);
 		resp = sc.doPost(simpleClient, simpleSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());  // SECURED POST requires a role
 		
 		// POST: SECURED MAPPED POST
 		simpleSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		simpleSecuredPost.addHeaders(simpleCsrfHeader);
 		resp = sc.doPost(simpleClient, simpleSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());  // SECURED MAPPED POST requires a role
 		
@@ -433,7 +437,7 @@ public class ActionServletGeneralTest {
 		// Logging in...
 		priviledgedClient = new HttpClient();
 		resp = sc.doGet(priviledgedClient, LOGIN_PRIVILDGED_USER_URL);
-		priviledgedCsrfHeader = resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER);
+		csrfHeader = resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER); // Stores CSRF header for later usage
 		
 		// GET: SECURED GET
 		priviledgedSecuredGet = new HttpGet(sc, SECURED_GET_URL);
@@ -458,7 +462,7 @@ public class ActionServletGeneralTest {
 		// PRIVILEDGED USER WITH CSRF ------------------------------------------
 		// GET: SECURED GET
 		priviledgedSecuredGet = new HttpGet(sc, SECURED_GET_URL);
-		priviledgedSecuredGet.addHeaders(priviledgedCsrfHeader);
+		priviledgedClient.addDefaultHeaders(csrfHeader); // <-- Adds CSRF token to default headers
 		resp = sc.doGet(priviledgedClient, priviledgedSecuredGet);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_GET_URL, resp.getResponseBody());
@@ -466,7 +470,6 @@ public class ActionServletGeneralTest {
 		
 		// GET: SECURED MAPPED GET
 		priviledgedSecuredGet = new HttpGet(sc, SECURED_MAPPED_GET_URL);
-		priviledgedSecuredGet.addHeaders(priviledgedCsrfHeader);
 		resp = sc.doGet(priviledgedClient, priviledgedSecuredGet);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_MAPPED_GET_URL, resp.getResponseBody());
@@ -474,7 +477,6 @@ public class ActionServletGeneralTest {
 		
 		// POST: SECURED POST
 		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		priviledgedSecuredPost.addHeaders(priviledgedCsrfHeader);
 		resp = sc.doPost(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_POST_URL, resp.getResponseBody());
@@ -482,8 +484,63 @@ public class ActionServletGeneralTest {
 		
 		// POST: SECURED MAPPED POST
 		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		priviledgedSecuredPost.addHeaders(priviledgedCsrfHeader);
 		resp = sc.doPost(priviledgedClient, priviledgedSecuredPost);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(SECURED_MAPPED_POST_URL, resp.getResponseBody());
+		expectNullPhaseHeaders(resp);
+		
+		// ADMIN USER WITHOUT CSRF -----------------------------------------------
+		// Logging in...
+		adminClient = new HttpClient();
+		resp = sc.doGet(adminClient, LOGIN_ADMIN_USER_URL);
+		csrfHeader = resp.getFirstHeader(CsrfSecurityHandler.CSRF_HEADER); // Stores CSRF header for later usage
+		
+		// GET: SECURED GET
+		priviledgedSecuredGet = new HttpGet(sc, SECURED_GET_URL);
+		resp = sc.doGet(adminClient, priviledgedSecuredGet);
+		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
+		
+		// GET: SECURED MAPPED GET
+		priviledgedSecuredGet = new HttpGet(sc, SECURED_MAPPED_GET_URL);
+		resp = sc.doGet(adminClient, priviledgedSecuredGet);
+		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
+		
+		// POST: SECURED POST
+		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
+		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
+		
+		// POST: SECURED MAPPED POST
+		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
+		
+		// ADMIN USER WITH CSRF ------------------------------------------
+		// GET: SECURED GET
+		priviledgedSecuredGet = new HttpGet(sc, SECURED_GET_URL);
+		adminClient.addDefaultHeaders(csrfHeader); // <-- Adds CSRF token to default headers
+		resp = sc.doGet(adminClient, priviledgedSecuredGet);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(SECURED_GET_URL, resp.getResponseBody());
+		expectNullPhaseHeaders(resp);
+		
+		// GET: SECURED MAPPED GET
+		priviledgedSecuredGet = new HttpGet(sc, SECURED_MAPPED_GET_URL);
+		resp = sc.doGet(adminClient, priviledgedSecuredGet);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(SECURED_MAPPED_GET_URL, resp.getResponseBody());
+		expectNullPhaseHeaders(resp);
+		
+		// POST: SECURED POST
+		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
+		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(SECURED_POST_URL, resp.getResponseBody());
+		expectNullPhaseHeaders(resp);
+		
+		// POST: SECURED MAPPED POST
+		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doPost(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_MAPPED_POST_URL, resp.getResponseBody());
 		expectNullPhaseHeaders(resp);
