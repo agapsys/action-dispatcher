@@ -43,4 +43,10 @@ public interface Transaction {
 	 * @param runnable runnable to be queued
 	 */
 	public void invokeAfterRollback(Runnable runnable);
+	
+	/**
+	 * Returns the HTTP exchange related to this transaction
+	 * @return the HTTP exchange related to this transaction
+	 */
+	public HttpExchange getHttpExchange();
 }

@@ -31,17 +31,19 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class TransactionalServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
 	/** Name of request attribute containing the transaction. */
-	public static final String REQ_ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
+	private static final String REQ_ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
 	
 	private static class ServletTransaction extends WrappedEntityTransaction implements Transaction {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Transaction is managed by servlet");
 		private final EntityManager em;
+		private final HttpExchange exchange;
 		private final List<Runnable> commitQueue = new LinkedList<>();
 		private final List<Runnable> rollbackQueue = new LinkedList<>();
 		
-		public ServletTransaction(UserManager userManager, HttpExchange exchange, ServletEntityManger em, EntityTransaction wrappedTransaction) {
+		public ServletTransaction(HttpExchange exchange, ServletEntityManger em, EntityTransaction wrappedTransaction) {
 			super(wrappedTransaction);
-			this.em = em;			
+			this.em = em;
+			this.exchange = exchange;
 		}
 		
 		private void processQueue(List<Runnable> queue) {
@@ -98,15 +100,20 @@ public abstract class TransactionalServlet extends ActionServlet {
 		public void invokeAfterRollback(Runnable runnable) {
 			invokeAfter(rollbackQueue, runnable);
 		}
+
+		@Override
+		public HttpExchange getHttpExchange() {
+			return exchange;
+		}
 	}
 	
 	private static class ServletEntityManger extends WrappedEntityManager {
 		private final UnsupportedOperationException exception = new UnsupportedOperationException("Entity manager is managed by servlet");
 		private final ServletTransaction singleTransaction;
 		
-		public ServletEntityManger(UserManager userManager, HttpExchange exchange, EntityManager wrappedEntityManager) {
+		public ServletEntityManger(HttpExchange exchange, EntityManager wrappedEntityManager) {
 			super(wrappedEntityManager);
-			singleTransaction = new ServletTransaction(userManager, exchange, this, super.getTransaction());
+			singleTransaction = new ServletTransaction(exchange, this, super.getTransaction());
 		}
 
 		@Override
@@ -183,7 +190,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 		ServletTransaction transaction = (ServletTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
 		
 		if (transaction == null) {
-			transaction = (ServletTransaction) new ServletEntityManger(getUserManager(), exchange, entityManagerFactory.getInstance().getEntityManager()).getTransaction();
+			transaction = (ServletTransaction) new ServletEntityManger(exchange, entityManagerFactory.getInstance().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
 			req.setAttribute(REQ_ATTR_TRANSACTION, transaction);
 		}
