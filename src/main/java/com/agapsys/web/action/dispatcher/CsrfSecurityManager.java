@@ -25,7 +25,7 @@ import java.util.Random;
  */
 public class CsrfSecurityManager implements SecurityManager {
 	// CLASS SCOPE =============================================================
-	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.csrfToken";
+	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.action.dispatcher.csrfToken";
 	private static final int    CSRF_TOKEN_LENGTH       = 128;
 	
 	/** Name of the header used to send/retrieve a CSRF token. */

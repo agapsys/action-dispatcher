@@ -46,7 +46,6 @@ public class CsrfUserManager extends UserManager {
 	}
 	// -------------------------------------------------------------------------
 	
-	// CUSTOMIZABLE RUNTIME BEHAVIOUR ------------------------------------------	
 	@Override
 	public void setSessionUser(HttpExchange exchange, SessionUser user) {
 		super.setSessionUser(exchange, user);
@@ -58,6 +57,5 @@ public class CsrfUserManager extends UserManager {
 		super.clearSessionUser(exchange);
 		csrfSecurityManager.getInstance().clearSessionCsrfToken(exchange);
 	}
-	// -------------------------------------------------------------------------	
 	// =========================================================================
 }

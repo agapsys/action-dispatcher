@@ -24,82 +24,9 @@ import javax.servlet.http.HttpServletResponse;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public abstract class DataBindServlet extends ActionServlet implements DataBindService {
-	// CLASS SCOPE =============================================================
-	private static final String ATTR_TARGET_OBJECT = "com.agapsys.angular.demo.targetObject";
-	
-	/** Data bind controller used by a {@link DataBindService}. */
-	public static abstract class DataBindController {
-		private final DataBindService dataBindService;
-		private final LazyInitializer<ObjectSerializer> objectSerializer = new LazyInitializer<ObjectSerializer>() {
-
-			@Override
-			protected ObjectSerializer getLazyInstance(Object...params) {
-				return DataBindController.this._getSerializer();
-			}
-		};
-
-		/**
-		 * Constructor
-		 * @param dataBindService data binding service.
-		 */
-		public DataBindController(DataBindService dataBindService) {
-			if (dataBindService == null)
-				throw new IllegalArgumentException("Null data binding service");
-
-			this.dataBindService = dataBindService;
-		}
-
-		// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -------------------------------
-		/**
-		 * Returns the serializer used by this controller.
-		 * This method is intended to be overridden to change object initialization and not be called directly
-		 * @return the serializer used by this controller. 
-		 */
-		protected abstract ObjectSerializer _getSerializer();
-
-		/**
-		 * Gets the method caller action associated with given method.
-		 * This method is intended to be overridden to change object initialization and not be called directly
-		 * @param method method
-		 * @param securityManager associated security manager
-		 * @return method caller action associated with given method.
-		 */
-		MethodCallerAction _getMethodCallerAction(Method method, SecurityManager securityManager) {
-			DataBindRequest[] dataBindRequestAnnotations = method.getAnnotationsByType(DataBindRequest.class);
-			DataBindRequest dataBindRequestAnnotation = dataBindRequestAnnotations.length > 0 ? dataBindRequestAnnotations[0] : null;
-
-			Class targetClass = null;
-
-			if (dataBindRequestAnnotation != null) {
-				targetClass = dataBindRequestAnnotation.targetClass();
-			}
-			return new DataBindMethodCallerAction(objectSerializer.getInstance(), targetClass, dataBindService, method, securityManager);
-		}
-		// -------------------------------------------------------------------------
-
-
-		/** 
-		 * Return the object sent from client (contained in the request)
-		 * @return the object sent from client (contained in the request)
-		 * @param exchange HTTP exchange
-		 */
-		public final Object readObject(HttpExchange exchange) {
-			return exchange.getRequest().getAttribute(ATTR_TARGET_OBJECT);
-		}
-
-		/**
-		 * Sends given object to the client (contained in the response).
-		 * @param exchange HTTP exchange
-		 * @param obj object to be sent
-		 */
-		public final void writeObject(HttpExchange exchange, Object obj) {
-			objectSerializer.getInstance().writeObject(exchange, obj);
-		}
-		// =========================================================================
-	}	
-
+	// CLASS SCOPE =============================================================	
 	/** Custom action caller to handle {@linkplain DataBindRequest} methods. */
-	private static class DataBindMethodCallerAction extends MethodCallerAction {
+	static class DataBindMethodCallerAction extends MethodCallerAction {
 		private final Class targetClass;
 		private final ObjectSerializer serializer;
 
@@ -128,7 +55,7 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 			if (targetClass != null) {
 				try {
 					Object targetObject = serializer.readObject(exchange, targetClass);
-					exchange.getRequest().setAttribute(ATTR_TARGET_OBJECT, targetObject);
+					exchange.getRequest().setAttribute(DataBindController.ATTR_TARGET_OBJECT, targetObject);
 					super.onProcessRequest(exchange);
 				} catch (ObjectSerializer.BadRequestException ex) {
 					exchange.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request

@@ -21,7 +21,7 @@ import com.agapsys.sevlet.test.HttpPost;
 import com.agapsys.sevlet.test.HttpResponse;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
-import com.agapsys.web.action.dispatcher.ActionServlet;
+import com.agapsys.web.action.dispatcher.DataBindController;
 import com.agapsys.web.action.dispatcher.DataBindRequest;
 import com.agapsys.web.action.dispatcher.DataBindService;
 import com.agapsys.web.action.dispatcher.DataBindServlet;

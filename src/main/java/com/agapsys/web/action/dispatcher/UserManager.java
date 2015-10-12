@@ -23,7 +23,7 @@ package com.agapsys.web.action.dispatcher;
  */
 public class UserManager {
 	// CLASS SCOPE =============================================================
-	private static final String SESSION_ATTR_USER = "com.agapsys.web.user";
+	private static final String SESSION_ATTR_USER = "com.agapsys.web.action.dispatcher.user";
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
