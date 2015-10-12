@@ -19,7 +19,7 @@ package com.agapsys.web.action.dispatcher;
 /**
  * Utility class to lazy-initialize objects in a multi-thread environment
  * @author Leandro Oliveira (leandro@agapsys.com)
- * @param <T> Type of the object handled by this initializer
+ * @param <T> Type of the object managed by this initializer
  */
 public abstract class LazyInitializer<T> {
 	private volatile boolean initialized = false;

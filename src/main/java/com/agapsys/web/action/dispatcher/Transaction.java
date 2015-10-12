@@ -45,7 +45,7 @@ public interface Transaction {
 	public void invokeAfterRollback(Runnable runnable);
 	
 	/**
-	 * Returns the HTTP exchange related to this transaction
+	 * Returns the HTTP exchange associated with this transaction
 	 * @return the HTTP exchange related to this transaction
 	 */
 	public HttpExchange getHttpExchange();

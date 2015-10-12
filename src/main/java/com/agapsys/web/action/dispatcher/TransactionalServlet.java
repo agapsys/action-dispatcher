@@ -24,17 +24,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Specialization of Action servlet to manage transactions.
- * A transaction will be initialized after each mapped action and will be committed (when action is successfully processed) or rolled back (if there is an error while processing an acation).
+ * Specialization of {@linkplain ActionServlet} which manages JPA transactions during HTTP exchange processing.
+ * A transaction will be initialized after each HTTP exchange and will be committed (when exchange is successfully processed) or rolled back (if there is an error while processing the exchange).
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public abstract class TransactionalServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
 	/** Name of request attribute containing the transaction. */
-	private static final String REQ_ATTR_TRANSACTION    = "com.agapsys.web.action.dispatcher.transaction";
+	private static final String REQ_ATTR_TRANSACTION = "com.agapsys.web.action.dispatcher.transaction";
 	
 	private static class ServletTransaction extends WrappedEntityTransaction implements Transaction {
-		private final UnsupportedOperationException exception = new UnsupportedOperationException("Transaction is managed by servlet");
+		private final UnsupportedOperationException unsupportedOperationException = new UnsupportedOperationException("Transaction is managed by servlet");
 		private final EntityManager em;
 		private final HttpExchange exchange;
 		private final List<Runnable> commitQueue = new LinkedList<>();
@@ -55,7 +55,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 		
 		@Override
 		public void commit() {
-			throw exception;
+			throw unsupportedOperationException;
 		}
 		public void wrappedCommit() {
 			super.commit();
@@ -64,7 +64,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 		
 		@Override
 		public void begin() {
-			throw exception;
+			throw unsupportedOperationException;
 		}
 		public void wrappedBegin() {
 			super.begin();
@@ -72,7 +72,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 
 		@Override
 		public void rollback() {
-			throw exception;
+			throw unsupportedOperationException;
 		}
 		public void wrappedRollback() {
 			super.rollback();
@@ -108,7 +108,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 	}
 	
 	private static class ServletEntityManger extends WrappedEntityManager {
-		private final UnsupportedOperationException exception = new UnsupportedOperationException("Entity manager is managed by servlet");
+		private final UnsupportedOperationException unsupportedOperationException = new UnsupportedOperationException("Entity manager is managed by servlet");
 		private final ServletTransaction singleTransaction;
 		
 		public ServletEntityManger(HttpExchange exchange, EntityManager wrappedEntityManager) {
@@ -123,10 +123,21 @@ public abstract class TransactionalServlet extends ActionServlet {
 
 		@Override
 		public void close() {
-			throw exception;
+			throw unsupportedOperationException;
 		}
 		public void wrappedClose() {
 			super.close();
+		}
+	}
+	
+	private static class DefaultTransactionalHttpExchange extends DefaultHttpExchange implements TransactionalHttpExchange {
+		public DefaultTransactionalHttpExchange(TransactionalServlet servlet, HttpServletRequest req, HttpServletResponse resp) {
+			super(servlet, req, resp);
+		}
+
+		@Override
+		public Transaction getTransaction() {
+			return ((TransactionalServlet) getServlet()).getTransaction(this);
 		}
 	}
 	// =========================================================================
@@ -135,8 +146,8 @@ public abstract class TransactionalServlet extends ActionServlet {
 	private final LazyInitializer<EntityManagerFactory> entityManagerFactory = new LazyInitializer<EntityManagerFactory>() {
 
 		@Override
-		protected EntityManagerFactory getLazyInstance() {
-			return TransactionalServlet.this.getEntityManagerFactory();
+		protected EntityManagerFactory getLazyInstance(Object...params) {
+			return TransactionalServlet.this._getEntityManagerFactory();
 		}
 	};
 	
@@ -152,31 +163,63 @@ public abstract class TransactionalServlet extends ActionServlet {
 			}
 			
 			((ServletEntityManger)transaction.getEntityManager()).wrappedClose();
-			req.removeAttribute(REQ_ATTR_TRANSACTION);
 		}
 	}
 
-	@Override
-	protected void onError(HttpExchange exchange, Throwable throwable) {
-		closeTransaction(exchange, throwable);
-		super.onError(exchange, throwable);
-	}
-	
-	@Override
-	protected void afterAction(HttpExchange exchange) {
-		closeTransaction(exchange, null);
-		super.afterAction(exchange);
-	}
-	
-	/**
-	 * Return The HTTP exchange used by this servlet
-	 * @return The HTTP exchange used by this servlet
-	 * @param req HTTP request
-	 * @param resp HTTP response
+	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
+	/** 
+	 * Return the factory of entity managers used by this servlet. 
+	 * This method is intended to be overridden to change servlet initialization and not be called directly
+	 * @return {@link EntityManagerFactory} instance used by this servlet
 	 */
+	protected abstract EntityManagerFactory _getEntityManagerFactory();
+	// -------------------------------------------------------------------------
+	
+	@Override
+	public void onError(HttpExchange exchange, Throwable throwable) {
+		Throwable t = null;
+		
+		try {
+			super.onError(exchange, throwable);
+		} catch (Throwable ex) {
+			t = ex;
+		}
+		
+		closeTransaction(exchange, throwable);
+		
+		if (t != null) {
+			if (t instanceof RuntimeException) {
+				throw ((RuntimeException) t);
+			} else {
+				throw new RuntimeException(t);
+			}
+		}
+	}
+	
+	@Override
+	public void afterAction(HttpExchange exchange) {
+		Throwable t = null;
+		
+		try {
+			super.afterAction(exchange);
+		} catch (Throwable ex) {
+			t = ex;
+		}
+		
+		closeTransaction(exchange, null);
+		
+		if (t != null) {
+			if (t instanceof RuntimeException) {
+				throw ((RuntimeException) t);
+			} else {
+				throw new RuntimeException(t);
+			}
+		}
+	}
+	
 	@Override
 	protected TransactionalHttpExchange getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
-		return new TransactionalHttpExchange.DefaultTransactionalHttpExchange(this, req, resp);
+		return new DefaultTransactionalHttpExchange(this, req, resp);
 	}
 	
 	/**
@@ -197,11 +240,5 @@ public abstract class TransactionalServlet extends ActionServlet {
 		
 		return transaction;
 	}
-	
-	/** 
-	 * Return the factory of entity managers used by this servlet. 
-	 * @return {@link EntityManagerFactory} instance used by this servlet
-	 */
-	protected abstract EntityManagerFactory getEntityManagerFactory();
 	// =========================================================================
 }

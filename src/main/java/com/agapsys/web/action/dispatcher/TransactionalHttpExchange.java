@@ -16,24 +16,14 @@
 
 package com.agapsys.web.action.dispatcher;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+/**
+ * Represents an HTTP exchange handled by a {@linkplain TransactionalServlet}
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public interface TransactionalHttpExchange extends HttpExchange {
-	// CLASS SCOPE =============================================================
-	static class DefaultTransactionalHttpExchange extends DefaultHttpExchange implements TransactionalHttpExchange {
-		public DefaultTransactionalHttpExchange(TransactionalServlet servlet, HttpServletRequest req, HttpServletResponse resp) {
-			super(servlet, req, resp);
-		}
-
-		@Override
-		public Transaction getTransaction() {
-			return ((TransactionalServlet) getServlet()).getTransaction(this);
-		}
-	}
-	// =========================================================================
-	
-	// INSTANCE SCOPE ==========================================================	
+	/**
+	 * Returns the transaction associated with this HTTP exchange
+	 * @return the transaction associated with this HTTP exchange
+	 */
 	public Transaction getTransaction();
-	// =========================================================================
 }

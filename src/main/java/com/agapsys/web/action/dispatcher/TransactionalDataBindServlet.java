@@ -16,24 +16,26 @@
 
 package com.agapsys.web.action.dispatcher;
 
+import com.agapsys.web.action.dispatcher.DataBindServlet.DataBindController;
 import java.lang.reflect.Method;
 
 /**
  * Custom {@link TransactionalServlet} to handle {@linkplain DataBindRequest} methods
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class TransactionalDataBindServlet extends TransactionalServlet {
+public abstract class TransactionalDataBindServlet extends TransactionalServlet implements DataBindService {
 	private final LazyInitializer<DataBindController> dataBindController = new LazyInitializer<DataBindController>() {
 
 		@Override
-		protected DataBindController getLazyInstance() {
-			return TransactionalDataBindServlet.this.getController();
+		protected DataBindController getLazyInstance(Object...params) {
+			return TransactionalDataBindServlet.this._getController();
 		}
 	};
 	
+	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
 	@Override
-	protected ActionCaller getActionCaller(Method method, SecurityHandler securityHandler) {
-		return dataBindController.getInstance().getActionCaller(method, securityHandler);
+	protected MethodCallerAction _getMethodCallerAction(Method method, SecurityManager securityManager) {
+		return dataBindController.getInstance()._getMethodCallerAction(method, securityManager);
 	}
 	
 	/**
@@ -41,22 +43,15 @@ public abstract class TransactionalDataBindServlet extends TransactionalServlet 
 	 * It is safe to return a new instance, since this method will be called only once during application execution.
 	 * @return the controller associated with this servlet.
 	 */
-	protected abstract DataBindController getController();
-	
-	/** 
-	 * Return the object sent from client (contained in the request)
-	 * @return the object sent from client (contained in the request)
-	 * @param exchange HTTP exchange
-	 */
+	protected abstract DataBindController _getController();
+	// -------------------------------------------------------------------------
+
+	@Override
 	public Object readObject(HttpExchange exchange) {
 		return dataBindController.getInstance().readObject(exchange);
 	}
-	
-	/**
-	 * Sends given object to the client (contained in the response).
-	 * @param exchange HTTP exchange
-	 * @param obj object to be sent
-	 */
+
+	@Override
 	public void writeObject(HttpExchange exchange, Object obj) {
 		dataBindController.getInstance().writeObject(exchange, obj);
 	}

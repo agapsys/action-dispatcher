@@ -18,7 +18,7 @@ package com.agapsys.web.action.dispatcher;
 
 /**
  * User manager.
- * A user manager is the object responsible by handling user in a request session
+ * A user manager is the object responsible by managing session users.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class UserManager {

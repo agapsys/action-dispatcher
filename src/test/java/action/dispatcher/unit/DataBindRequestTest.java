@@ -22,8 +22,8 @@ import com.agapsys.sevlet.test.HttpResponse;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.DataBindController;
 import com.agapsys.web.action.dispatcher.DataBindRequest;
+import com.agapsys.web.action.dispatcher.DataBindService;
 import com.agapsys.web.action.dispatcher.DataBindServlet;
 import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.HttpMethod;
@@ -108,12 +108,12 @@ public class DataBindRequestTest {
 
 		private static class DataBindTestController extends DataBindController {
 
-			public DataBindTestController(ActionServlet servlet) {
-				super(servlet);
+			public DataBindTestController(DataBindService service) {
+				super(service);
 			}
 
 			@Override
-			protected ObjectSerializer getSerializer() {
+			protected ObjectSerializer _getSerializer() {
 				return new GsonSerializer();
 			}
 		}
@@ -133,7 +133,7 @@ public class DataBindRequestTest {
 
 		// INSTANCE SCOPE ==========================================================
 		@Override
-		protected DataBindController getController() {
+		protected DataBindController _getController() {
 			return new DataBindTestController(this);
 		}
 

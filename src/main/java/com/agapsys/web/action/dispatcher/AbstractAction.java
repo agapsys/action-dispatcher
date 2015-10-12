@@ -19,20 +19,20 @@ package com.agapsys.web.action.dispatcher;
 import javax.servlet.http.HttpServletResponse;
 
 public abstract class AbstractAction implements Action {
-	private final SecurityHandler securityHandler;
+	private final SecurityManager securityManager;
 	
 	/**
 	 * Constructor.
-	 * Creates an action with given security handler
-	 * @param securityHandler security handler used by this action or null if there is no security
+	 * Creates an action with given security manager
+	 * @param securityManager security manger used by this action or null if there is no security
 	 */
-	public AbstractAction(SecurityHandler securityHandler) {
-		this.securityHandler = securityHandler;
+	public AbstractAction(SecurityManager securityManager) {
+		this.securityManager = securityManager;
 	}
 	
 	/**
 	 * Constructor.
-	 * Creates an action without any security handler
+	 * Creates an action without any security manager
 	 */
 	public AbstractAction() {
 		this(null);
@@ -49,7 +49,7 @@ public abstract class AbstractAction implements Action {
 	 * Actual action code.
 	 * This method will be called only if given request is allowed to be processed.
 	 * @param exchange HTTP exchange
-	 * @see SecurityHandler#isAllowed(HttpExchange)
+	 * @see SecurityManager#isAllowed(HttpExchange)
 	 */
 	protected abstract void onProcessRequest(HttpExchange exchange);
 	
@@ -71,8 +71,8 @@ public abstract class AbstractAction implements Action {
 	
 	@Override
 	public final void processRequest(HttpExchange exchange) {
-		if (securityHandler != null) {
-			if (securityHandler.isAllowed(exchange)) {
+		if (securityManager != null) {
+			if (securityManager.isAllowed(exchange)) {
 				beforeAction(exchange);
 				onProcessRequest(exchange);
 				afterAction(exchange);

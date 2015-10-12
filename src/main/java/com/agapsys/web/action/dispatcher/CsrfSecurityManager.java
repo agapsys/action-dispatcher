@@ -18,14 +18,12 @@ package com.agapsys.web.action.dispatcher;
 
 import java.util.Objects;
 import java.util.Random;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
- * Security handler responsible by checking for CSRF attacks
+ * Security manager responsible by checking for CSRF attacks
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class CsrfSecurityHandler implements SecurityHandler {
+public class CsrfSecurityManager implements SecurityManager {
 	// CLASS SCOPE =============================================================
 	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.csrfToken";
 	private static final int    CSRF_TOKEN_LENGTH       = 128;
@@ -70,11 +68,13 @@ public class CsrfSecurityHandler implements SecurityHandler {
 
 	// INSTANCE SCOPE ==========================================================
 	/** 
-	 * Generates a CSRF token
-	 * @return generated CSRF token
+	 * Generates a session CSRF token 
+	 * @param exchange HTTP exchange
 	 */
-	public String generateCsrfToken() {
-		return getRandomString(CSRF_TOKEN_LENGTH);
+	public void generateSessionCsrfToken(HttpExchange exchange) {
+		String token = getRandomString(CSRF_TOKEN_LENGTH);
+		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, token);
+		exchange.getResponse().setHeader(CSRF_HEADER, token);
 	}
 	
 	/**
@@ -86,45 +86,18 @@ public class CsrfSecurityHandler implements SecurityHandler {
 		return (String) exchange.getRequest().getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	
-	/**
-	 * Stores a CSRF token in the session
-	 * @param csrfToken token to be stored
-	 * @param exchange HTTP exchange
-	 */
-	public void setSessionCsrfToken(HttpExchange exchange, String csrfToken) {	
-		if (csrfToken == null || csrfToken.isEmpty())
-			throw new IllegalArgumentException("Null/Empty CSRF token");
-		
-		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
-	}
-	
 	/** 
 	 * Clears session CSRF token
 	 * @param exchange HTTP exchange
 	 */
-	public void clearCsrfToken(HttpExchange exchange) {
+	public void clearSessionCsrfToken(HttpExchange exchange) {
 		exchange.getRequest().getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
-	}
-	
-	/**
-	 * Convenience method for sendCsrfToken(csrfToken, he, false)
-	 * @param csrfToken token to be sent
-	 * @param exchange HTTP exchange
-	 */
-	public void sendCsrfToken(HttpExchange exchange, String csrfToken) {
-		if (csrfToken == null || csrfToken.isEmpty())
-			throw new IllegalArgumentException("Null/Empty CSRF token");
-		
-		HttpServletResponse resp = exchange.getResponse();
-		resp.setHeader(CSRF_HEADER, csrfToken);
 	}
 	
 	@Override
 	public boolean isAllowed(HttpExchange exchange) {
-		HttpServletRequest req = exchange.getRequest();
-		
-		String sessionCsrfToken = (String) req.getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
-		String requestCsrfToken = req.getHeader(CSRF_HEADER);
+		String sessionCsrfToken = getSessionCsrfToken(exchange);
+		String requestCsrfToken = exchange.getRequest().getHeader(CSRF_HEADER);
 			
 		return Objects.equals(sessionCsrfToken, requestCsrfToken);
 	}

@@ -13,18 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.agapsys.web.action.dispatcher;
 
-/**
- * Represents a security manager.
- * A security manger is an object responsible to allow or reject a HTTP exchange according to its internal logic.
+/** 
+ * Represents a Data binding service.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface SecurityManager {
-	/**
-	 * Returns a boolean indicating if given HTTP exchange is allowed to be processed.
+public interface DataBindService extends ActionService {
+	/** 
+	 * Return the object sent from client (contained in the request)
+	 * @return the object sent from client (contained in the request)
 	 * @param exchange HTTP exchange
-	 * @return a boolean indicating if given exchange is allowed to be processed.
 	 */
-	public boolean isAllowed(HttpExchange exchange);
+	public Object readObject(HttpExchange exchange);
+	
+	/**
+	 * Sends given object to the client (contained in the response).
+	 * @param exchange HTTP exchange
+	 * @param obj object to be sent
+	 */
+	public void writeObject(HttpExchange exchange, Object obj);
 }

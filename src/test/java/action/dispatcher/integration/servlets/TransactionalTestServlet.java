@@ -37,7 +37,7 @@ public class TransactionalTestServlet extends TransactionalServlet {
 	
 	// INSTANCE SCOPE ==========================================================	
 	@Override
-	protected EntityManagerFactory getEntityManagerFactory() {
+	protected EntityManagerFactory _getEntityManagerFactory() {
 		final PersistenceUnit pu = PersistenceUnitFactory.getInstance();
 		return new EntityManagerFactory() {
 
@@ -59,7 +59,7 @@ public class TransactionalTestServlet extends TransactionalServlet {
 	}
 
 	@Override
-	protected void beforeAction(HttpExchange exchange){
+	public void beforeAction(HttpExchange exchange){
 		postCommitted = false;
 		postRollbacked = false;
 	}

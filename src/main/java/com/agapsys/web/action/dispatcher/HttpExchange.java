@@ -19,41 +19,11 @@ package com.agapsys.web.action.dispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Represents an HTTP exchange.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
 public interface HttpExchange {
-	// CLASS SCOPE =============================================================
-	static class DefaultHttpExchange implements HttpExchange {
-		private final ActionServlet servlet;
-		private final HttpServletRequest req;
-		private final HttpServletResponse resp;
-
-		public DefaultHttpExchange(ActionServlet servlet, HttpServletRequest req, HttpServletResponse resp) {
-			this.servlet = servlet;
-			this.req = req;
-			this.resp = resp;
-		}
-
-		protected ActionServlet getServlet() {
-			return servlet;
-		}
-		
-		@Override
-		public HttpServletRequest getRequest() {
-			return req;
-		}
-
-		@Override
-		public HttpServletResponse getResponse() {
-			return resp;
-		}
-
-		@Override
-		public SessionUser getSessionUser() {
-			return getServlet().getUserManager().getSessionUser(this);
-		}
-	}
-	// =========================================================================
-	
-	// INSTANCE SCOPE ==========================================================	
 	/** @return HTTP request associated with this exchange. */
 	public HttpServletRequest getRequest();
 
@@ -62,5 +32,4 @@ public interface HttpExchange {
 	
 	/** @return the user associated with this exchange. */
 	public SessionUser getSessionUser();
-	// =========================================================================
 }

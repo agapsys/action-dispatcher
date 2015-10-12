@@ -18,7 +18,7 @@ package action.dispatcher.integration.servlets;
 
 import com.agapsys.web.action.dispatcher.HttpMethod;
 import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.SecurityHandler;
+import com.agapsys.web.action.dispatcher.SecurityManager;
 import com.agapsys.web.action.dispatcher.WebAction;
 import action.dispatcher.integration.ActionServletGeneralTest;
 import java.util.Set;
@@ -39,7 +39,7 @@ public class DefaultActionServlet extends PublicServlet {
 	}
 
 	@Override
-	protected SecurityHandler getSecurityHandler(Set<String> requiredRoles) {
+	protected SecurityManager _getSecurityManager(Set<String> requiredRoles) {
 		return null;
 	}
 }

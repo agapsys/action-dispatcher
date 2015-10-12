@@ -19,22 +19,30 @@ package com.agapsys.web.action.dispatcher;
 import java.util.Set;
 
 /**
- * Security handler responsible by checking if a user is allowed to process an action
+ * Security manger responsible by checking if a user is allowed to process an action
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class UserRoleSecurityHandler implements SecurityHandler {
+public class UserRoleSecurityManager implements SecurityManager {
 	private final Set<String> requiredRoles;
 	private final UserManager userManager;
 	
 	/**
 	 * Constructor.
-	 * Creates a security handler with given required roles
+	 * Creates a security manger with given required roles
 	 * @param userManager user manager which will be used by this instance whiling getting the user from a session.
 	 * @param requiredRoles required roles. Passing null or an empty set implies in no security
 	 */
-	public UserRoleSecurityHandler(UserManager userManager, Set<String> requiredRoles) {
+	public UserRoleSecurityManager(UserManager userManager, Set<String> requiredRoles) {
 		this.requiredRoles = requiredRoles;
 		this.userManager = userManager;
+	}
+	
+	/**
+	 * Returns the user manager passed in constructor.
+	 * @return the user manager passed in constructor.
+	 */
+	public final UserManager getUserManager() {
+		return userManager;
 	}
 		
 	@Override

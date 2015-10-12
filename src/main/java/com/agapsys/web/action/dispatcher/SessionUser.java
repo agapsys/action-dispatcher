@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * Represents an user in the application.
+ * Represents a session user in the application.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface SessionUser extends Serializable {

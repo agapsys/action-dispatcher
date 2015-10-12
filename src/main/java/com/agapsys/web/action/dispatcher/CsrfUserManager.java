@@ -22,30 +22,42 @@ package com.agapsys.web.action.dispatcher;
  */
 public class CsrfUserManager extends UserManager {
 	// CLASS SCOPE =============================================================
-	private static final CsrfSecurityHandler DEFAULT_CSRF_SECURITY_HANDLER = new CsrfSecurityHandler();
+	private static final CsrfSecurityManager DEFAULT_CSRF_SECURITY_MANAGER = new CsrfSecurityManager();
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
+	private final LazyInitializer<CsrfSecurityManager> csrfSecurityManager = new LazyInitializer() {
+
+		@Override
+		protected CsrfSecurityManager getLazyInstance(Object... params) {
+			return CsrfUserManager.this._getCsrfSecurityManager();
+		}
+	};
+	
+	
+	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
+	/**
+	 * Returns the CSRF security manager used by this instance.
+	 * This method is intended to be overridden to change object initialization and not be called directly
+	 * @return the CSRF security manager used by this instance.
+	 */
+	protected CsrfSecurityManager _getCsrfSecurityManager() {
+		return DEFAULT_CSRF_SECURITY_MANAGER;
+	}
+	// -------------------------------------------------------------------------
+	
+	// CUSTOMIZABLE RUNTIME BEHAVIOUR ------------------------------------------	
 	@Override
 	public void setSessionUser(HttpExchange exchange, SessionUser user) {
 		super.setSessionUser(exchange, user);
-		String csrfToken = DEFAULT_CSRF_SECURITY_HANDLER.generateCsrfToken();
-		DEFAULT_CSRF_SECURITY_HANDLER.setSessionCsrfToken(exchange, csrfToken);
-		DEFAULT_CSRF_SECURITY_HANDLER.sendCsrfToken(exchange, csrfToken);
+		csrfSecurityManager.getInstance().generateSessionCsrfToken(exchange);
 	}
 
 	@Override
 	public void clearSessionUser(HttpExchange exchange) {
 		super.clearSessionUser(exchange);
-		DEFAULT_CSRF_SECURITY_HANDLER.clearCsrfToken(exchange);
+		csrfSecurityManager.getInstance().clearSessionCsrfToken(exchange);
 	}
-	
-	/**
-	 * Returns the CSRF security handler used by this instance.
-	 * @return the CSRF security handler used by this instance.
-	 */
-	public CsrfSecurityHandler getCsrfSecurityHandler() {
-		return DEFAULT_CSRF_SECURITY_HANDLER;
-	}
+	// -------------------------------------------------------------------------	
 	// =========================================================================
 }
