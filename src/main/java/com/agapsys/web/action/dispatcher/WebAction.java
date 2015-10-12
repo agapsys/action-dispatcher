@@ -28,15 +28,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface WebAction {
-	/** @return Accepted HTTP method */
-	HttpMethod httpMethod()    default HttpMethod.GET;
+	/** @return Accepted HTTP methods */
+	HttpMethod[] httpMethods()    default {HttpMethod.GET};
 	
 	/** @return name of the mapping. Passing an null/empty string will use the method name as URL mapping. */
-	String     mapping()       default "";
+	String       mapping()       default "";
 	
 	/** @return required roles to process mapped action. Passing an empty array implies in no security. */
-	String[]   requiredRoles() default {};
+	String[]     requiredRoles() default {};
 	
 	/** @return a boolean indicating if annotated method will be the default action handled by servlet. */
-	boolean    defaultAction() default false;
+	boolean      defaultAction() default false;
 }

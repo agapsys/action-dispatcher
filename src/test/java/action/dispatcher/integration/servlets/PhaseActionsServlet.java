@@ -43,13 +43,13 @@ public class PhaseActionsServlet extends PublicServlet {
 	}
 	
 	@Override
-	@WebAction(httpMethod = HttpMethod.GET, defaultAction = true)
+	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
 	public void get(HttpExchange exchange) {
 		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, exchange);
 	}
 	
 	@Override
-	@WebAction(httpMethod = HttpMethod.POST, defaultAction = true)
+	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
 	public void post(HttpExchange exchange){
 		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, exchange);
 	}

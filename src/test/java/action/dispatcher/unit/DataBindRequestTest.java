@@ -138,7 +138,7 @@ public class DataBindRequestTest {
 		}
 
 		// Actions -----------------------------------------------------------------
-		@WebAction(httpMethod = HttpMethod.POST)
+		@WebAction(httpMethods = HttpMethod.POST)
 		@DataBindRequest(targetClass = RequestObject.class)
 		public void post(HttpExchange exchange) {
 			RequestObject reqObj = (RequestObject) readObject(exchange);

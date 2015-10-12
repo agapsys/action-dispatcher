@@ -142,7 +142,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 									throw new RuntimeException("Duplicate role: " + role);
 							}
 
-							HttpMethod httpMethod = webAction.httpMethod();
+							HttpMethod[] httpMethods = webAction.httpMethods();
 							String url = webAction.mapping();
 
 							if (url.trim().isEmpty())
@@ -153,10 +153,13 @@ public class ActionServlet extends HttpServlet implements ActionService {
 
 							SecurityManager securityManager = ActionServlet.this._getSecurityManager(requiredRoleSet);
 							MethodCallerAction methodCallerAction = ActionServlet.this._getMethodCallerAction(method, securityManager);
-							dispatcher.registerAction(methodCallerAction, httpMethod, url);
+							
+							for (HttpMethod httpMethod : httpMethods) {
+								dispatcher.registerAction(methodCallerAction, httpMethod, url);
 
-							if (webAction.defaultAction()) {
-								dispatcher.registerAction(methodCallerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+								if (webAction.defaultAction()) {
+									dispatcher.registerAction(methodCallerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+								}
 							}
 						}
 					}

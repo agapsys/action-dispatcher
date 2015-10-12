@@ -69,7 +69,8 @@ public class ActionServletGeneralTest {
 	public static final String PUBLIC_MAPPED_WITH_SLASH_GET_URL = "/public/mapped/get2";
 	public static final String PUBLIC_POST_URL                  = "/public/post";
 	public static final String PUBLIC_MAPPED_POST_URL           = "/public/mapped/post";
-	public static final String PUBLIC_REPEATABLE_GET_POST_URL   = "/public/repeatableGetOrPost";
+	public static final String PUBLIC_WEBACTIONS_URL            = "/public/repeatableGetOrPost";
+	public static final String PUBLIC_MULTIPLE_METHODS_URL      = "/public/multipleMethods";
 	
 	public static final String SECURED_DEFAULT_URL       = "/secured";
 	public static final String SECURED_GET_URL           = "/secured/get";
@@ -316,15 +317,28 @@ public class ActionServletGeneralTest {
 	public void testPublicRepeatble() {
 		HttpResponse resp;
 		
+		// Multiple @WebAction's...
 		// GET:
-		resp = sc.doGet(PUBLIC_REPEATABLE_GET_POST_URL);
+		resp = sc.doGet(PUBLIC_WEBACTIONS_URL);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
-		Assert.assertEquals(PUBLIC_REPEATABLE_GET_POST_URL + "GET", resp.getResponseBody());
+		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "GET", resp.getResponseBody());
 		
 		// POST:
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_REPEATABLE_GET_POST_URL));
+		resp = sc.doPost(new HttpPost(sc, PUBLIC_WEBACTIONS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
-		Assert.assertEquals(PUBLIC_REPEATABLE_GET_POST_URL + "POST", resp.getResponseBody());
+		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "POST", resp.getResponseBody());
+		
+		
+		// Multiple methods, same @WebAction...
+		// GET:
+		resp = sc.doGet(PUBLIC_MULTIPLE_METHODS_URL);
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "GET", resp.getResponseBody());
+		
+		// POST:
+		resp = sc.doPost(new HttpPost(sc, PUBLIC_MULTIPLE_METHODS_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "POST", resp.getResponseBody());
 	}
 	
 	@Test

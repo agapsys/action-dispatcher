@@ -54,18 +54,23 @@ public class PublicServlet extends ActionServlet {
 	}
 	
 	
-	@WebAction(httpMethod = HttpMethod.POST)
+	@WebAction(httpMethods = HttpMethod.POST)
 	public void post(HttpExchange exchange){
 		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, exchange);
 	}
 	
-	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post")
+	@WebAction(httpMethods = HttpMethod.POST, mapping = "mapped/post")
 	public void mappedPost(HttpExchange exchange){
 		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, exchange);
 	}
 	
-	@WebActions({@WebAction(httpMethod = HttpMethod.GET),@WebAction(httpMethod = HttpMethod.POST)})
+	@WebActions({@WebAction(httpMethods = HttpMethod.GET),@WebAction(httpMethods = HttpMethod.POST)})
 	public void repeatableGetOrPost(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_REPEATABLE_GET_POST_URL + exchange.getRequest().getMethod(), exchange);
+		processRequest(ActionServletGeneralTest.PUBLIC_WEBACTIONS_URL + exchange.getRequest().getMethod(), exchange);
+	}
+	
+	@WebAction(httpMethods = {HttpMethod.GET, HttpMethod.POST})
+	public void multipleMethods(HttpExchange exchange){
+		processRequest(ActionServletGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + exchange.getRequest().getMethod(), exchange);
 	}
 }

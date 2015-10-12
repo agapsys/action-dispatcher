@@ -54,12 +54,12 @@ public class SecuredServlet extends ActionServlet {
 	}
 	
 	
-	@WebAction(httpMethod = HttpMethod.POST, requiredRoles = {SECURED_ROLE})
+	@WebAction(httpMethods = HttpMethod.POST, requiredRoles = {SECURED_ROLE})
 	public void post(HttpExchange exchange) {
 		processAction(ActionServletGeneralTest.SECURED_POST_URL, exchange);
 	}
 	
-	@WebAction(httpMethod = HttpMethod.POST, mapping = "mapped/post", requiredRoles = {SECURED_ROLE})
+	@WebAction(httpMethods = HttpMethod.POST, mapping = "mapped/post", requiredRoles = {SECURED_ROLE})
 	public void mappedPost(HttpExchange exchange) {
 		processAction(ActionServletGeneralTest.SECURED_MAPPED_POST_URL, exchange);
 	}
