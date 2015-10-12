@@ -25,18 +25,30 @@ public abstract class LazyInitializer<T> {
 	private volatile boolean initialized = false;
 	private T instance;
 
-	/** Called during initialization. Default implementation does nothing. */
-	protected void onInitialize() {}
+	/** 
+	 * Called during initialization. Default implementation does nothing.
+	 * @param params initialization parameters
+	 */
+	protected void onInitialize(Object...params) {}
 	
-	/** @return a instance of an object which in initialized only when required. Default implementation returns null. This method will be called only once */
-	protected T getLazyInstance() {
+	/** 
+	 * Returns the object associated with this initializer.
+	 * @return the object associated with this initializer.
+	 * Default implementation returns null. This method will be called only once
+	 * @param params initialization parameters
+	 */
+	protected T getLazyInstance(Object...params) {
 		return null;
 	}
 	
-	public final synchronized void initialize() {
+	/**
+	 * Starts the initializer.
+	 * @param params initialization parameters
+	 */
+	public final synchronized void initialize(Object...params) {
 		if (!initialized) {
-			onInitialize();
-			this.instance = getLazyInstance();
+			onInitialize(params);
+			instance = getLazyInstance(params);
 			initialized = true;
 		}
 	}
@@ -50,12 +62,14 @@ public abstract class LazyInitializer<T> {
 	}
 	
 	/** 
-	 * Return a instance returned by {@linkplain LazyInitializer#getLazyInstance}.
-	 * @return instance returned by {@linkplain LazyInitializer#getLazyInstance}.
+	 * Return an instance associated with this initializer.
+	 * Returned instance will be obtained via {@linkplain LazyInitializer#getLazyInstance(Object...)}.
+	 * @return the instance associated with this initializer.
+	 * @param params initialization parameters
 	 */
-	public final T getInstance() {
+	public final T getInstance(Object... params) {
 		if (!initialized) {
-			initialize();
+			initialize(params);
 		}
 		return instance;
 	}
