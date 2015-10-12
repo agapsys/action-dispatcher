@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 
 /**
  * Web action annotation group.
- * Every method of an {@linkplain ActionServlet} (with the signature <code>public void methodName(HttpServletRequest, HttpServletResponse) throws ServletException, IOException</code>) annotated with {@linkplain WebAction} or {@linkplain WebActions} will be mapped to an {@linkplain ActionCaller}
+ * Every method of an {@linkplain ActionServlet} (with the signature <code>public void methodName(HttpExchange)</code>) annotated with {@linkplain WebAction} or {@linkplain WebActions} will be mapped to an {@linkplain MethodCallerAction}
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
