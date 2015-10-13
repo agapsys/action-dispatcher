@@ -29,18 +29,12 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 	static class DataBindMethodCallerAction extends MethodCallerAction {
 		private final Class targetClass;
 		private final ObjectSerializer serializer;
+		private final boolean throwIfNonEntityEnclosed;
 
-		/**
-		 * Constructor.
-		 * @param serializer object serializer
-		 * @param targetClass target class
-		 * @param actionService action service
-		 * @param method mapped method
-		 * @param securityManager security manager
-		 */
 		public DataBindMethodCallerAction(
 			ObjectSerializer serializer,
-			Class targetClass, 
+			Class targetClass,
+			boolean throwIfNonEntityEnclosed,
 			ActionService actionService, 
 			Method method, 
 			SecurityManager securityManager
@@ -48,17 +42,37 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 			super(actionService, method, securityManager);
 			this.targetClass = targetClass;
 			this.serializer = serializer;
+			this.throwIfNonEntityEnclosed = throwIfNonEntityEnclosed;
 		}
 
+		private boolean isEntityEnclosed(HttpExchange exchange) {
+			String[] entityEnclosedMethods = {"POST", "PUT", "PATCH"};
+			String method = exchange.getRequest().getMethod();
+			
+			for (String accepted : entityEnclosedMethods) {
+				if (method.equalsIgnoreCase(accepted)) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
 		@Override
 		protected void onProcessRequest(HttpExchange exchange) {
 			if (targetClass != null) {
-				try {
-					Object targetObject = serializer.readObject(exchange, targetClass);
-					exchange.getRequest().setAttribute(DataBindController.ATTR_TARGET_OBJECT, targetObject);
-					super.onProcessRequest(exchange);
-				} catch (ObjectSerializer.BadRequestException ex) {
-					exchange.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request
+				boolean isEntityEnclosed = isEntityEnclosed(exchange);
+				if (throwIfNonEntityEnclosed && !isEntityEnclosed)
+					throw new RuntimeException(String.format("Expecting %s for a non-entity-enclosed request (%s)", targetClass.getName(), exchange.getRequest().getMethod()));
+				
+				if (isEntityEnclosed) {
+					try {
+						Object targetObject = serializer.readObject(exchange, targetClass);
+						exchange.getRequest().setAttribute(DataBindController.ATTR_TARGET_OBJECT, targetObject);
+						super.onProcessRequest(exchange);
+					} catch (ObjectSerializer.BadRequestException ex) {
+						exchange.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request
+					}
 				}
 			} else {
 				super.onProcessRequest(exchange);

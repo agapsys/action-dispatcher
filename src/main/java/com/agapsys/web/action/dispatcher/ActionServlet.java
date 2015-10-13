@@ -64,6 +64,11 @@ public class ActionServlet extends HttpServlet implements ActionService {
 		public SessionUser getSessionUser() {
 			return getServlet().getUserManager().getSessionUser(this);
 		}
+
+		@Override
+		public String toString() {
+			return String.format("%s %s %s", req.getMethod(), req.getRequestURI(), req.getProtocol());
+		}
 	}
 	
 	/** 

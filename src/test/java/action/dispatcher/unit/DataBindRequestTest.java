@@ -145,6 +145,14 @@ public class DataBindRequestTest {
 			ResponseObject respObj = new ResponseObject(reqObj);
 			writeObject(exchange, respObj);
 		}
+		
+		@WebAction(httpMethods = HttpMethod.GET)
+		@DataBindRequest(targetClass = RequestObject.class, throwIfNonEntityEnclosed = true)
+		public void getError(HttpExchange exchange) {}
+		
+		@WebAction(httpMethods = HttpMethod.GET)
+		@DataBindRequest(targetClass = RequestObject.class, throwIfNonEntityEnclosed = false)
+		public void getIgnored(HttpExchange exchange) {}
 		// -------------------------------------------------------------------------
 		// =========================================================================
 	}
@@ -189,5 +197,20 @@ public class DataBindRequestTest {
 		HttpResponse resp = sc.doPost(post);
 		System.out.println(resp.getResponseBody());
 		Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST, resp.getStatusCode());
+	}
+	
+	@Test
+	public void testNotIgnoringInvalidRequest() {
+		HttpResponse resp = sc.doGet("/getError");
+		System.out.println(resp.getResponseBody());
+		Assert.assertTrue(resp.getResponseBody().contains("non-entity-enclosed request (GET)"));
+		Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, resp.getStatusCode());
+	}
+	
+	@Test
+	public void testIgnoringInvalidRequest() {
+		HttpResponse resp = sc.doGet("/getIgnored");
+		System.out.println(resp.getResponseBody());
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 	}
 }
