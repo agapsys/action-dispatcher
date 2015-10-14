@@ -52,16 +52,18 @@ public interface ObjectSerializer {
 	 * @param <T> Type of the returned object
 	 * @param exchange HTTP exchange
 	 * @param targetClass class of returned object
+	 * @param params extra parameters passed to deserialization.
 	 * @return returned object
 	 * @throws BadRequestException if it was not possible to retrieve an object instance from given request
 	 */
-	public <T> T readObject(HttpExchange exchange, Class<T> targetClass) throws BadRequestException;
+	public <T> T readObject(HttpExchange exchange, Class<T> targetClass, Object...params) throws BadRequestException;
 	
 	/**
 	 * Sends given object to the client (contained in the response).
 	 * @param exchange HTTP exchange
 	 * @param object object to be sent
+	 * @param params extra parameters passed to serialization.
 	 */
-	public void writeObject(HttpExchange exchange, Object object);
+	public void writeObject(HttpExchange exchange, Object object, Object...params);
 	// =========================================================================
 }

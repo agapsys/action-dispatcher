@@ -75,7 +75,7 @@ public class DataBindRequestTest {
 			}
 
 			@Override
-			public <T> T readObject(HttpExchange exchange, Class<T> targetClass) throws ObjectSerializer.BadRequestException {
+			public <T> T readObject(HttpExchange exchange, Class<T> targetClass, Object...params) throws ObjectSerializer.BadRequestException {
 				if (targetClass == null)
 					throw new IllegalArgumentException("Null targetClass");
 
@@ -91,7 +91,7 @@ public class DataBindRequestTest {
 			}
 
 			@Override
-			public void writeObject(HttpExchange exchange, Object object) {
+			public void writeObject(HttpExchange exchange, Object object, Object...params) {
 				exchange.getResponse().setContentType(JSON_CONTENT_TYPE);
 				exchange.getResponse().setCharacterEncoding(JSON_ENCODING);
 
