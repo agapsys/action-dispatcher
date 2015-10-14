@@ -33,6 +33,6 @@ public @interface DataBindRequest {
 	/** @return The class of the object embedded in the request. */
 	Class targetClass();
 	
-	/** @return a boolean indicating if an exception must be thrown if request is non-entity-enclosed. */
-	boolean throwIfNonEntityEnclosed() default true;
+	/** @return an array with ignored HTTP methods. */
+	HttpMethod[] ignoredMethods() default {};
 }

@@ -29,12 +29,12 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 	static class DataBindMethodCallerAction extends MethodCallerAction {
 		private final Class targetClass;
 		private final ObjectSerializer serializer;
-		private final boolean throwIfNonEntityEnclosed;
+		private final HttpMethod[] ignoredMethods;
 
 		public DataBindMethodCallerAction(
 			ObjectSerializer serializer,
 			Class targetClass,
-			boolean throwIfNonEntityEnclosed,
+			HttpMethod[] ignoredMethods,
 			ActionService actionService, 
 			Method method, 
 			SecurityManager securityManager
@@ -42,15 +42,17 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 			super(actionService, method, securityManager);
 			this.targetClass = targetClass;
 			this.serializer = serializer;
-			this.throwIfNonEntityEnclosed = throwIfNonEntityEnclosed;
+			this.ignoredMethods = ignoredMethods;
 		}
 
-		private boolean isEntityEnclosed(HttpExchange exchange) {
-			String[] entityEnclosedMethods = {"POST", "PUT", "PATCH"};
+		private boolean ignore(HttpExchange exchange) {
+			if (ignoredMethods == null)
+				return false;
+			
 			String method = exchange.getRequest().getMethod();
 			
-			for (String accepted : entityEnclosedMethods) {
-				if (method.equalsIgnoreCase(accepted)) {
+			for (HttpMethod ignoredMethod : ignoredMethods) {
+				if (method.equalsIgnoreCase(ignoredMethod.name())) {
 					return true;
 				}
 			}
@@ -61,11 +63,7 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 		@Override
 		protected void onProcessRequest(HttpExchange exchange) {
 			if (targetClass != null) {
-				boolean isEntityEnclosed = isEntityEnclosed(exchange);
-				if (throwIfNonEntityEnclosed && !isEntityEnclosed)
-					throw new RuntimeException(String.format("Expecting %s for a non-entity-enclosed request (%s)", targetClass.getName(), exchange.getRequest().getMethod()));
-				
-				if (isEntityEnclosed) {
+				if (!ignore(exchange)) {
 					try {
 						Object targetObject = serializer.readObject(exchange, targetClass);
 						exchange.getRequest().setAttribute(DataBindController.ATTR_TARGET_OBJECT, targetObject);
@@ -73,6 +71,8 @@ public abstract class DataBindServlet extends ActionServlet implements DataBindS
 					} catch (ObjectSerializer.BadRequestException ex) {
 						exchange.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST); // Skip request if target object cannot be obtained from request
 					}
+				} else {
+					super.onProcessRequest(exchange);
 				}
 			} else {
 				super.onProcessRequest(exchange);

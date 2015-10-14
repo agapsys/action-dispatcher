@@ -66,17 +66,17 @@ public abstract class DataBindController {
 		DataBindRequest dataBindRequestAnnotation = dataBindRequestAnnotations.length > 0 ? dataBindRequestAnnotations[0] : null;
 
 		Class targetClass = null;
-		boolean throwIfNonEntityEnclosed = true;
+		HttpMethod[] ignoredMethods = null;
 		
 		if (dataBindRequestAnnotation != null) {
 			targetClass = dataBindRequestAnnotation.targetClass();
-			throwIfNonEntityEnclosed = dataBindRequestAnnotation.throwIfNonEntityEnclosed();			
+			ignoredMethods = dataBindRequestAnnotation.ignoredMethods();			
 		}
 		
 		return new DataBindServlet.DataBindMethodCallerAction(
 			objectSerializer.getInstance(),
 			targetClass,
-			throwIfNonEntityEnclosed,
+			ignoredMethods,
 			dataBindService, 
 			method, 
 			securityManager
