@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
  * Action responsible by calling {@linkplain ActionService} methods annotated with {@linkplain WebAction} or {@linkplain WebActions}.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class MethodCallerAction extends AbstractAction {
+class MethodCallerAction extends AbstractAction {
 	private final Method method;
 	private final ActionService actionService;
 	

@@ -97,79 +97,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	private final LazyInitializer actionServlet = new LazyInitializer() {
 		@Override
 		protected void onInitialize(Object...params) {
-			Class<? extends ActionServlet> actionServletClass = ActionServlet.this.getClass();
-			
-			String thisClassName = actionServletClass.getName();
-			
-			// Check if this class uses WebServlet annotation...
-			WebServlet[] webServletAnnotationArray = actionServletClass.getAnnotationsByType(WebServlet.class);
-			if (webServletAnnotationArray.length == 0)
-				throw new RuntimeException(String.format("Class '%s' is not annotated with '%s'", thisClassName, WebServlet.class.getName()));
-			
-			WebServlet webServletAnnotation = webServletAnnotationArray[0];
-			String[] urlPatternArray = webServletAnnotation.urlPatterns();
-			if (urlPatternArray.length == 0) {
-				urlPatternArray = webServletAnnotation.value();
-			}
-			
-			if (urlPatternArray.length == 0)
-				throw new RuntimeException(String.format("Servlet class '%s' does not have any URL pattern", thisClassName));
-			
-			for (String urlPattern : urlPatternArray) {
-				if (!urlPattern.endsWith("/*")) {
-					throw new RuntimeException(String.format("Invalid URL pattern '%s' for class '%s' (pattern must end with '/*')", urlPattern, thisClassName));
-				}
-			}
-			
-			// Check for WebAction annotations...
-			Method[] methods = actionServletClass.getDeclaredMethods();
-			for (Method method : methods) {
-				Annotation[] annotations = method.getAnnotations();
-				for (Annotation annotation : annotations) {
-					if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
-						if (!matchSignature(method))
-							throw new RuntimeException(String.format("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName()));
-								
-						WebAction[] webActions;
-						
-						if (annotation instanceof WebActions) {
-							webActions = ((WebActions) annotation).value();
-						} else {
-							webActions = new WebAction[]{(WebAction) annotation};
-						}
-
-						for (WebAction webAction : webActions) {
-							String[] requiredRoles = webAction.requiredRoles();
-							Set<String> requiredRoleSet = new LinkedHashSet<>();
-
-							for (String role : requiredRoles) {
-								if (!requiredRoleSet.add(role))
-									throw new RuntimeException("Duplicate role: " + role);
-							}
-
-							HttpMethod[] httpMethods = webAction.httpMethods();
-							String url = webAction.mapping();
-
-							if (url.trim().isEmpty())
-								url = method.getName();
-
-							if (!url.startsWith("/"))
-								url = "/" + url;
-
-							SecurityManager securityManager = ActionServlet.this._getSecurityManager(requiredRoleSet);
-							MethodCallerAction methodCallerAction = ActionServlet.this._getMethodCallerAction(method, securityManager);
-							
-							for (HttpMethod httpMethod : httpMethods) {
-								dispatcher.registerAction(methodCallerAction, httpMethod, url);
-
-								if (webAction.defaultAction()) {
-									dispatcher.registerAction(methodCallerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
-								}
-							}
-						}
-					}
-				}
-			}
+			ActionServlet.this._onInit();
 		}
 	};
 	private final LazyInitializer<UserManager> userManager = new LazyInitializer<UserManager>() {
@@ -182,15 +110,81 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	};
 	
 	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
-	/**
-	 * Returns the action caller which will be responsible by call a method in servlet.
-	 * This method is intended to be overridden to change servlet initialization and not be called directly
-	 * @param method method annotated with {@linkplain WebAction} of {@linkplain WebActions}
-	 * @param securityManager security manager used by mapped method. Instances will be obtained via {@linkplain ActionServlet#_getSecurityManager(Set)}
-	 * @return action caller which will actually call a servlet method
-	 */
-	protected MethodCallerAction _getMethodCallerAction(Method method, SecurityManager securityManager) {
-		return new MethodCallerAction(this, method, securityManager);
+	/** Called during servlet initialization. Always call super implementation. */
+	protected void _onInit() {
+		Class<? extends ActionServlet> actionServletClass = ActionServlet.this.getClass();
+			
+		String thisClassName = actionServletClass.getName();
+
+		// Check if this class uses WebServlet annotation...
+		WebServlet[] webServletAnnotationArray = actionServletClass.getAnnotationsByType(WebServlet.class);
+		if (webServletAnnotationArray.length == 0)
+			throw new RuntimeException(String.format("Class '%s' is not annotated with '%s'", thisClassName, WebServlet.class.getName()));
+
+		WebServlet webServletAnnotation = webServletAnnotationArray[0];
+		String[] urlPatternArray = webServletAnnotation.urlPatterns();
+		if (urlPatternArray.length == 0) {
+			urlPatternArray = webServletAnnotation.value();
+		}
+
+		if (urlPatternArray.length == 0)
+			throw new RuntimeException(String.format("Servlet class '%s' does not have any URL pattern", thisClassName));
+
+		for (String urlPattern : urlPatternArray) {
+			if (!urlPattern.endsWith("/*")) {
+				throw new RuntimeException(String.format("Invalid URL pattern '%s' for class '%s' (pattern must end with '/*')", urlPattern, thisClassName));
+			}
+		}
+
+		// Check for WebAction annotations...
+		Method[] methods = actionServletClass.getDeclaredMethods();
+		for (Method method : methods) {
+			Annotation[] annotations = method.getAnnotations();
+			for (Annotation annotation : annotations) {
+				if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
+					if (!matchSignature(method))
+						throw new RuntimeException(String.format("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName()));
+
+					WebAction[] webActions;
+
+					if (annotation instanceof WebActions) {
+						webActions = ((WebActions) annotation).value();
+					} else {
+						webActions = new WebAction[]{(WebAction) annotation};
+					}
+
+					for (WebAction webAction : webActions) {
+						String[] requiredRoles = webAction.requiredRoles();
+						Set<String> requiredRoleSet = new LinkedHashSet<>();
+
+						for (String role : requiredRoles) {
+							if (!requiredRoleSet.add(role))
+								throw new RuntimeException("Duplicate role: " + role);
+						}
+
+						HttpMethod[] httpMethods = webAction.httpMethods();
+						String url = webAction.mapping();
+
+						if (url.trim().isEmpty())
+							url = method.getName();
+
+						if (!url.startsWith("/"))
+							url = "/" + url;
+
+						SecurityManager securityManager = ActionServlet.this._getSecurityManager(requiredRoleSet);
+						MethodCallerAction methodCallerAction = new MethodCallerAction(this, method, securityManager);
+
+						for (HttpMethod httpMethod : httpMethods) {
+							dispatcher.registerAction(methodCallerAction, httpMethod, url);
+
+							if (webAction.defaultAction()) {
+								dispatcher.registerAction(methodCallerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -198,7 +192,6 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 * This method is intended to be overridden to change servlet initialization and not be called directly
 	 * @param requiredRoles action required roles
 	 * @return the security manger user by created actions managed by this servlet.
-	 * @see ActionServlet#_getMethodCallerAction(Method, SecurityManager)
 	 */
 	protected SecurityManager _getSecurityManager(Set<String> requiredRoles) {
 		if (requiredRoles == null || requiredRoles.isEmpty()) { // Ignores CSRF token if there is no required roles
