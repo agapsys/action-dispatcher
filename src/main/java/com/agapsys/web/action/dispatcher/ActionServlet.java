@@ -111,7 +111,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	
 	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
 	/** Called during servlet initialization. Always call super implementation. */
-	protected void _onInit() {
+	private void _onInit() {
 		Class<? extends ActionServlet> actionServletClass = ActionServlet.this.getClass();
 			
 		String thisClassName = actionServletClass.getName();
@@ -185,6 +185,8 @@ public class ActionServlet extends HttpServlet implements ActionService {
 				}
 			}
 		}
+		
+		onInit();
 	}
 	
 	/**
@@ -216,6 +218,9 @@ public class ActionServlet extends HttpServlet implements ActionService {
 		return DEFAULT_USER_MANAGER;
 	}
 	// -------------------------------------------------------------------------
+	
+	/** Called during servlet initialization. Default implementation does nothing. */
+	protected void onInit() {}
 	
 	/** 
 	 * Called before an action. 
