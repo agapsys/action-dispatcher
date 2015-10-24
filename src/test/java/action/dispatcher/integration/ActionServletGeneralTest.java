@@ -19,7 +19,6 @@ package action.dispatcher.integration;
 import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.HttpClient;
 import com.agapsys.sevlet.test.HttpGet;
-import com.agapsys.sevlet.test.HttpPost;
 import com.agapsys.sevlet.test.HttpRequest;
 import com.agapsys.sevlet.test.HttpRequest.HttpHeader;
 import com.agapsys.sevlet.test.HttpResponse;
@@ -33,6 +32,7 @@ import action.dispatcher.integration.servlets.LoginServlet;
 import action.dispatcher.integration.servlets.PhaseActionsServlet;
 import action.dispatcher.integration.servlets.PublicServlet;
 import action.dispatcher.integration.servlets.SecuredServlet;
+import com.agapsys.sevlet.test.StringEntityPost;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -96,7 +96,7 @@ public class ActionServletGeneralTest {
 		sc = new ServletContainer() {
 
 			@Override
-			protected HttpResponse doRequest(HttpClient client, HttpRequest request) throws IllegalArgumentException, RuntimeException {
+			public HttpResponse doRequest(HttpClient client, HttpRequest request) throws IllegalArgumentException, RuntimeException {
 				HttpResponse resp = super.doRequest(client, request);
 				
 				if (resp.getStatusCode() == HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
@@ -143,8 +143,8 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getResponseBody());
 		
 		
-		// POST: POST
-		resp = sc.doPost(new HttpPost(sc, DEFAULT_ACTION_POST_URL));
+		// POST: POST		
+		resp = sc.doEntityRequest(new StringEntityPost(sc, DEFAULT_ACTION_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getResponseBody());
 		
@@ -159,12 +159,12 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getResponseBody());
 		
 		// POST: DEFAULT
-		resp = sc.doPost(new HttpPost(sc, DEFAULT_ACTION_DEFAULT_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, DEFAULT_ACTION_DEFAULT_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getResponseBody());
 		
 		// POST: DEFAULT + "/"
-		resp = sc.doPost(new HttpPost(sc, DEFAULT_ACTION_DEFAULT_URL + "/"));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, DEFAULT_ACTION_DEFAULT_URL + "/"));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getResponseBody());
 	}
@@ -209,7 +209,7 @@ public class ActionServletGeneralTest {
 		
 		
 		// POST
-		resp = sc.doPost(new HttpPost(sc, PHASE_DEFAULT_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PHASE_DEFAULT_URL));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -240,7 +240,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
 		
 		// POST: NOT FOUND
-		resp = sc.doPost(new HttpPost(sc, PHASE_DEFAULT_URL + "/unknown"));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PHASE_DEFAULT_URL + "/unknown"));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -279,7 +279,7 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: PUBLIC POST		
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_POST_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PUBLIC_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_POST_URL, resp.getResponseBody());
 		
@@ -288,7 +288,7 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: PUBLIC MAPPED POST		
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_MAPPED_POST_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PUBLIC_MAPPED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_POST_URL, resp.getResponseBody());
 		
@@ -305,11 +305,11 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 		
 		// POST: PUBLIC GET
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_GET_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PUBLIC_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 		
 		// POST: PUBLIC MAPPED GET
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_MAPPED_GET_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PUBLIC_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 	}
 	
@@ -324,7 +324,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "GET", resp.getResponseBody());
 		
 		// POST:
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_WEBACTIONS_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PUBLIC_WEBACTIONS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "POST", resp.getResponseBody());
 		
@@ -336,7 +336,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "GET", resp.getResponseBody());
 		
 		// POST:
-		resp = sc.doPost(new HttpPost(sc, PUBLIC_MULTIPLE_METHODS_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, PUBLIC_MULTIPLE_METHODS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "POST", resp.getResponseBody());
 	}
@@ -354,11 +354,11 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// POST: SECURED POST
-		resp = sc.doPost(new HttpPost(sc, SECURED_POST_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, SECURED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// POST: SECURED MAPPED POST
-		resp = sc.doPost(new HttpPost(sc, SECURED_MAPPED_POST_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, SECURED_MAPPED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		
@@ -372,11 +372,11 @@ public class ActionServletGeneralTest {
 		
 		
 		// POST: SECURED GET
-		resp = sc.doPost(new HttpPost(sc, SECURED_GET_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, SECURED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 		
 		// POST: SECURED MAPPED GET
-		resp = sc.doPost(new HttpPost(sc, SECURED_MAPPED_GET_URL));
+		resp = sc.doEntityRequest(new StringEntityPost(sc, SECURED_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 	}
 
@@ -417,8 +417,8 @@ public class ActionServletGeneralTest {
 		HttpGet simpleSecuredGet;
 		HttpGet priviledgedSecuredGet;
 		
-		HttpPost simpleSecuredPost;
-		HttpPost priviledgedSecuredPost;
+		StringEntityPost simpleSecuredPost;
+		StringEntityPost priviledgedSecuredPost;
 		
 		// SIMPLE USER WITH CSRF -----------------------------------------------
 		// Logging in...
@@ -437,13 +437,13 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // SECURED MAPPED GET requires a role
 		
 		// POST: SECURED POST
-		simpleSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		resp = sc.doPost(simpleClient, simpleSecuredPost);
+		simpleSecuredPost = new StringEntityPost(sc, SECURED_POST_URL);
+		resp = sc.doEntityRequest(simpleClient, simpleSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());  // SECURED POST requires a role
 		
 		// POST: SECURED MAPPED POST
-		simpleSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		resp = sc.doPost(simpleClient, simpleSecuredPost);
+		simpleSecuredPost = new StringEntityPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doEntityRequest(simpleClient, simpleSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());  // SECURED MAPPED POST requires a role
 		
 		// PRIVILEDGED USER WITHOUT CSRF ---------------------------------------
@@ -463,13 +463,13 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		resp = sc.doPost(priviledgedClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_POST_URL);
+		resp = sc.doEntityRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		resp = sc.doPost(priviledgedClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doEntityRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// PRIVILEDGED USER WITH CSRF ------------------------------------------
@@ -489,15 +489,15 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		resp = sc.doPost(priviledgedClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_POST_URL);
+		resp = sc.doEntityRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_POST_URL, resp.getResponseBody());
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		resp = sc.doPost(priviledgedClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doEntityRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_MAPPED_POST_URL, resp.getResponseBody());
 		expectNullPhaseHeaders(resp);
@@ -519,13 +519,13 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_POST_URL);
+		resp = sc.doEntityRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doEntityRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// ADMIN USER WITH CSRF ------------------------------------------
@@ -545,15 +545,15 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_POST_URL);
-		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_POST_URL);
+		resp = sc.doEntityRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_POST_URL, resp.getResponseBody());
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new HttpPost(sc, SECURED_MAPPED_POST_URL);
-		resp = sc.doPost(adminClient, priviledgedSecuredPost);
+		priviledgedSecuredPost = new StringEntityPost(sc, SECURED_MAPPED_POST_URL);
+		resp = sc.doEntityRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_MAPPED_POST_URL, resp.getResponseBody());
 		expectNullPhaseHeaders(resp);
