@@ -74,6 +74,9 @@ class MethodCallerAction extends AbstractAction {
 		try {
 			method.invoke(actionService, exchange);
 		} catch (InvocationTargetException | IllegalAccessException ex) {
+			if (ex instanceof InvocationTargetException)
+				throw new RuntimeException(((InvocationTargetException) ex).getTargetException());
+			
 			throw new RuntimeException(ex);
 		}
 	}

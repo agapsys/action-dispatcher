@@ -295,8 +295,8 @@ public class ActionServlet extends HttpServlet implements ActionService {
 		} else {
 			try {
 				action.processRequest(exchange);
-			} catch (Throwable t) {
-				onError(exchange, t);
+			} catch (RuntimeException t) { // MethodCallerAction throws the target exception wrapped in a RuntimeException
+				onError(exchange, t.getCause());
 			}
 		}
 	}
