@@ -32,7 +32,7 @@ import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpRequest;
 import com.agapsys.http.HttpResponse.StringResponse;
-import com.agapsys.http.StringEntityPost;
+import com.agapsys.http.StringEntityRequest.StringEntityPost;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
