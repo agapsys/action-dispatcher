@@ -126,14 +126,6 @@ public class ActionServletGeneralTest {
 	}
 	
 	@Test
-	public void callInvalidMappedServlet() {
-		StringResponse resp = sc.doRequest(new HttpGet("/invalid1"));
-		Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, resp.getStatusCode());
-		String expectedErrorMessage = String.format("Invalid URL pattern '%s' for class '%s' (pattern must end with '/*')", "/invalid1", InvalidUrlPatternServlet.class.getName());
-		Assert.assertTrue(resp.getContentString().contains(expectedErrorMessage));
-	}
-	
-	@Test
 	public void testDefaultActions() {
 		StringResponse resp;
 		
