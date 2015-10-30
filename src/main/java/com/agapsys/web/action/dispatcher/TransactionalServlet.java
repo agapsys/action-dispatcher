@@ -143,10 +143,10 @@ public abstract class TransactionalServlet extends ActionServlet {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private final LazyInitializer<EntityManagerFactory> entityManagerFactory = new LazyInitializer<EntityManagerFactory>() {
+	private final LazyInitializer<SimpleEntityManagerFactory> entityManagerFactory = new LazyInitializer<SimpleEntityManagerFactory>() {
 
 		@Override
-		protected EntityManagerFactory getLazyInstance(Object...params) {
+		protected SimpleEntityManagerFactory getLazyInstance(Object...params) {
 			return TransactionalServlet.this._getEntityManagerFactory();
 		}
 	};
@@ -170,9 +170,9 @@ public abstract class TransactionalServlet extends ActionServlet {
 	/** 
 	 * Return the factory of entity managers used by this servlet. 
 	 * This method is intended to be overridden to change servlet initialization and not be called directly
-	 * @return {@link EntityManagerFactory} instance used by this servlet
+	 * @return {@link SimpleEntityManagerFactory} instance used by this servlet
 	 */
-	protected abstract EntityManagerFactory _getEntityManagerFactory();
+	protected abstract SimpleEntityManagerFactory _getEntityManagerFactory();
 	// -------------------------------------------------------------------------
 	
 	@Override

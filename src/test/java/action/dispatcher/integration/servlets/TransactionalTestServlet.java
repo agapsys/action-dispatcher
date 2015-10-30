@@ -17,7 +17,7 @@
 package action.dispatcher.integration.servlets;
 
 import com.agapsys.jpa.PersistenceUnit;
-import com.agapsys.web.action.dispatcher.EntityManagerFactory;
+import com.agapsys.web.action.dispatcher.SimpleEntityManagerFactory;
 import com.agapsys.web.action.dispatcher.TransactionalServlet;
 import action.dispatcher.integration.jpa.PersistenceUnitFactory;
 import com.agapsys.web.action.dispatcher.HttpExchange;
@@ -37,9 +37,9 @@ public class TransactionalTestServlet extends TransactionalServlet {
 	
 	// INSTANCE SCOPE ==========================================================	
 	@Override
-	protected EntityManagerFactory _getEntityManagerFactory() {
+	protected SimpleEntityManagerFactory _getEntityManagerFactory() {
 		final PersistenceUnit pu = PersistenceUnitFactory.getInstance();
-		return new EntityManagerFactory() {
+		return new SimpleEntityManagerFactory() {
 
 			@Override
 			public EntityManager getEntityManager() {
