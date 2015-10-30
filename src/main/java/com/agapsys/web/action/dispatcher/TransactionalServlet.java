@@ -175,46 +175,22 @@ public abstract class TransactionalServlet extends ActionServlet {
 	protected abstract SimpleEntityManagerFactory _getEntityManagerFactory();
 	// -------------------------------------------------------------------------
 	
+	/** 
+	 * Handles an error in the application and returns a boolean indicating if error shall be propagated. Default implementation rollback current transaction.
+	 * @param exchange HTTP exchange
+	 * @param throwable error
+	 * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
+	 */
 	@Override
-	public void onError(HttpExchange exchange, Throwable throwable) {
-		Throwable t = null;
-		
-		try {
-			super.onError(exchange, throwable);
-		} catch (Throwable ex) {
-			t = ex;
-		}
-		
+	public boolean onError(HttpExchange exchange, Throwable throwable) {
+		super.onError(exchange, throwable);
 		closeTransaction(exchange, throwable);
-		
-		if (t != null) {
-			if (t instanceof RuntimeException) {
-				throw ((RuntimeException) t);
-			} else {
-				throw new RuntimeException(t);
-			}
-		}
+		return true;
 	}
 	
 	@Override
 	public void afterAction(HttpExchange exchange) {
-		Throwable t = null;
-		
-		try {
-			super.afterAction(exchange);
-		} catch (Throwable ex) {
-			t = ex;
-		}
-		
 		closeTransaction(exchange, null);
-		
-		if (t != null) {
-			if (t instanceof RuntimeException) {
-				throw ((RuntimeException) t);
-			} else {
-				throw new RuntimeException(t);
-			}
-		}
 	}
 	
 	@Override

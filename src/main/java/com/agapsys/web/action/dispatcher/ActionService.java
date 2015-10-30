@@ -40,11 +40,12 @@ public interface ActionService {
 	public void onNotFound(HttpExchange exchange);
 	
 	/** 
-	 * Called when there is an error while processing an action.
+	 * Handles an error in the application and returns a boolean indicating if error shall be propagated.
 	 * @param exchange HTTP exchange
 	 * @param throwable error
+	 * @return a boolean indicating if given error shall be propagated.
 	 */
-	public void onError(HttpExchange exchange, Throwable throwable);
+	public boolean onError(HttpExchange exchange, Throwable throwable);
 	
 	/**
 	 * Called when an action is not allowed to be executed.

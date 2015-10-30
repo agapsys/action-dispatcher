@@ -229,17 +229,14 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	}
 	
 	/** 
-	 * Called when there is an error while processing an action.
-	 * Default implementation just throws given exception.
+	 * Handles an error in the application and returns a boolean indicating if error shall be propagated.
 	 * @param exchange HTTP exchange
 	 * @param throwable error
+	 * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
 	 */
 	@Override
-	public void onError(HttpExchange exchange, Throwable throwable) {
-		if (throwable instanceof RuntimeException)
-			throw (RuntimeException) throwable;
-		
-		throw new RuntimeException(throwable);
+	public boolean onError(HttpExchange exchange, Throwable throwable) {
+		return true;
 	}
 	
 	/**
@@ -296,7 +293,9 @@ public class ActionServlet extends HttpServlet implements ActionService {
 			try {
 				action.processRequest(exchange);
 			} catch (RuntimeException t) { // MethodCallerAction throws the target exception wrapped in a RuntimeException
-				onError(exchange, t.getCause());
+				Throwable cause = t.getCause();
+				if (onError(exchange, cause))
+					throw new RuntimeException(cause);
 			}
 		}
 	}
