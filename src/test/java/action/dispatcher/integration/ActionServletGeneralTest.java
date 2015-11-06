@@ -16,12 +16,6 @@
 
 package action.dispatcher.integration;
 
-import com.agapsys.sevlet.test.ApplicationContext;
-import com.agapsys.sevlet.test.ServletContainer;
-import com.agapsys.sevlet.test.StacktraceErrorHandler;
-import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.CsrfSecurityManager;
-import com.agapsys.web.action.dispatcher.WebAction;
 import action.dispatcher.integration.servlets.DefaultActionServlet;
 import action.dispatcher.integration.servlets.LoginServlet;
 import action.dispatcher.integration.servlets.PhaseActionsServlet;
@@ -33,6 +27,12 @@ import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpRequest;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.http.StringEntityRequest.StringEntityPost;
+import com.agapsys.sevlet.test.ApplicationContext;
+import com.agapsys.sevlet.test.ServletContainer;
+import com.agapsys.sevlet.test.StacktraceErrorHandler;
+import com.agapsys.web.action.dispatcher.ActionServlet;
+import com.agapsys.web.action.dispatcher.CsrfSecurityManager;
+import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -91,7 +91,7 @@ public class ActionServletGeneralTest {
 	}
 	
 	@Before
-	public void setUp() {
+	public void before() {
 		// Register dispatcher servlet...
 		sc = new ServletContainer() {
 
@@ -121,8 +121,16 @@ public class ActionServletGeneralTest {
 	}
 	
 	@After
-	public void tearDown() {
+	public void after() {
 		sc.stopServer();
+	}
+	
+	@Test
+	public void callInvalidMappedServlet() {
+		StringResponse resp = sc.doRequest(new HttpGet("/invalid1"));
+		Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, resp.getStatusCode());
+		String expectedErrorMessage = String.format("Invalid URL pattern '%s' for class '%s' (pattern must end with '/*')", "/invalid1", InvalidUrlPatternServlet.class.getName());
+		Assert.assertTrue(resp.getContentString().contains(expectedErrorMessage));
 	}
 	
 	@Test
