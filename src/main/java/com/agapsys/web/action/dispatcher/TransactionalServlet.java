@@ -143,11 +143,11 @@ public abstract class TransactionalServlet extends ActionServlet {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private final LazyInitializer<SimpleEntityManagerFactory> entityManagerFactory = new LazyInitializer<SimpleEntityManagerFactory>() {
+	private final LazyInitializer<EntityManagerProvider> entityManagerProvider = new LazyInitializer<EntityManagerProvider>() {
 
 		@Override
-		protected SimpleEntityManagerFactory getLazyInstance(Object...params) {
-			return TransactionalServlet.this._getEntityManagerFactory();
+		protected EntityManagerProvider getLazyInstance(Object...params) {
+			return TransactionalServlet.this._getEntityManagerProvider();
 		}
 	};
 	
@@ -170,9 +170,9 @@ public abstract class TransactionalServlet extends ActionServlet {
 	/** 
 	 * Return the factory of entity managers used by this servlet. 
 	 * This method is intended to be overridden to change servlet initialization and not be called directly
-	 * @return {@link SimpleEntityManagerFactory} instance used by this servlet
+	 * @return {@link EntityManagerProvider} instance used by this servlet
 	 */
-	protected abstract SimpleEntityManagerFactory _getEntityManagerFactory();
+	protected abstract EntityManagerProvider _getEntityManagerProvider();
 	// -------------------------------------------------------------------------
 	
 	/** 
@@ -209,7 +209,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 		ServletTransaction transaction = (ServletTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
 		
 		if (transaction == null) {
-			transaction = (ServletTransaction) new ServletEntityManger(exchange, entityManagerFactory.getInstance().getEntityManager()).getTransaction();
+			transaction = (ServletTransaction) new ServletEntityManger(exchange, entityManagerProvider.getInstance().getEntityManager()).getTransaction();
 			transaction.wrappedBegin();
 			req.setAttribute(REQ_ATTR_TRANSACTION, transaction);
 		}
