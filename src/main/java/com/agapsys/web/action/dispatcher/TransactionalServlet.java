@@ -179,7 +179,7 @@ public abstract class TransactionalServlet extends ActionServlet {
 	 * Handles an error in the application and returns a boolean indicating if error shall be propagated. Default implementation rollback current transaction.
 	 * @param exchange HTTP exchange
 	 * @param throwable error
-	 * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
+	 * @return a boolean indicating if given error shall be propagated. Default always return true.
 	 */
 	@Override
 	public boolean onError(HttpExchange exchange, Throwable throwable) {
