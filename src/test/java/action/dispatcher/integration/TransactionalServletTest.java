@@ -16,12 +16,13 @@
 
 package action.dispatcher.integration;
 
-import com.agapsys.sevlet.test.ApplicationContext;
-import com.agapsys.sevlet.test.ServletContainer;
-import com.agapsys.sevlet.test.StacktraceErrorHandler;
+import action.dispatcher.integration.jpa.PersistenceUnit;
 import action.dispatcher.integration.servlets.TransactionalTestServlet;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse.StringResponse;
+import com.agapsys.sevlet.test.ApplicationContext;
+import com.agapsys.sevlet.test.ServletContainer;
+import com.agapsys.sevlet.test.StacktraceErrorHandler;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -42,6 +43,7 @@ public class TransactionalServletTest {
 	
 	@BeforeClass
 	public static void beforeClass() {
+		PersistenceUnit.start();
 		sc = new ServletContainer();
 		ApplicationContext app = new ApplicationContext();
 		app.setErrorHandler(new StacktraceErrorHandler());
@@ -53,6 +55,7 @@ public class TransactionalServletTest {
 	@AfterClass
 	public static void after() {
 		sc.stopServer();
+		PersistenceUnit.close();
 	}
 	
 	@Test

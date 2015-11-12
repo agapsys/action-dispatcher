@@ -16,14 +16,13 @@
 
 package action.dispatcher.integration.servlets;
 
-import com.agapsys.jpa.PersistenceUnit;
+import action.dispatcher.integration.jpa.PersistenceUnit;
+import action.dispatcher.integration.jpa.TestEntity;
 import com.agapsys.web.action.dispatcher.EntityManagerProvider;
-import com.agapsys.web.action.dispatcher.TransactionalServlet;
-import action.dispatcher.integration.jpa.PersistenceUnitFactory;
 import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.Transaction;
+import com.agapsys.web.action.dispatcher.TransactionalServlet;
 import com.agapsys.web.action.dispatcher.WebAction;
-import action.dispatcher.integration.jpa.TestEntity;
 import java.io.IOException;
 import javax.persistence.EntityManager;
 import javax.servlet.annotation.WebServlet;
@@ -38,12 +37,11 @@ public class TransactionalTestServlet extends TransactionalServlet {
 	// INSTANCE SCOPE ==========================================================	
 	@Override
 	protected EntityManagerProvider _getEntityManagerProvider() {
-		final PersistenceUnit pu = PersistenceUnitFactory.getInstance();
 		return new EntityManagerProvider() {
 
 			@Override
 			public EntityManager getEntityManager() {
-				return pu.getEntityManager();
+				return PersistenceUnit.getEntityManager();
 			}
 		};
 	}
