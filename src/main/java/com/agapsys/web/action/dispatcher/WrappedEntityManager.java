@@ -37,7 +37,7 @@ import javax.persistence.metamodel.Metamodel;
  * Wrapper for an {@linkplain EntityManager} instance.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-class WrappedEntityManager implements EntityManager {
+public class WrappedEntityManager implements EntityManager {
 	private final EntityManager wrappedEntityManager;
 
 	/**

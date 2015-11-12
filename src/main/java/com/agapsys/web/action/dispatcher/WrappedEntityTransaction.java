@@ -22,7 +22,7 @@ import javax.persistence.EntityTransaction;
  * Wrapper for an {@linkplain EntityTransaction} instance.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-class WrappedEntityTransaction implements EntityTransaction {
+public class WrappedEntityTransaction implements EntityTransaction {
 	private final EntityTransaction wrappedTransaction;
 	
 	/**
