@@ -324,6 +324,10 @@ public class ActionServlet extends HttpServlet implements ActionService {
 				action.processRequest(exchange);
 			} catch (RuntimeException t) { // MethodCallerAction throws the target exception wrapped in a RuntimeException
 				Throwable cause = t.getCause();
+				
+				if (cause == null)
+					cause = t;
+				
 				if (onError(exchange, cause))
 					throw new RuntimeException(cause);
 			}
