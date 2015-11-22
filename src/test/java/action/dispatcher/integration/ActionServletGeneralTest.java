@@ -144,7 +144,7 @@ public class ActionServletGeneralTest {
 		
 		
 		// POST: POST		
-		resp = sc.doRequest(new StringEntityPost(DEFAULT_ACTION_POST_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
 		
@@ -159,12 +159,12 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
 		
 		// POST: DEFAULT
-		resp = sc.doRequest(new StringEntityPost(DEFAULT_ACTION_DEFAULT_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
 		
 		// POST: DEFAULT + "/"
-		resp = sc.doRequest(new StringEntityPost(DEFAULT_ACTION_DEFAULT_URL + "/", "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL + "/"));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
 	}
@@ -209,7 +209,7 @@ public class ActionServletGeneralTest {
 		
 		
 		// POST
-		resp = sc.doRequest(new StringEntityPost(PHASE_DEFAULT_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -240,7 +240,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
 		
 		// POST: NOT FOUND
-		resp = sc.doRequest(new StringEntityPost(PHASE_DEFAULT_URL + "/unknown", "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "/unknown"));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -279,7 +279,7 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: PUBLIC POST		
-		resp = sc.doRequest(new StringEntityPost(PUBLIC_POST_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_POST_URL, resp.getContentString());
 		
@@ -288,7 +288,7 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: PUBLIC MAPPED POST		
-		resp = sc.doRequest(new StringEntityPost(PUBLIC_MAPPED_POST_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_POST_URL, resp.getContentString());
 		
@@ -305,11 +305,11 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 		
 		// POST: PUBLIC GET
-		resp = sc.doRequest(new StringEntityPost(PUBLIC_GET_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 		
 		// POST: PUBLIC MAPPED GET
-		resp = sc.doRequest(new StringEntityPost(PUBLIC_MAPPED_GET_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 	}
 	
@@ -324,7 +324,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "GET", resp.getContentString());
 		
 		// POST:
-		resp = sc.doRequest(new StringEntityPost(PUBLIC_WEBACTIONS_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_WEBACTIONS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "POST", resp.getContentString());
 		
@@ -336,7 +336,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "GET", resp.getContentString());
 		
 		// POST:
-		resp = sc.doRequest(new StringEntityPost(PUBLIC_MULTIPLE_METHODS_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MULTIPLE_METHODS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "POST", resp.getContentString());
 	}
@@ -354,11 +354,11 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// POST: SECURED POST
-		resp = sc.doRequest(new StringEntityPost(SECURED_POST_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", SECURED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		// POST: SECURED MAPPED POST
-		resp = sc.doRequest(new StringEntityPost(SECURED_MAPPED_POST_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, resp.getStatusCode());
 		
 		
@@ -372,11 +372,11 @@ public class ActionServletGeneralTest {
 		
 		
 		// POST: SECURED GET
-		resp = sc.doRequest(new StringEntityPost(SECURED_GET_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", SECURED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 		
 		// POST: SECURED MAPPED GET
-		resp = sc.doRequest(new StringEntityPost(SECURED_MAPPED_GET_URL, "text/plain", "UTF-8"));
+		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
 	}
 
@@ -437,12 +437,12 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // SECURED MAPPED GET requires a role
 		
 		// POST: SECURED POST
-		simpleSecuredPost = new StringEntityPost(SECURED_POST_URL, "text/plain", "UTF-8");
+		simpleSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_POST_URL);
 		resp = sc.doRequest(simpleClient, simpleSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());  // SECURED POST requires a role
 		
 		// POST: SECURED MAPPED POST
-		simpleSecuredPost = new StringEntityPost(SECURED_MAPPED_POST_URL, "text/plain", "UTF-8");
+		simpleSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_POST_URL);
 		resp = sc.doRequest(simpleClient, simpleSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode());  // SECURED MAPPED POST requires a role
 		
@@ -463,12 +463,12 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_POST_URL);
 		resp = sc.doRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_MAPPED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_POST_URL);
 		resp = sc.doRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
@@ -489,14 +489,14 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_POST_URL);
 		resp = sc.doRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_POST_URL, resp.getContentString());
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_MAPPED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_POST_URL);
 		resp = sc.doRequest(priviledgedClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_MAPPED_POST_URL, resp.getContentString());
@@ -519,12 +519,12 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_POST_URL);
 		resp = sc.doRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_MAPPED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_POST_URL);
 		resp = sc.doRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, resp.getStatusCode()); // CSRF token header was not sent
 		
@@ -545,14 +545,14 @@ public class ActionServletGeneralTest {
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_POST_URL);
 		resp = sc.doRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_POST_URL, resp.getContentString());
 		expectNullPhaseHeaders(resp);
 		
 		// POST: SECURED MAPPED POST
-		priviledgedSecuredPost = new StringEntityPost(SECURED_MAPPED_POST_URL, "text/plain", "UTF-8");
+		priviledgedSecuredPost = new StringEntityPost("text/plain", "utf-8", SECURED_MAPPED_POST_URL);
 		resp = sc.doRequest(adminClient, priviledgedSecuredPost);
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(SECURED_MAPPED_POST_URL, resp.getContentString());
