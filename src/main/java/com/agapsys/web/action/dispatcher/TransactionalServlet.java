@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
  * A transaction will be initialized after each HTTP exchange and will be committed (when exchange is successfully processed) or rolled back (if there is an error while processing the exchange).
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class TransactionalServlet extends ActionServlet {
+public class TransactionalServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
 	/** Name of request attribute containing the transaction. */
 	private static final String REQ_ATTR_TRANSACTION = "com.agapsys.web.action.dispatcher.transaction";
@@ -170,9 +170,11 @@ public abstract class TransactionalServlet extends ActionServlet {
 	/** 
 	 * Return the factory of entity managers used by this servlet. 
 	 * This method is intended to be overridden to change servlet initialization and not be called directly
-	 * @return {@link EntityManagerProvider} instance used by this servlet
+	 * @return {@link EntityManagerProvider} instance used by this servlet. Default implementation returns null.
 	 */
-	protected abstract EntityManagerProvider _getEntityManagerProvider();
+	protected EntityManagerProvider _getEntityManagerProvider() {
+		return null;
+	}
 	// -------------------------------------------------------------------------
 	
 	/** 
@@ -213,15 +215,21 @@ public abstract class TransactionalServlet extends ActionServlet {
 	 */
 	public final Transaction getTransaction(HttpExchange exchange) {
 		HttpServletRequest req = exchange.getRequest();
-		ServletTransaction transaction = (ServletTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
+		EntityManagerProvider emp = entityManagerProvider.getInstance();
 		
-		if (transaction == null) {
-			transaction = (ServletTransaction) new ServletEntityManger(exchange, entityManagerProvider.getInstance().getEntityManager()).getTransaction();
-			transaction.wrappedBegin();
-			req.setAttribute(REQ_ATTR_TRANSACTION, transaction);
+		if (emp != null) {
+			ServletTransaction transaction = (ServletTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
+
+			if (transaction == null) {
+				transaction = (ServletTransaction) new ServletEntityManger(exchange, emp.getEntityManager()).getTransaction();
+				transaction.wrappedBegin();
+				req.setAttribute(REQ_ATTR_TRANSACTION, transaction);
+			}
+
+			return transaction;
+		} else {
+			throw new UnsupportedOperationException("Servlet does not have an associated " + EntityManagerProvider.class.getName());
 		}
-		
-		return transaction;
 	}
 	// =========================================================================
 }
