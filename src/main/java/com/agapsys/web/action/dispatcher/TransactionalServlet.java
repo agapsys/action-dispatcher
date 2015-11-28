@@ -197,7 +197,8 @@ public class TransactionalServlet extends ActionServlet {
 	@Override
 	public void beforeAction(HttpExchange exchange) {
 		super.beforeAction(exchange);
-		getTransaction(exchange); // <-- Forces transaction on each request
+		if (getEntityManagerProvider() != null)
+			getTransaction(exchange); // <-- Forces transaction on each request
 	}
 	
 	
