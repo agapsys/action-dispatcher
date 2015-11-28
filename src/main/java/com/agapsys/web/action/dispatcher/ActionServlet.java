@@ -224,6 +224,14 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	protected UserManager _getUserManager() {
 		return DEFAULT_USER_MANAGER;
 	}
+	
+	/**
+	 * Returns the user manager used by this servlet.
+	 * @return the user manager used by this servlet
+	 */
+	protected final UserManager getUserManager() {
+		return userManager.getInstance();
+	}
 	// -------------------------------------------------------------------------
 	
 	/** Called during servlet initialization. Default implementation does nothing. */
@@ -298,14 +306,6 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 */
 	protected HttpExchange getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
 		return new DefaultHttpExchange(this, req, resp);
-	}
-	
-	/**
-	 * Returns the user manager used by this servlet.
-	 * @return the user manager used by this servlet
-	 */
-	public final UserManager getUserManager() {
-		return userManager.getInstance();
 	}
 	
 	@Override
