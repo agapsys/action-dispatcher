@@ -175,6 +175,10 @@ public class TransactionalServlet extends ActionServlet {
 	protected EntityManagerProvider _getEntityManagerProvider() {
 		return null;
 	}
+	
+	protected final EntityManagerProvider getEntityManagerProvider() {
+		return entityManagerProvider.getInstance();
+	}
 	// -------------------------------------------------------------------------
 	
 	/** 
@@ -215,7 +219,7 @@ public class TransactionalServlet extends ActionServlet {
 	 */
 	public final Transaction getTransaction(HttpExchange exchange) {
 		HttpServletRequest req = exchange.getRequest();
-		EntityManagerProvider emp = entityManagerProvider.getInstance();
+		EntityManagerProvider emp = getEntityManagerProvider();
 		
 		if (emp != null) {
 			ServletTransaction transaction = (ServletTransaction) req.getAttribute(REQ_ATTR_TRANSACTION);
