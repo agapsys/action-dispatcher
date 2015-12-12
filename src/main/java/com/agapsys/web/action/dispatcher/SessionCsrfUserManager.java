@@ -17,7 +17,7 @@
 package com.agapsys.web.action.dispatcher;
 
 /**
- * User manager which handles CSRF security
+ * Session-based user manager which handles CSRF security
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class SessionCsrfUserManager extends CsrfUserManager {
