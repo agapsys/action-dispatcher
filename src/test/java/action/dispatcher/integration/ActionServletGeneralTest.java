@@ -31,7 +31,7 @@ import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.ServletContainer;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.CsrfSecurityManager;
+import com.agapsys.web.action.dispatcher.SessionCsrfSecurityManager;
 import com.agapsys.web.action.dispatcher.WebAction;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -179,7 +179,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_WITH_SLASH_GET_URL, resp.getContentString());
 		
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER);
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER);
 		Assert.assertNull(csrfHeader);
 		expectNullPhaseHeaders(resp);
 	}
@@ -265,7 +265,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_GET_URL, resp.getContentString());
 		
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER);
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER);
 		Assert.assertNull(csrfHeader);
 		expectNullPhaseHeaders(resp);
 		
@@ -274,7 +274,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_GET_URL, resp.getContentString());
 		
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER);
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER);
 		Assert.assertNull(csrfHeader);
 		expectNullPhaseHeaders(resp);
 		
@@ -283,7 +283,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_POST_URL, resp.getContentString());
 		
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER);
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER);
 		Assert.assertNull(csrfHeader);
 		expectNullPhaseHeaders(resp);
 		
@@ -292,7 +292,7 @@ public class ActionServletGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_POST_URL, resp.getContentString());
 		
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER);
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER);
 		Assert.assertNull(csrfHeader);
 		expectNullPhaseHeaders(resp);
 		
@@ -386,20 +386,20 @@ public class ActionServletGeneralTest {
 		
 		resp = sc.doRequest(new HttpGet(LOGIN_SIMPLE_USER_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
-		Assert.assertNotNull(resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER));
+		Assert.assertNotNull(resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER));
 		Assert.assertEquals(LOGIN_SIMPLE_USER_URL, resp.getContentString());
 		expectNullPhaseHeaders(resp);
 		
 		
 		resp = sc.doRequest(new HttpGet(LOGIN_PRIVILDGED_USER_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
-		Assert.assertNotNull(resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER));
+		Assert.assertNotNull(resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER));
 		Assert.assertEquals(LOGIN_PRIVILDGED_USER_URL, resp.getContentString());
 		expectNullPhaseHeaders(resp);
 		
 		resp = sc.doRequest(new HttpGet(LOGIN_ADMIN_USER_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
-		Assert.assertNotNull(resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER));
+		Assert.assertNotNull(resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER));
 		Assert.assertEquals(LOGIN_ADMIN_USER_URL, resp.getContentString());
 		expectNullPhaseHeaders(resp);
 	}
@@ -424,7 +424,7 @@ public class ActionServletGeneralTest {
 		// Logging in...
 		simpleClient = new HttpClient();
 		resp = sc.doRequest(simpleClient, new HttpGet(LOGIN_SIMPLE_USER_URL));
-		simpleClient.addDefaultHeaders(resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER)); // <-- Adds CSRF token to default headers
+		simpleClient.addDefaultHeaders(resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER)); // <-- Adds CSRF token to default headers
 		
 		// GET: SECURED GET
 		simpleSecuredGet = new HttpGet(SECURED_GET_URL);
@@ -450,7 +450,7 @@ public class ActionServletGeneralTest {
 		// Logging in...
 		priviledgedClient = new HttpClient();
 		resp = sc.doRequest(priviledgedClient, new HttpGet(LOGIN_PRIVILDGED_USER_URL));
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER); // Stores CSRF header for later usage
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER); // Stores CSRF header for later usage
 		
 		// GET: SECURED GET
 		priviledgedSecuredGet = new HttpGet(SECURED_GET_URL);
@@ -506,7 +506,7 @@ public class ActionServletGeneralTest {
 		// Logging in...
 		adminClient = new HttpClient();
 		resp = sc.doRequest(adminClient, new HttpGet(LOGIN_ADMIN_USER_URL));
-		csrfHeader = resp.getFirstHeader(CsrfSecurityManager.CSRF_HEADER); // Stores CSRF header for later usage
+		csrfHeader = resp.getFirstHeader(SessionCsrfSecurityManager.CSRF_HEADER); // Stores CSRF header for later usage
 		
 		// GET: SECURED GET
 		priviledgedSecuredGet = new HttpGet(SECURED_GET_URL);

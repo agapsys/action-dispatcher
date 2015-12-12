@@ -54,8 +54,8 @@ public class DefaultHttpExchange implements HttpExchange {
 	}
 
 	@Override
-	public SessionUser getSessionUser() {
-		return getServlet().getUserManager().getSessionUser(this);
+	public ApplicationUser getUser() {
+		return getServlet().getUserManager().getUser(this);
 	}
 
 	@Override

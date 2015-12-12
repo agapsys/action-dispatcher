@@ -15,29 +15,23 @@
  */
 package com.agapsys.web.action.dispatcher;
 
+import java.util.Set;
+
 /**
- * User manager.
- * A user manager is the object responsible by managing application users across multiple requests.
+ * Represents a servlet security layer
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface UserManager {
+public interface ServletSecurityLayer {	
 	/**
-	 * Returns a user associated with the HTTP exchange
-	 * @param exchange HTTP exchange
-	 * @return application user associated with given HTTP exchange or null if there is no user
+	 * Returns the security manager used when calling an {@linkplain Action action} with given set of required roles.
+	 * @param requiredRoles action required roles
+	 * @return the security manager used when calling an {@linkplain Action action} with given set of required roles.
 	 */
-	public ApplicationUser getUser(HttpExchange exchange);
+	public SecurityManager getSecurityManager(Set<String> requiredRoles);
 	
-	/**
-	 * Register a user associated with the HTTP exchange
-	 * @param exchange HTTP exchange
-	 * @param user user to be registered.
+	/** 
+	 * Returns the user manager used by the servlet using this security layer. 
+	 * @return the user manager used by the servlet using this security layer.
 	 */
-	public void login(HttpExchange exchange, ApplicationUser user);
-	
-	/**
-	 * logout an user associated with the HTTP exchange
-	 * @param exchange HTTP exchange
-	 */
-	public void logout(HttpExchange exchange);
+	public UserManager getUserManager();
 }

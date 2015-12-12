@@ -16,12 +16,10 @@
 
 package action.dispatcher.integration.servlets;
 
-import com.agapsys.web.action.dispatcher.HttpMethod;
-import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.SecurityManager;
-import com.agapsys.web.action.dispatcher.WebAction;
 import action.dispatcher.integration.ActionServletGeneralTest;
-import java.util.Set;
+import com.agapsys.web.action.dispatcher.HttpExchange;
+import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.web.action.dispatcher.WebAction;
 import javax.servlet.annotation.WebServlet;
 
 @WebServlet("/default/*")
@@ -36,10 +34,5 @@ public class DefaultActionServlet extends PublicServlet {
 	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
 	public void post(HttpExchange exchange) {
 		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_POST_URL, exchange);
-	}
-
-	@Override
-	protected SecurityManager _getSecurityManager(Set<String> requiredRoles) {
-		return null;
 	}
 }

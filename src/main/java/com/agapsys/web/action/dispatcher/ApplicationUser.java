@@ -22,7 +22,7 @@ import java.util.Collection;
  * Represents a session user in the application.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface SessionUser extends Serializable {
+public interface ApplicationUser extends Serializable {
 	/**
 	 * Return collection of roles associated with this user
 	 * @return collection roles associated with this user

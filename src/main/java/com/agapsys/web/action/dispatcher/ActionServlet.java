@@ -29,10 +29,9 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet responsible by mapping methods to actions
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class ActionServlet extends HttpServlet implements ActionService {
+public class ActionServlet extends HttpServlet {
 	// CLASS SCOPE =============================================================
-	/** Default User manager. */
-	private static final UserManager DEFAULT_USER_MANAGER = new CsrfUserManager();
+	private static final ServletSecurityLayer DEFAULT_SECURITY_LAYER = new DefaultSessionSecurityLayer();
 	
 	/** 
 	 * Checks if an annotated method signature matches with required one.
@@ -56,24 +55,23 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================	
-	private final ActionDispatcher dispatcher = new ActionDispatcher();
-	private final LazyInitializer actionServlet = new LazyInitializer() {
+	private final ActionDispatcher dispatcher    = new ActionDispatcher();
+	private final LazyInitializer  actionServlet = new LazyInitializer() {
 		@Override
 		protected void onInitialize(Object...params) {
 			ActionServlet.this._onInit();
 		}
 	};
-	private final LazyInitializer<UserManager> userManager = new LazyInitializer<UserManager>() {
+	private final LazyInitializer<ServletSecurityLayer> securityLayer = new LazyInitializer<ServletSecurityLayer>() {
 
 		@Override
-		protected UserManager getLazyInstance(Object... params) {
-			return ActionServlet.this._getUserManager();
+		protected ServletSecurityLayer getLazyInstance(Object... params) {
+			return _getSecurityLayer();
 		}
-		
 	};
 	
 	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
-	/** Called during servlet initialization. Always call super implementation. */
+	/** Called during servlet initialization. */
 	private void _onInit() {
 		Class<? extends ActionServlet> actionServletClass = ActionServlet.this.getClass();
 		
@@ -134,7 +132,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 						if (!url.startsWith("/"))
 							url = "/" + url;
 
-						SecurityManager securityManager = ActionServlet.this._getSecurityManager(requiredRoleSet);
+						SecurityManager securityManager = ActionServlet.this.getSecurityLayer().getSecurityManager(requiredRoleSet);
 						MethodCallerAction methodCallerAction = new MethodCallerAction(this, method, securityManager);
 
 						for (HttpMethod httpMethod : httpMethods) {
@@ -152,41 +150,24 @@ public class ActionServlet extends HttpServlet implements ActionService {
 		onInit();
 	}
 	
-	/**
-	 * Returns the security manager used by {@linkplain MethodCallerAction} instances.
-	 * This method is intended to be overridden to change servlet initialization and not be called directly
-	 * @param requiredRoles action required roles
-	 * @return the security manger user by created actions managed by this servlet.
-	 */
-	protected SecurityManager _getSecurityManager(Set<String> requiredRoles) {
-		if (requiredRoles == null || requiredRoles.isEmpty()) { // Ignores CSRF token if there is no required roles
-			return null;
-		} else {
-			Set<SecurityManager> securityManagerSet = new LinkedHashSet<>();
-			securityManagerSet.add(((CsrfUserManager)getUserManager())._getCsrfSecurityManager());
-
-			final UserRoleSecurityManager userRoleSecurityManager = new UserRoleSecurityManager(getUserManager(), requiredRoles);
-			securityManagerSet.add(userRoleSecurityManager);
-
-			return new SecurityManagerSet(securityManagerSet);
-		}
+	protected ServletSecurityLayer _getSecurityLayer() {
+		return DEFAULT_SECURITY_LAYER;
 	}
 	
 	/**
-	 * Return the user manager instance managed by this servlet.
-	 * This method is intended to be overridden to change servlet initialization and not be called directly
-	 * @return the user manager instance managed by this servlet.
+	 * Returns the security layer used by this servlet.
+	 * @return the security layer used by this servlet.
 	 */
-	protected UserManager _getUserManager() {
-		return DEFAULT_USER_MANAGER;
+	public final ServletSecurityLayer getSecurityLayer() {
+		return securityLayer.getInstance();
 	}
 	
 	/**
 	 * Returns the user manager used by this servlet.
 	 * @return the user manager used by this servlet
 	 */
-	protected final UserManager getUserManager() {
-		return userManager.getInstance();
+	public final UserManager getUserManager() {
+		return getSecurityLayer().getUserManager();
 	}
 	// -------------------------------------------------------------------------
 	
@@ -199,8 +180,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 * Default implementation does nothing.
 	 * @param exchange HTTP exchange
 	 */
-	@Override
-	public void beforeAction(HttpExchange exchange) {}
+	protected void beforeAction(HttpExchange exchange) {}
 		
 	/** 
 	 * Called after an action. 
@@ -208,8 +188,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 * Default implementation does nothing.
 	 * @param exchange HTTP exchange
 	 */
-	@Override
-	public void afterAction(HttpExchange exchange) {}
+	protected void afterAction(HttpExchange exchange) {}
 	
 	/** 
 	 * Called when an action is not found.
@@ -217,8 +196,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 * Default implementation sets a {@linkplain HttpServletResponse#SC_NOT_FOUND} status in the response.
 	 * @param exchange HTTP exchange
 	 */
-	@Override
-	public void onNotFound(HttpExchange exchange) {
+	protected void onNotFound(HttpExchange exchange) {
 		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 	
@@ -228,8 +206,7 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 * @param throwable error
 	 * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
 	 */
-	@Override
-	public boolean onError(HttpExchange exchange, Throwable throwable) {
+	protected boolean onError(HttpExchange exchange, Throwable throwable) {
 		return true;
 	}
 	
@@ -243,9 +220,8 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	 * @param exchange HTTP exchange
 	 * @see ActionServlet#getUserManager()
 	 */
-	@Override
-	public void onNotAllowed(HttpExchange exchange) {
-		SessionUser sessionUser = getUserManager().getSessionUser(exchange);
+	protected void onNotAllowed(HttpExchange exchange) {
+		ApplicationUser sessionUser = getUserManager().getUser(exchange);
 		
 		if (sessionUser == null) {
 			exchange.getResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);

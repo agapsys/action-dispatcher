@@ -176,14 +176,14 @@ public class TransactionalServlet extends ActionServlet {
 	 * @return a boolean indicating if given error shall be propagated. Default always return true.
 	 */
 	@Override
-	public boolean onError(HttpExchange exchange, Throwable throwable) {
+	protected boolean onError(HttpExchange exchange, Throwable throwable) {
 		super.onError(exchange, throwable);
 		closeTransaction(exchange, throwable);
 		return true;
 	}
 
 	@Override
-	public void beforeAction(HttpExchange exchange) {
+	protected void beforeAction(HttpExchange exchange) {
 		super.beforeAction(exchange);
 		if (getEntityManagerProvider() != null)
 			getTransaction(exchange); // <-- Forces transaction on each request
@@ -191,7 +191,7 @@ public class TransactionalServlet extends ActionServlet {
 	
 	
 	@Override
-	public void afterAction(HttpExchange exchange) {
+	protected void afterAction(HttpExchange exchange) {
 		closeTransaction(exchange, null);
 	}
 	

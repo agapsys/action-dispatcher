@@ -17,7 +17,7 @@
 package action.dispatcher.integration.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.SessionUser;
+import com.agapsys.web.action.dispatcher.ApplicationUser;
 import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.WebAction;
 import action.dispatcher.integration.ActionServletGeneralTest;
@@ -29,7 +29,7 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet("/login/*")
 public class LoginServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
-	private static class SimpleUser implements SessionUser {
+	private static class SimpleUser implements ApplicationUser {
 		private final Set<String> roles = new LinkedHashSet<>();
 		
 		@Override
@@ -55,9 +55,9 @@ public class LoginServlet extends ActionServlet {
 		}
 	}
 	
-	private final SessionUser simpleUser      = new SimpleUser();
-	private final SessionUser priviledgedUser = new PriviledgedUser();
-	private final SessionUser adminUser       = new AdminUser();
+	private final ApplicationUser simpleUser      = new SimpleUser();
+	private final ApplicationUser priviledgedUser = new PriviledgedUser();
+	private final ApplicationUser adminUser       = new AdminUser();
 	
 	private void sendMessage(String msg, HttpExchange exchange) {
 		try {
@@ -69,19 +69,19 @@ public class LoginServlet extends ActionServlet {
 	
 	@WebAction
 	public void simple(HttpExchange exchange) {
-		getUserManager().setSessionUser(exchange, simpleUser);
+		getUserManager().login(exchange, simpleUser);
 		sendMessage(ActionServletGeneralTest.LOGIN_SIMPLE_USER_URL, exchange);
 	}
 	
 	@WebAction
 	public void priviledged(HttpExchange exchange) {
-		getUserManager().setSessionUser(exchange, priviledgedUser);
+		getUserManager().login(exchange, priviledgedUser);
 		sendMessage(ActionServletGeneralTest.LOGIN_PRIVILDGED_USER_URL, exchange);
 	}
 	
 	@WebAction
 	public void admin(HttpExchange exchange) {
-		getUserManager().setSessionUser(exchange, adminUser);
+		getUserManager().login(exchange, adminUser);
 		sendMessage(ActionServletGeneralTest.LOGIN_ADMIN_USER_URL, exchange);
 	}
 }

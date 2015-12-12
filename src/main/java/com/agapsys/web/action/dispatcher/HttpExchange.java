@@ -31,5 +31,5 @@ public interface HttpExchange {
 	public HttpServletResponse getResponse();
 	
 	/** @return the user associated with this exchange. */
-	public SessionUser getSessionUser();
+	public ApplicationUser getUser();
 }

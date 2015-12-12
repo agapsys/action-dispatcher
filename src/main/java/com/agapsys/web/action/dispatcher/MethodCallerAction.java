@@ -20,12 +20,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Action responsible by calling {@linkplain ActionService} methods annotated with {@linkplain WebAction} or {@linkplain WebActions}.
+ * Action responsible by calling {@linkplain ActionServlet} methods annotated with {@linkplain WebAction} or {@linkplain WebActions}.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 class MethodCallerAction extends AbstractAction {
 	private final Method method;
-	private final ActionService actionService;
+	private final ActionServlet actionService;
 	
 	/**
 	 * Constructor.
@@ -33,7 +33,7 @@ class MethodCallerAction extends AbstractAction {
 	 * @param method mapped method
 	 * @param securityManager the security manager used by action
 	 */
-	public MethodCallerAction(ActionService actionService, Method method, SecurityManager securityManager) {
+	public MethodCallerAction(ActionServlet actionService, Method method, SecurityManager securityManager) {
 		super(securityManager);
 		
 		if (actionService == null)
@@ -50,7 +50,7 @@ class MethodCallerAction extends AbstractAction {
 	 * Returns the action service.
 	 * @return the action service passed in constructor.
 	 */
-	public final ActionService getActionService() {
+	public final ActionServlet getActionServlet() {
 		return actionService;
 	}
 

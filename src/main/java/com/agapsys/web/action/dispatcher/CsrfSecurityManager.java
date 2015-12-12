@@ -20,13 +20,12 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * Security manager responsible by checking for CSRF attacks
+ * CSRF security manager.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class CsrfSecurityManager implements SecurityManager {
+public abstract class CsrfSecurityManager implements SecurityManager {
 	// CLASS SCOPE =============================================================
-	private static final String SESSION_ATTR_CSRF_TOKEN = "com.agapsys.web.action.dispatcher.csrfToken";
-	private static final int    CSRF_TOKEN_LENGTH       = 128;
+	private static final int CSRF_TOKEN_LENGTH = 128;
 	
 	/** Name of the header used to send/retrieve a CSRF token. */
 	public static final String CSRF_HEADER  = "X-Csrf-Token";
@@ -68,38 +67,41 @@ public class CsrfSecurityManager implements SecurityManager {
 
 	// INSTANCE SCOPE ==========================================================
 	/** 
-	 * Generates a session CSRF token 
+	 * Registers a CSRF token with given HTTP exchange
 	 * @param exchange HTTP exchange
 	 */
-	public void generateSessionCsrfToken(HttpExchange exchange) {
+	public final void registerToken(HttpExchange exchange) {
 		String token = getRandomString(CSRF_TOKEN_LENGTH);
-		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_CSRF_TOKEN, token);
+		registerToken(exchange, token);
 		exchange.getResponse().setHeader(CSRF_HEADER, token);
 	}
 	
 	/**
-	 * Returns the CSRF token stored in session
+	 * Registers a CSRF token with given HTTP exchange
 	 * @param exchange HTTP exchange
-	 * @return the CSRF token stored in session
+	 * @param token CSRF token to be registered
 	 */
-	public String getSessionCsrfToken(HttpExchange exchange) {
-		return (String) exchange.getRequest().getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
-	}
+	protected abstract void registerToken(HttpExchange exchange, String token);
+	
+	/**
+	 * Returns the CSRF token registered for given HTTP exchange
+	 * @param exchange HTTP exchange
+	 * @return the CSRF token associated with given HTTP exchange
+	 */
+	public abstract String getRegisteredToken(HttpExchange exchange);
 	
 	/** 
-	 * Clears session CSRF token
+	 * Unregisters the CSRF token associated with given HTTP exchange
 	 * @param exchange HTTP exchange
 	 */
-	public void clearSessionCsrfToken(HttpExchange exchange) {
-		exchange.getRequest().getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
-	}
+	public abstract void unregisterToken(HttpExchange exchange);
 	
 	@Override
-	public boolean isAllowed(HttpExchange exchange) {
-		String sessionCsrfToken = getSessionCsrfToken(exchange);
-		String requestCsrfToken = exchange.getRequest().getHeader(CSRF_HEADER);
+	public final boolean isAllowed(HttpExchange exchange) {
+		String registeredToken = getRegisteredToken(exchange);
+		String requestToken   = exchange.getRequest().getHeader(CSRF_HEADER);
 			
-		return Objects.equals(sessionCsrfToken, requestCsrfToken);
+		return Objects.equals(registeredToken, requestToken);
 	}
 	// =========================================================================
 }

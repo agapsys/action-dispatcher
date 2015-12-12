@@ -20,12 +20,8 @@ package com.agapsys.web.action.dispatcher;
  * User manager which handles CSRF security
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class CsrfUserManager extends UserManager {
-	// CLASS SCOPE =============================================================
-	private static final CsrfSecurityManager DEFAULT_CSRF_SECURITY_MANAGER = new CsrfSecurityManager();
-	// =========================================================================
+public abstract class CsrfUserManager implements UserManager {
 
-	// INSTANCE SCOPE ==========================================================
 	private final LazyInitializer<CsrfSecurityManager> csrfSecurityManager = new LazyInitializer() {
 
 		@Override
@@ -33,7 +29,12 @@ public class CsrfUserManager extends UserManager {
 			return CsrfUserManager.this._getCsrfSecurityManager();
 		}
 	};
-	
+	private final LazyInitializer<UserManager> userManager = new LazyInitializer() {
+		@Override
+		protected UserManager getLazyInstance(Object... params) {
+			return CsrfUserManager.this._getUserManager();
+		}
+	};
 	
 	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
 	/**
@@ -41,21 +42,37 @@ public class CsrfUserManager extends UserManager {
 	 * This method is intended to be overridden to change object initialization and not be called directly
 	 * @return the CSRF security manager used by this instance.
 	 */
-	protected CsrfSecurityManager _getCsrfSecurityManager() {
-		return DEFAULT_CSRF_SECURITY_MANAGER;
+	protected abstract CsrfSecurityManager _getCsrfSecurityManager();
+	
+	public final CsrfSecurityManager getCsrfSecurityManager() {
+		return csrfSecurityManager.getInstance();
+	}
+	
+	/**
+	 * Returns the User manager associated with this instance.
+	 * @return the User manager associated with this instance
+	 */
+	protected abstract UserManager _getUserManager();
+	
+	public final UserManager getUserManager() {
+		return userManager.getInstance();
 	}
 	// -------------------------------------------------------------------------
 	
 	@Override
-	public void setSessionUser(HttpExchange exchange, SessionUser user) {
-		super.setSessionUser(exchange, user);
-		csrfSecurityManager.getInstance().generateSessionCsrfToken(exchange);
+	public final void login(HttpExchange exchange, ApplicationUser user) {
+		getUserManager().login(exchange, user);
+		getCsrfSecurityManager().registerToken(exchange);
 	}
 
 	@Override
-	public void clearSessionUser(HttpExchange exchange) {
-		super.clearSessionUser(exchange);
-		csrfSecurityManager.getInstance().clearSessionCsrfToken(exchange);
+	public final void logout(HttpExchange exchange) {
+		getUserManager().logout(exchange);
+		getCsrfSecurityManager().unregisterToken(exchange);
 	}
-	// =========================================================================
+	
+	@Override
+	public final ApplicationUser getUser(HttpExchange exchange) {
+		return getUserManager().getUser(exchange);
+	}
 }
