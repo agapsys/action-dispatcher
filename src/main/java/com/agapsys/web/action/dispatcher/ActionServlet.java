@@ -34,43 +34,6 @@ public class ActionServlet extends HttpServlet implements ActionService {
 	/** Default User manager. */
 	private static final UserManager DEFAULT_USER_MANAGER = new CsrfUserManager();
 	
-	/** Default HttpExchange implementation. */
-	static class DefaultHttpExchange implements HttpExchange {
-		private final ActionServlet servlet;
-		private final HttpServletRequest req;
-		private final HttpServletResponse resp;
-
-		public DefaultHttpExchange(ActionServlet servlet, HttpServletRequest req, HttpServletResponse resp) {
-			this.servlet = servlet;
-			this.req = req;
-			this.resp = resp;
-		}
-
-		public final ActionServlet getServlet() {
-			return servlet;
-		}
-		
-		@Override
-		public HttpServletRequest getRequest() {
-			return req;
-		}
-
-		@Override
-		public HttpServletResponse getResponse() {
-			return resp;
-		}
-
-		@Override
-		public SessionUser getSessionUser() {
-			return getServlet().getUserManager().getSessionUser(this);
-		}
-
-		@Override
-		public String toString() {
-			return String.format("%s %s %s", req.getMethod(), req.getRequestURI(), req.getProtocol());
-		}
-	}
-	
 	/** 
 	 * Checks if an annotated method signature matches with required one.
 	 * @param method annotated method

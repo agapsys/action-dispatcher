@@ -21,7 +21,6 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Specialization of {@linkplain ActionServlet} which manages JPA transactions during HTTP exchange processing.
@@ -129,17 +128,6 @@ public class TransactionalServlet extends ActionServlet {
 			super.close();
 		}
 	}
-	
-	private static class DefaultTransactionalHttpExchange extends DefaultHttpExchange implements TransactionalHttpExchange {
-		public DefaultTransactionalHttpExchange(TransactionalServlet servlet, HttpServletRequest req, HttpServletResponse resp) {
-			super(servlet, req, resp);
-		}
-
-		@Override
-		public Transaction getTransaction() {
-			return ((TransactionalServlet) getServlet()).getTransaction(this);
-		}
-	}
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
@@ -205,11 +193,6 @@ public class TransactionalServlet extends ActionServlet {
 	@Override
 	public void afterAction(HttpExchange exchange) {
 		closeTransaction(exchange, null);
-	}
-	
-	@Override
-	protected TransactionalHttpExchange getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
-		return new DefaultTransactionalHttpExchange(this, req, resp);
 	}
 	
 	/**
