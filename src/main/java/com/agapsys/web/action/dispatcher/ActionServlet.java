@@ -98,13 +98,6 @@ public class ActionServlet extends HttpServlet implements ActionService {
 				throw new RuntimeException(String.format("Invalid URL pattern '%s' for class '%s' (pattern must end with '/*')", urlPattern, thisClassName));
 			}
 		}
-		
-		
-		
-		
-		
-		
-		
 			
 		// Check for WebAction annotations...
 		Method[] methods = actionServletClass.getDeclaredMethods();
