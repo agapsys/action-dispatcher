@@ -230,16 +230,6 @@ public class ActionServlet extends HttpServlet {
 		}
 	}
 	
-	/**
-	 * Return The HTTP exchange used by this servlet
-	 * @return The HTTP exchange used by this servlet
-	 * @param req HTTP request
-	 * @param resp HTTP response
-	 */
-	protected HttpExchange getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
-		return new DefaultHttpExchange(req, resp);
-	}
-	
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) {
 		if (!actionServlet.isInitialized())
@@ -247,7 +237,7 @@ public class ActionServlet extends HttpServlet {
 		
 		Action action = dispatcher.getAction(req);
 		
-		HttpExchange exchange = getHttpExchange(req, resp);
+		HttpExchange exchange = new HttpExchange(req, resp);
 		
 		if (action == null) {
 			onNotFound(exchange);

@@ -19,14 +19,33 @@ package com.agapsys.web.action.dispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * Represents an HTTP exchange.
- * @author Leandro Oliveira (leandro@agapsys.com)
- */
-public interface HttpExchange {
-	/** @return HTTP request associated with this exchange. */
-	public HttpServletRequest getRequest();
+/** Default HttpExchange implementation. */
+public class HttpExchange {
+	private final HttpServletRequest req;
+	private final HttpServletResponse resp;
 
-	/** @return HTTP response associated with this exchange. */
-	public HttpServletResponse getResponse();
+	public HttpExchange(HttpServletRequest req, HttpServletResponse resp) {
+		
+		if (req == null)
+			throw new IllegalArgumentException("Request cannot be null");
+		
+		if (resp == null)
+			throw new IllegalArgumentException("Response cannot be null");
+
+		this.req = req;
+		this.resp = resp;
+	}
+
+	public final HttpServletRequest getRequest() {
+		return req;
+	}
+
+	public final HttpServletResponse getResponse() {
+		return resp;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s %s %s", req.getMethod(), req.getRequestURI(), req.getProtocol());
+	}
 }
