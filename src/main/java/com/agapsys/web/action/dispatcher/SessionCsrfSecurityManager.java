@@ -16,6 +16,8 @@
 
 package com.agapsys.web.action.dispatcher;
 
+import javax.servlet.http.HttpSession;
+
 /**
  * Session-based CSRF security manager.
  * @author Leandro Oliveira (leandro@agapsys.com)
@@ -34,12 +36,18 @@ public class SessionCsrfSecurityManager extends CsrfSecurityManager {
 	
 	@Override
 	public String getRegisteredToken(HttpExchange exchange) {
-		return (String) exchange.getRequest().getSession().getAttribute(SESSION_ATTR_CSRF_TOKEN);
+		HttpSession session = exchange.getRequest().getSession(false);
+		if (session == null)
+			return null;
+		
+		return (String) session.getAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 
 	@Override
 	public void unregisterToken(HttpExchange exchange) {
-		exchange.getRequest().getSession().removeAttribute(SESSION_ATTR_CSRF_TOKEN);
+		HttpSession session = exchange.getRequest().getSession(false);
+		if (session != null)		
+			session.removeAttribute(SESSION_ATTR_CSRF_TOKEN);
 	}
 	// =========================================================================
 }

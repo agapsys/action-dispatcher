@@ -16,6 +16,8 @@
 
 package com.agapsys.web.action.dispatcher;
 
+import javax.servlet.http.HttpSession;
+
 /**
  * Session-based user manager.
  * @author Leandro Oliveira (leandro@agapsys.com)
@@ -28,7 +30,11 @@ public class SessionUserManager implements UserManager {
 	// INSTANCE SCOPE ==========================================================
 	@Override
 	public ApplicationUser getUser(HttpExchange exchange) {
-		return (ApplicationUser) exchange.getRequest().getSession().getAttribute(SESSION_ATTR_USER);
+		HttpSession session = exchange.getRequest().getSession(false);
+		if (session == null)
+			return null;
+		
+		return (ApplicationUser) session.getAttribute(SESSION_ATTR_USER);
 	}
 	
 	@Override
@@ -41,7 +47,9 @@ public class SessionUserManager implements UserManager {
 	
 	@Override
 	public void logout(HttpExchange exchange) {
-		exchange.getRequest().getSession().removeAttribute(SESSION_ATTR_USER);
+		HttpSession session = exchange.getRequest().getSession(false);
+		if (session != null)
+			session.removeAttribute(SESSION_ATTR_USER);
 	}
 	// =========================================================================
 }
