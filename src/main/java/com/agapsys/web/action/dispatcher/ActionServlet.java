@@ -237,7 +237,7 @@ public class ActionServlet extends HttpServlet {
 	 * @param resp HTTP response
 	 */
 	protected HttpExchange getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
-		return new DefaultHttpExchange(this, req, resp);
+		return new DefaultHttpExchange(req, resp);
 	}
 	
 	@Override

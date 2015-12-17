@@ -21,26 +21,19 @@ import javax.servlet.http.HttpServletResponse;
 
 /** Default HttpExchange implementation. */
 public class DefaultHttpExchange implements HttpExchange {
-	private final ActionServlet servlet;
 	private final HttpServletRequest req;
 	private final HttpServletResponse resp;
 
-	public DefaultHttpExchange(ActionServlet servlet, HttpServletRequest req, HttpServletResponse resp) {
-		if (servlet == null)
-			throw new IllegalArgumentException("Servlet cannot be null");
+	public DefaultHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
 		
 		if (req == null)
 			throw new IllegalArgumentException("Request cannot be null");
 		
 		if (resp == null)
 			throw new IllegalArgumentException("Response cannot be null");
-		this.servlet = servlet;
+
 		this.req = req;
 		this.resp = resp;
-	}
-
-	public final ActionServlet getServlet() {
-		return servlet;
 	}
 
 	@Override
@@ -51,11 +44,6 @@ public class DefaultHttpExchange implements HttpExchange {
 	@Override
 	public final HttpServletResponse getResponse() {
 		return resp;
-	}
-
-	@Override
-	public ApplicationUser getUser() {
-		return getServlet().getUserManager().getUser(this);
 	}
 
 	@Override

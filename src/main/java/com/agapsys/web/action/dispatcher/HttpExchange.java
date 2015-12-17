@@ -29,7 +29,4 @@ public interface HttpExchange {
 
 	/** @return HTTP response associated with this exchange. */
 	public HttpServletResponse getResponse();
-	
-	/** @return the user associated with this exchange. */
-	public ApplicationUser getUser();
 }
