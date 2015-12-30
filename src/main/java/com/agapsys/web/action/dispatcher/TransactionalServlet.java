@@ -150,6 +150,8 @@ public class TransactionalServlet extends ActionServlet {
 				transaction.wrappedCommit();
 			}
 			
+			req.removeAttribute(REQ_ATTR_TRANSACTION);
+			
 			((ServletEntityManger)transaction.getEntityManager()).wrappedClose();
 		}
 	}

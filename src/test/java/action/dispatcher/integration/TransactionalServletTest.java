@@ -20,8 +20,8 @@ import action.dispatcher.integration.jpa.PersistenceUnit;
 import action.dispatcher.integration.servlets.TransactionalTestServlet;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse.StringResponse;
-import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.ServletContainer;
+import com.agapsys.sevlet.test.ServletContainerBuilder;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.AfterClass;
@@ -44,11 +44,14 @@ public class TransactionalServletTest {
 	@BeforeClass
 	public static void beforeClass() {
 		PersistenceUnit.start();
-		sc = new ServletContainer();
-		ApplicationContext app = new ApplicationContext();
-		app.setErrorHandler(new StacktraceErrorHandler());
-		app.registerServlet(TransactionalTestServlet.class);
-		sc.registerContext(app);
+		sc = new ServletContainerBuilder()
+			.addRootContext()
+				.setErrorHandler(new StacktraceErrorHandler())
+				.registerServlet(TransactionalTestServlet.class)
+			.endContext()
+			.build();
+
+		
 		sc.startServer();
 	}
 	

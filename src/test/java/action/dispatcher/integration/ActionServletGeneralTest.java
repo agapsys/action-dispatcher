@@ -24,11 +24,10 @@ import action.dispatcher.integration.servlets.SecuredServlet;
 import com.agapsys.http.HttpClient;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpHeader;
-import com.agapsys.http.HttpRequest;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.http.StringEntityRequest.StringEntityPost;
-import com.agapsys.sevlet.test.ApplicationContext;
 import com.agapsys.sevlet.test.ServletContainer;
+import com.agapsys.sevlet.test.ServletContainerBuilder;
 import com.agapsys.sevlet.test.StacktraceErrorHandler;
 import com.agapsys.web.action.dispatcher.ActionServlet;
 import com.agapsys.web.action.dispatcher.SessionCsrfSecurityManager;
@@ -93,30 +92,18 @@ public class ActionServletGeneralTest {
 	@Before
 	public void before() {
 		// Register dispatcher servlet...
-		sc = new ServletContainer() {
-
-			@Override
-			public StringResponse doRequest(HttpClient client, HttpRequest request) {
-				StringResponse resp = super.doRequest(client, request);
-				
-				if (resp.getStatusCode() == HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-					System.out.println(resp.getContentString());
-				
-				return resp;
-			}
-		};
+		sc = new ServletContainerBuilder()
+			.addRootContext()
+				.registerServlet(InvalidUrlPatternServlet.class)
+				.registerServlet(LoginServlet.class)
+				.registerServlet(PublicServlet.class)
+				.registerServlet(SecuredServlet.class)
+				.registerServlet(PhaseActionsServlet.class)
+				.registerServlet(DefaultActionServlet.class)
+				.setErrorHandler(new StacktraceErrorHandler())
+			.endContext()
+			.build();
 		
-		ApplicationContext context = new ApplicationContext();
-		context.setErrorHandler(new StacktraceErrorHandler());
-		
-		context.registerServlet(InvalidUrlPatternServlet.class);
-		context.registerServlet(LoginServlet.class);
-		context.registerServlet(PublicServlet.class);
-		context.registerServlet(SecuredServlet.class);
-		context.registerServlet(PhaseActionsServlet.class);
-		context.registerServlet(DefaultActionServlet.class);
-		
-		sc.registerContext(context, "/");
 		sc.startServer();
 	}
 	
