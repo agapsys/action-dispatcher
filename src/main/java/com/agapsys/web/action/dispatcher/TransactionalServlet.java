@@ -194,6 +194,7 @@ public class TransactionalServlet extends ActionServlet {
 	
 	@Override
 	protected void afterAction(HttpExchange exchange) {
+		super.afterAction(exchange);
 		closeTransaction(exchange, null);
 	}
 	
