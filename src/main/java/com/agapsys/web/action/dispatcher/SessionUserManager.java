@@ -29,16 +29,16 @@ public class SessionUserManager implements UserManager {
 
 	// INSTANCE SCOPE ==========================================================
 	@Override
-	public ApplicationUser getUser(HttpExchange exchange) {
+	public User getUser(HttpExchange exchange) {
 		HttpSession session = exchange.getRequest().getSession(false);
 		if (session == null)
 			return null;
 		
-		return (ApplicationUser) session.getAttribute(SESSION_ATTR_USER);
+		return (User) session.getAttribute(SESSION_ATTR_USER);
 	}
 	
 	@Override
-	public void login(HttpExchange exchange, ApplicationUser user) {
+	public void login(HttpExchange exchange, User user) {
 		if (user == null)
 			throw new IllegalArgumentException("Null user");
 		

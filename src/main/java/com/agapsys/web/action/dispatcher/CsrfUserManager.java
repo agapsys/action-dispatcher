@@ -60,7 +60,7 @@ public abstract class CsrfUserManager implements UserManager {
 	// -------------------------------------------------------------------------
 	
 	@Override
-	public final void login(HttpExchange exchange, ApplicationUser user) {
+	public final void login(HttpExchange exchange, User user) {
 		getUserManager().login(exchange, user);
 		getCsrfSecurityManager().registerToken(exchange);
 	}
@@ -72,7 +72,7 @@ public abstract class CsrfUserManager implements UserManager {
 	}
 	
 	@Override
-	public final ApplicationUser getUser(HttpExchange exchange) {
+	public final User getUser(HttpExchange exchange) {
 		return getUserManager().getUser(exchange);
 	}
 }

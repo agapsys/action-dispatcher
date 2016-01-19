@@ -50,7 +50,7 @@ public class UserRoleSecurityManager implements SecurityManager {
 		if (requiredRoles == null || requiredRoles.isEmpty()) {
 			return true;
 		} else {
-			ApplicationUser sessionUser = userManager != null ? userManager.getUser(exchange) : null;
+			User sessionUser = userManager != null ? userManager.getUser(exchange) : null;
 			return sessionUser != null && (sessionUser.isAdmin() || (sessionUser.getRoles() != null && sessionUser.getRoles().containsAll(requiredRoles)));
 		}
 	}

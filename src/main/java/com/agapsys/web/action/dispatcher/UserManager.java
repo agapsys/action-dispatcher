@@ -26,14 +26,14 @@ public interface UserManager {
 	 * @param exchange HTTP exchange
 	 * @return application user associated with given HTTP exchange or null if there is no user
 	 */
-	public ApplicationUser getUser(HttpExchange exchange);
+	public User getUser(HttpExchange exchange);
 	
 	/**
 	 * Register a user associated with the HTTP exchange
 	 * @param exchange HTTP exchange
 	 * @param user user to be registered.
 	 */
-	public void login(HttpExchange exchange, ApplicationUser user);
+	public void login(HttpExchange exchange, User user);
 	
 	/**
 	 * logout an user associated with the HTTP exchange

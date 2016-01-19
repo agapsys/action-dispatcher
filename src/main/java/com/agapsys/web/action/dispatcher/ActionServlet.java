@@ -221,7 +221,7 @@ public class ActionServlet extends HttpServlet {
 	 * @see ActionServlet#getUserManager()
 	 */
 	protected void onNotAllowed(HttpExchange exchange) {
-		ApplicationUser sessionUser = getUserManager().getUser(exchange);
+		User sessionUser = getUserManager().getUser(exchange);
 		
 		if (sessionUser == null) {
 			exchange.getResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);

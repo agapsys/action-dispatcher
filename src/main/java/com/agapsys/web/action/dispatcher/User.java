@@ -19,10 +19,10 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * Represents a session user in the application.
+ * Represents an user in the application.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public interface ApplicationUser extends Serializable {
+public interface User extends Serializable {
 	/**
 	 * Return collection of roles associated with this user
 	 * @return collection roles associated with this user

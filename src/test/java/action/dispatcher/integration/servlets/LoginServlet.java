@@ -17,7 +17,7 @@
 package action.dispatcher.integration.servlets;
 
 import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.ApplicationUser;
+import com.agapsys.web.action.dispatcher.User;
 import com.agapsys.web.action.dispatcher.HttpExchange;
 import com.agapsys.web.action.dispatcher.WebAction;
 import action.dispatcher.integration.ActionServletGeneralTest;
@@ -29,7 +29,7 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet("/login/*")
 public class LoginServlet extends ActionServlet {
 	// CLASS SCOPE =============================================================
-	private static class SimpleUser implements ApplicationUser {
+	private static class SimpleUser implements User {
 		private final Set<String> roles = new LinkedHashSet<>();
 		
 		@Override
@@ -55,9 +55,9 @@ public class LoginServlet extends ActionServlet {
 		}
 	}
 	
-	private final ApplicationUser simpleUser      = new SimpleUser();
-	private final ApplicationUser priviledgedUser = new PriviledgedUser();
-	private final ApplicationUser adminUser       = new AdminUser();
+	private final User simpleUser      = new SimpleUser();
+	private final User priviledgedUser = new PriviledgedUser();
+	private final User adminUser       = new AdminUser();
 	
 	private void sendMessage(String msg, HttpExchange exchange) {
 		try {
