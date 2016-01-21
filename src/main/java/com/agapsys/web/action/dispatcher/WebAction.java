@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2015-2016 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,6 @@ public @interface WebAction {
 	
 	/** @return name of the mapping. Passing an null/empty string will use the method name as URL mapping. */
 	String       mapping()       default "";
-	
-	/** @return required roles to process mapped action. Passing an empty array implies in no security. */
-	String[]     requiredRoles() default {};
 	
 	/** @return a boolean indicating if annotated method will be the default action handled by servlet. */
 	boolean      defaultAction() default false;

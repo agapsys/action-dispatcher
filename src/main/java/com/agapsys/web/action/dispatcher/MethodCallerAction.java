@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2015-2016 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,24 +25,21 @@ import java.lang.reflect.Method;
  */
 class MethodCallerAction extends AbstractAction {
 	private final Method method;
-	private final ActionServlet actionService;
+	private final ActionServlet actionServlet;
 	
 	/**
 	 * Constructor.
-	 * @param actionService Action service instance associated with this action caller.
+	 * @param actionServlet Action servlet instance associated with this action caller.
 	 * @param method mapped method
-	 * @param securityManager the security manager used by action
 	 */
-	public MethodCallerAction(ActionServlet actionService, Method method, SecurityManager securityManager) {
-		super(securityManager);
-		
-		if (actionService == null)
-			throw new IllegalArgumentException("Null servlet");
+	public MethodCallerAction(ActionServlet actionServlet, Method method) {
+		if (actionServlet == null)
+			throw new IllegalArgumentException("Action servlet cannot be null");
 		
 		if (method == null)
-			throw new IllegalArgumentException("Null method");
+			throw new IllegalArgumentException("Method cannot be null");
 		
-		this.actionService = actionService;
+		this.actionServlet = actionServlet;
 		this.method = method;
 	}
 
@@ -51,28 +48,23 @@ class MethodCallerAction extends AbstractAction {
 	 * @return the action service passed in constructor.
 	 */
 	public final ActionServlet getActionServlet() {
-		return actionService;
+		return actionServlet;
 	}
 
 	@Override
 	protected void beforeAction(HttpExchange exchange){
-		actionService.beforeAction(exchange);
+		actionServlet.beforeAction(exchange);
 	}
 
 	@Override
 	protected void afterAction(HttpExchange exchange){
-		actionService.afterAction(exchange);
-	}
-	
-	@Override
-	protected void onNotAllowed(HttpExchange exchange){
-		actionService.onNotAllowed(exchange);
+		actionServlet.afterAction(exchange);
 	}
 
 	@Override
 	protected void onProcessRequest(HttpExchange exchange) {
 		try {
-			method.invoke(actionService, exchange);
+			method.invoke(actionServlet, exchange);
 		} catch (InvocationTargetException | IllegalAccessException ex) {
 			if (ex instanceof InvocationTargetException)
 				throw new RuntimeException(((InvocationTargetException) ex).getTargetException());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2015-2016 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,11 @@ import javax.servlet.http.HttpServletRequest;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class ActionDispatcher {
+	// CLASS SCOPE =============================================================
 	public static final String DEFAULT_URL = "/";
+	// =========================================================================
 	
+	// INSTANCE SCOPE ==========================================================
 	private final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new LinkedHashMap<>();
 
 	/**
@@ -95,4 +98,5 @@ public class ActionDispatcher {
 			return map.get(path);
 		}
 	}
+	// =========================================================================
 }

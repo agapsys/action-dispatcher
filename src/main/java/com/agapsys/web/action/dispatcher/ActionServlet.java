@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2015-2016 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.agapsys.web.action.dispatcher;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,9 +28,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class ActionServlet extends HttpServlet {
-	// CLASS SCOPE =============================================================
-	private static final ServletSecurityLayer DEFAULT_SECURITY_LAYER = new DefaultSessionSecurityLayer();
-	
+	// CLASS SCOPE =============================================================	
 	/** 
 	 * Checks if an annotated method signature matches with required one.
 	 * @param method annotated method
@@ -56,21 +52,13 @@ public class ActionServlet extends HttpServlet {
 	
 	// INSTANCE SCOPE ==========================================================	
 	private final ActionDispatcher dispatcher    = new ActionDispatcher();
-	private final LazyInitializer  actionServlet = new LazyInitializer() {
+	private final LazyInitializer  lazyInitializer = new LazyInitializer() {
 		@Override
-		protected void onInitialize(Object...params) {
+		protected void onInitialize() {
 			ActionServlet.this._onInit();
 		}
 	};
-	private final LazyInitializer<ServletSecurityLayer> securityLayer = new LazyInitializer<ServletSecurityLayer>() {
-
-		@Override
-		protected ServletSecurityLayer getLazyInstance(Object... params) {
-			return _getSecurityLayer();
-		}
-	};
 	
-	// CUSTOMIZABLE INITIALIZATION BEHAVIOUR -----------------------------------
 	/** Called during servlet initialization. */
 	private void _onInit() {
 		Class<? extends ActionServlet> actionServletClass = ActionServlet.this.getClass();
@@ -115,14 +103,6 @@ public class ActionServlet extends HttpServlet {
 					}
 
 					for (WebAction webAction : webActions) {
-						String[] requiredRoles = webAction.requiredRoles();
-						Set<String> requiredRoleSet = new LinkedHashSet<>();
-
-						for (String role : requiredRoles) {
-							if (!requiredRoleSet.add(role))
-								throw new RuntimeException("Duplicate role: " + role);
-						}
-
 						HttpMethod[] httpMethods = webAction.httpMethods();
 						String url = webAction.mapping();
 
@@ -132,8 +112,7 @@ public class ActionServlet extends HttpServlet {
 						if (!url.startsWith("/"))
 							url = "/" + url;
 
-						SecurityManager securityManager = ActionServlet.this.getSecurityLayer().getSecurityManager(requiredRoleSet);
-						MethodCallerAction methodCallerAction = new MethodCallerAction(this, method, securityManager);
+						MethodCallerAction methodCallerAction = new MethodCallerAction(this, method);
 
 						for (HttpMethod httpMethod : httpMethods) {
 							dispatcher.registerAction(methodCallerAction, httpMethod, url);
@@ -149,28 +128,7 @@ public class ActionServlet extends HttpServlet {
 		
 		onInit();
 	}
-	
-	protected ServletSecurityLayer _getSecurityLayer() {
-		return DEFAULT_SECURITY_LAYER;
-	}
-	
-	/**
-	 * Returns the security layer used by this servlet.
-	 * @return the security layer used by this servlet.
-	 */
-	public final ServletSecurityLayer getSecurityLayer() {
-		return securityLayer.getInstance();
-	}
-	
-	/**
-	 * Returns the user manager used by this servlet.
-	 * @return the user manager used by this servlet
-	 */
-	public final UserManager getUserManager() {
-		return getSecurityLayer().getUserManager();
-	}
-	// -------------------------------------------------------------------------
-	
+
 	/** Called during servlet initialization. Default implementation does nothing. */
 	protected void onInit() {}
 	
@@ -210,30 +168,10 @@ public class ActionServlet extends HttpServlet {
 		return true;
 	}
 	
-	/**
-	 * Called when an action is not allowed to be executed.
-	 * Default implementation sets a status in the response:
-	 * <ul>
-	 *		<li> {@linkplain HttpServletResponse#SC_UNAUTHORIZED} if called action has required roles an there is no user registered with request session.</li>
-	 *		<li> {@linkplain HttpServletResponse#SC_FORBIDDEN} if there is an user registered with request session but the user does not fulfill required roles</li>
-	 * </ul>
-	 * @param exchange HTTP exchange
-	 * @see ActionServlet#getUserManager()
-	 */
-	protected void onNotAllowed(HttpExchange exchange) {
-		User sessionUser = getUserManager().getUser(exchange);
-		
-		if (sessionUser == null) {
-			exchange.getResponse().setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		} else {
-			exchange.getResponse().setStatus(HttpServletResponse.SC_FORBIDDEN);
-		}
-	}
-	
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) {
-		if (!actionServlet.isInitialized())
-			actionServlet.initialize();
+		if (!lazyInitializer.isInitialized())
+			lazyInitializer.initialize();
 		
 		Action action = dispatcher.getAction(req);
 		
