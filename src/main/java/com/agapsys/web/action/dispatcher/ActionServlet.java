@@ -182,14 +182,18 @@ public class ActionServlet extends HttpServlet {
 		} else {
 			try {
 				action.processRequest(exchange);
-			} catch (RuntimeException t) { // MethodCallerAction throws the target exception wrapped in a RuntimeException
+			} catch (RuntimeException t) { // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
 				Throwable cause = t.getCause();
 				
 				if (cause == null)
 					cause = t;
 				
-				if (onError(exchange, cause))
+				if (onError(exchange, cause)) {
+					if (cause instanceof RuntimeException)
+						throw (RuntimeException) cause;
+					
 					throw new RuntimeException(cause);
+				}
 			}
 		}
 	}
