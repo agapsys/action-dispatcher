@@ -159,14 +159,12 @@ public class ActionServlet extends HttpServlet {
 	}
 	
 	/** 
-	 * Handles an error in the application and returns a boolean indicating if error shall be propagated.
+	 * Called when an error happens while processing an action.
+	 * Default implementation does nothing.
 	 * @param exchange HTTP exchange
 	 * @param throwable error
-	 * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
 	 */
-	protected boolean onError(HttpExchange exchange, Throwable throwable) {
-		return true;
-	}
+	protected void onError(HttpExchange exchange, Throwable throwable) {}
 	
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) {
@@ -188,12 +186,12 @@ public class ActionServlet extends HttpServlet {
 				if (cause == null)
 					cause = t;
 				
-				if (onError(exchange, cause)) {
-					if (cause instanceof RuntimeException)
-						throw (RuntimeException) cause;
+				onError(exchange, cause);
+				
+				if (cause instanceof RuntimeException)
+					throw (RuntimeException) cause;
 					
-					throw new RuntimeException(cause);
-				}
+				throw new RuntimeException(cause);
 			}
 		}
 	}
