@@ -1,7 +1,7 @@
 <!--
 
  Copyright 2015 Agapsys Tecnologia Ltda-ME.
- 
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -17,29 +17,29 @@ limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>com.agapsys.libs</groupId>
-	<artifactId>action-dispatcher</artifactId>
+	<artifactId>rest-controller</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-		
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 	</properties>
-	
-	<name>Action Dispatcher</name>
-	<description>REST framework for java back-end applications</description>
-	<url>https://github.com/agapsys/action-dispatcher</url>
-	
+
+	<name>REST Controller Framework</name>
+	<description>REST controllers for java back-end applications</description>
+	<url>https://github.com/agapsys/rest-controller</url>
+
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
-	
+
 	<developers>
 		<developer>
 			<name>Leandro Oliveira</name>
@@ -48,17 +48,17 @@ limitations under the License.
 			<organizationUrl>http://www.agapsys.com</organizationUrl>
 		</developer>
 	</developers>
-	
+
 	<scm>
-		<connection>scm:git:git@github.com:agapsys/action-dispatcher.git</connection>
-		<url>git@github.com:agapsys/action-dispatcher.git</url>
+		<connection>scm:git:git@github.com:agapsys/rest-controller.git</connection>
+		<url>git@github.com:agapsys/rest-controller.git</url>
 	</scm>
-	
+
 	<organization>
 		<name>Agapsys Tecnologia Ltda-ME</name>
 		<url>http://www.agapsys.com</url>
 	</organization>
-	
+
 	<dependencies>
 		<!-- Test dependencies -->
 		<dependency>
@@ -67,37 +67,14 @@ limitations under the License.
 			<version>0.1.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.3.1</version>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-			<version>5.0.1.Final</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.187</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.agapsys.libs</groupId>
-			<artifactId>jpa-utils</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		
+
 		<!-- Provided dependencies -->
 		<dependency>
 			<groupId>javax</groupId>

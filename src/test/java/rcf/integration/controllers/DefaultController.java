@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package action.dispatcher.integration.servlets;
+package rcf.integration.controllers;
 
-import action.dispatcher.integration.ActionServletGeneralTest;
-import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.HttpMethod;
-import com.agapsys.web.action.dispatcher.WebAction;
-import javax.servlet.annotation.WebServlet;
+import com.agapsys.rcf.HttpExchange;
+import com.agapsys.rcf.HttpMethod;
+import com.agapsys.rcf.WebAction;
+import com.agapsys.rcf.WebController;
+import rcf.integration.ControllerGeneralTest;
 
-@WebServlet("/default/*")
-public class DefaultActionServlet extends PublicServlet {
+@WebController("default")
+public class DefaultController extends PublicController {
 	@Override
 	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
 	public void get(HttpExchange exchange) {
-		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_GET_URL, exchange);
+		processRequest(ControllerGeneralTest.DEFAULT_ACTION_GET_URL, exchange);
 	}
-	
+
 	@Override
 	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
 	public void post(HttpExchange exchange) {
-		processRequest(ActionServletGeneralTest.DEFAULT_ACTION_POST_URL, exchange);
+		processRequest(ControllerGeneralTest.DEFAULT_ACTION_POST_URL, exchange);
 	}
 }

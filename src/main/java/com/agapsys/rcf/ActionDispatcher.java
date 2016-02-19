@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package com.agapsys.rcf;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

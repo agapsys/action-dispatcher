@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package com.agapsys.rcf;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Action responsible by calling {@linkplain ActionServlet} methods annotated with {@linkplain WebAction} or {@linkplain WebActions}.
+ * Action responsible by calling {@link Controller} methods annotated with {@linkplain WebAction} or {@linkplain WebActions}.
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 class MethodCallerAction extends AbstractAction {
 	private final Method method;
-	private final ActionServlet actionServlet;
+	private final Controller actionServlet;
 	
 	/**
 	 * Constructor.
 	 * @param actionServlet Action servlet instance associated with this action caller.
 	 * @param method mapped method
 	 */
-	public MethodCallerAction(ActionServlet actionServlet, Method method) {
+	public MethodCallerAction(Controller actionServlet, Method method) {
 		if (actionServlet == null)
 			throw new IllegalArgumentException("Action servlet cannot be null");
 		
@@ -47,7 +47,7 @@ class MethodCallerAction extends AbstractAction {
 	 * Returns the action service.
 	 * @return the action service passed in constructor.
 	 */
-	public final ActionServlet getActionServlet() {
+	public final Controller getActionServlet() {
 		return actionServlet;
 	}
 

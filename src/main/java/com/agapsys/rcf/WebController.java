@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2016 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.agapsys.rcf;
 
-package com.agapsys.web.action.dispatcher;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/** Represents a HTTP method. */
-public enum HttpMethod {
-	DELETE,
-	GET,
-	HEAD,
-	OPTIONS,
-	POST,
-	PUT,
-	TRACE,
-	PATCH;
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface WebController {
+	/** @return controller mapping value. Passing an null/empty string will use the type name as URL mapping. */
+	String value() default "";
 }

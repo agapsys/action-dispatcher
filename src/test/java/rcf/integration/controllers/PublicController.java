@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package action.dispatcher.integration.servlets;
+package rcf.integration.controllers;
 
-import com.agapsys.web.action.dispatcher.ActionServlet;
-import com.agapsys.web.action.dispatcher.HttpMethod;
-import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.WebAction;
-import com.agapsys.web.action.dispatcher.WebActions;
-import action.dispatcher.integration.ActionServletGeneralTest;
+import com.agapsys.rcf.Controller;
+import com.agapsys.rcf.HttpExchange;
+import com.agapsys.rcf.HttpMethod;
+import com.agapsys.rcf.WebAction;
+import com.agapsys.rcf.WebActions;
+import com.agapsys.rcf.WebController;
 import java.io.IOException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletResponse;
+import rcf.integration.ControllerGeneralTest;
 
-@WebServlet("/public/*")
-public class PublicServlet extends ActionServlet {
-	
+@WebController("public")
+public class PublicController extends Controller {
+
 	protected void processRequest(String msg, HttpExchange exchange){
 		exchange.getResponse().setStatus(HttpServletResponse.SC_OK);
 		try {
@@ -37,40 +37,39 @@ public class PublicServlet extends ActionServlet {
 			throw new RuntimeException(ex);
 		}
 	}
-	
+
 	@WebAction
 	public void get(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_GET_URL, exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_GET_URL, exchange);
 	}
-	
+
 	@WebAction(mapping = "mapped/get")
 	public void mappedGet(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_GET_URL, exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_MAPPED_GET_URL, exchange);
 	}
-	
+
 	@WebAction(mapping = "/mapped/get2")
 	public void mappedWithSlash(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, exchange);
 	}
-	
-	
+
 	@WebAction(httpMethods = HttpMethod.POST)
 	public void post(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_POST_URL, exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_POST_URL, exchange);
 	}
-	
+
 	@WebAction(httpMethods = HttpMethod.POST, mapping = "mapped/post")
 	public void mappedPost(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_MAPPED_POST_URL, exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_MAPPED_POST_URL, exchange);
 	}
-	
+
 	@WebActions({@WebAction(httpMethods = HttpMethod.GET),@WebAction(httpMethods = HttpMethod.POST)})
 	public void repeatableGetOrPost(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_WEBACTIONS_URL + exchange.getRequest().getMethod(), exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_WEBACTIONS_URL + exchange.getRequest().getMethod(), exchange);
 	}
-	
+
 	@WebAction(httpMethods = {HttpMethod.GET, HttpMethod.POST})
 	public void multipleMethods(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + exchange.getRequest().getMethod(), exchange);
+		processRequest(ControllerGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + exchange.getRequest().getMethod(), exchange);
 	}
 }

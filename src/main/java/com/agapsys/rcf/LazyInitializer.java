@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package com.agapsys.rcf;
 
 /**
  * Utility class to lazy-initialize objects in a multi-thread environment

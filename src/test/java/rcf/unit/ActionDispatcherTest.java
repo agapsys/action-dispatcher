@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package action.dispatcher.unit;
+package rcf.unit;
 
-import com.agapsys.web.action.dispatcher.Action;
-import com.agapsys.web.action.dispatcher.ActionDispatcher;
-import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.HttpMethod;
+import com.agapsys.rcf.Action;
+import com.agapsys.rcf.ActionDispatcher;
+import com.agapsys.rcf.HttpExchange;
+import com.agapsys.rcf.HttpMethod;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;

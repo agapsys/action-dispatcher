@@ -1,0 +1,8 @@
+# Application controllers
+#
+# Syntax: 
+# 	Normal classes: full.qualified.class.Name url/mapping
+# 	Inner classes : full.qualified.class.Name.InnerClass url/mapping
+
+com.example.MyClass mapping1
+com.example.MyClass.InnerClass mapping2/mapping3

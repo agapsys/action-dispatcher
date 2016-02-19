@@ -14,43 +14,43 @@
  * limitations under the License.
  */
 
-package action.dispatcher.integration.servlets;
+package rcf.integration.controllers;
 
-import com.agapsys.web.action.dispatcher.HttpMethod;
-import com.agapsys.web.action.dispatcher.HttpExchange;
-import com.agapsys.web.action.dispatcher.WebAction;
-import action.dispatcher.integration.ActionServletGeneralTest;
-import javax.servlet.annotation.WebServlet;
+import com.agapsys.rcf.HttpExchange;
+import com.agapsys.rcf.HttpMethod;
+import com.agapsys.rcf.WebAction;
+import com.agapsys.rcf.WebController;
 import javax.servlet.http.HttpServletResponse;
+import rcf.integration.ControllerGeneralTest;
 
-@WebServlet("/phase/*")
-public class PhaseActionsServlet extends PublicServlet {
-	
+@WebController("phase")
+public class PhaseController extends PublicController {
+
 	@Override
 	public void beforeAction(HttpExchange exchange){
-		exchange.getResponse().setHeader(ActionServletGeneralTest.PHASE_BEFORE_HEADER, ActionServletGeneralTest.PHASE_BEFORE_HEADER);
+		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
 	}
-	
+
 	@Override
 	public void afterAction(HttpExchange exchange){
-		exchange.getResponse().setHeader(ActionServletGeneralTest.PHASE_AFTER_HEADER, ActionServletGeneralTest.PHASE_AFTER_HEADER);
+		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
 	}
-	
+
 	@Override
 	public void onNotFound(HttpExchange exchange){
 		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
-		exchange.getResponse().setHeader(ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER, ActionServletGeneralTest.PHASE_NOT_FOUND_HEADER);
+		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
 	}
-	
+
 	@Override
 	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
 	public void get(HttpExchange exchange) {
-		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, exchange);
+		processRequest(ControllerGeneralTest.PHASE_DEFAULT_URL, exchange);
 	}
-	
+
 	@Override
 	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
 	public void post(HttpExchange exchange){
-		processRequest(ActionServletGeneralTest.PHASE_DEFAULT_URL, exchange);
+		processRequest(ControllerGeneralTest.PHASE_DEFAULT_URL, exchange);
 	}
 }

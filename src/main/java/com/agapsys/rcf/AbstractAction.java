@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.agapsys.web.action.dispatcher;
+package com.agapsys.rcf;
 
 public abstract class AbstractAction implements Action {
 	/** 
