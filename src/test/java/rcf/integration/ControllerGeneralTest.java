@@ -20,6 +20,7 @@ import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.http.StringEntityRequest.StringEntityPost;
+import com.agapsys.rcf.ControllerRegistrationListener;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import javax.servlet.http.HttpServletResponse;
@@ -57,7 +58,8 @@ public class ControllerGeneralTest {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private ServletContainer sc;
+	private ServletContainer sc1;
+	private ServletContainer sc2;
 
 	private void expectNullPhaseHeaders(StringResponse resp) {
 		Assert.assertNull(resp.getFirstHeader(PHASE_BEFORE_HEADER));
@@ -66,56 +68,92 @@ public class ControllerGeneralTest {
 
 	@Before
 	public void before() {
-		// Register dispatcher servlet...
-		sc = new ServletContainerBuilder()
+		// Register controllers directly...
+		sc1 = new ServletContainerBuilder()
 			.registerController(PublicController.class)
 			.registerController(PhaseController.class)
 			.registerController(DefaultController.class)
 			.setErrorHandler(new StacktraceErrorHandler())
 			.build();
 
-		sc.startServer();
+		// Controller registration via listener...
+		sc2 = new ServletContainerBuilder()
+			.registerEventListener(ControllerRegistrationListener.class)
+			.build();
+		
+		sc1.startServer();
+		sc2.startServer();
 	}
 
 	@After
 	public void after() {
-		sc.stopServer();
+		sc1.stopServer();
+		sc2.stopServer();
 	}
 
 	@Test
 	public void testDefaultActions() {
 		StringResponse resp;
 
-		// GET: GET
-		resp = sc.doRequest(new HttpGet(DEFAULT_ACTION_GET_URL));
+		// GET: GET ------------------------------------------------------------
+		resp = sc1.doRequest(new HttpGet(DEFAULT_ACTION_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
+		
+		resp = sc2.doRequest(new HttpGet(DEFAULT_ACTION_GET_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
+		// ---------------------------------------------------------------------
 
-
-		// POST: POST
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_POST_URL));
+		// POST: POST ----------------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_POST_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
+		// ---------------------------------------------------------------------
 
 		// GET: DEFAULT
-		resp = sc.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL));
+		resp = sc1.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
-
+		
+		resp = sc2.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
+		// ---------------------------------------------------------------------
+		
 		// GET: DEFAULT + "/"
-		resp = sc.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL + "/"));
+		resp = sc1.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL + "/"));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
-
+		
+		resp = sc2.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL + "/"));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(DEFAULT_ACTION_GET_URL, resp.getContentString());
+		// ---------------------------------------------------------------------
+		
 		// POST: DEFAULT
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL));
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
-
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
+		// ---------------------------------------------------------------------
+		
 		// POST: DEFAULT + "/"
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL + "/"));
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL + "/"));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL + "/"));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(DEFAULT_ACTION_POST_URL, resp.getContentString());
+		// ---------------------------------------------------------------------
 	}
 
 	@Test
@@ -123,10 +161,14 @@ public class ControllerGeneralTest {
 		StringResponse resp;
 
 		// GET: PUBLIC GET
-		resp = sc.doRequest(new HttpGet(PUBLIC_MAPPED_WITH_SLASH_GET_URL));
+		resp = sc1.doRequest(new HttpGet(PUBLIC_MAPPED_WITH_SLASH_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_WITH_SLASH_GET_URL, resp.getContentString());
-
+		expectNullPhaseHeaders(resp);
+		
+		resp = sc2.doRequest(new HttpGet(PUBLIC_MAPPED_WITH_SLASH_GET_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MAPPED_WITH_SLASH_GET_URL, resp.getContentString());
 		expectNullPhaseHeaders(resp);
 	}
 
@@ -137,8 +179,40 @@ public class ControllerGeneralTest {
 		HttpHeader afterHeader;
 		HttpHeader notFoundHeader;
 
-		// GET
-		resp = sc.doRequest(new HttpGet(PHASE_DEFAULT_URL));
+		// GET -----------------------------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PHASE_DEFAULT_URL));
+		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
+		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
+		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
+
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PHASE_DEFAULT_URL, resp.getContentString());
+
+		Assert.assertNotNull(beforeHeader);
+		Assert.assertNotNull(afterHeader);
+		Assert.assertNull(notFoundHeader);
+
+		Assert.assertEquals(PHASE_BEFORE_HEADER, beforeHeader.getValue());
+		Assert.assertEquals(PHASE_AFTER_HEADER, afterHeader.getValue());
+		
+		resp = sc2.doRequest(new HttpGet(PHASE_DEFAULT_URL));
+		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
+		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
+		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
+
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PHASE_DEFAULT_URL, resp.getContentString());
+
+		Assert.assertNotNull(beforeHeader);
+		Assert.assertNotNull(afterHeader);
+		Assert.assertNull(notFoundHeader);
+
+		Assert.assertEquals(PHASE_BEFORE_HEADER, beforeHeader.getValue());
+		Assert.assertEquals(PHASE_AFTER_HEADER, afterHeader.getValue());
+		// ---------------------------------------------------------------------
+
+		// POST ----------------------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -153,9 +227,7 @@ public class ControllerGeneralTest {
 		Assert.assertEquals(PHASE_BEFORE_HEADER, beforeHeader.getValue());
 		Assert.assertEquals(PHASE_AFTER_HEADER, afterHeader.getValue());
 
-
-		// POST
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL));
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -169,9 +241,10 @@ public class ControllerGeneralTest {
 
 		Assert.assertEquals(PHASE_BEFORE_HEADER, beforeHeader.getValue());
 		Assert.assertEquals(PHASE_AFTER_HEADER, afterHeader.getValue());
-
+		// ---------------------------------------------------------------------
+		
 		// GET: NOT FOUND
-		resp = sc.doRequest(new HttpGet(PHASE_DEFAULT_URL + "/unknown"));
+		resp = sc1.doRequest(new HttpGet(PHASE_DEFAULT_URL + "/unknown"));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -184,9 +257,8 @@ public class ControllerGeneralTest {
 		Assert.assertNotNull(notFoundHeader);
 
 		Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
-
-		// POST: NOT FOUND
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "/unknown"));
+		
+		resp = sc2.doRequest(new HttpGet(PHASE_DEFAULT_URL + "/unknown"));
 		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
 		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
 		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -199,55 +271,122 @@ public class ControllerGeneralTest {
 		Assert.assertNotNull(notFoundHeader);
 
 		Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
+		// ---------------------------------------------------------------------
+		
+		// POST: NOT FOUND -----------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "/unknown"));
+		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
+		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
+		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
+
+		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		Assert.assertEquals("", resp.getContentString());
+
+		Assert.assertNull(beforeHeader);
+		Assert.assertNull(afterHeader);
+		Assert.assertNotNull(notFoundHeader);
+
+		Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "/unknown"));
+		beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
+		afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
+		notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
+
+		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		Assert.assertEquals("", resp.getContentString());
+
+		Assert.assertNull(beforeHeader);
+		Assert.assertNull(afterHeader);
+		Assert.assertNotNull(notFoundHeader);
+
+		Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
+		// ---------------------------------------------------------------------
 	}
 
 	@Test
 	public void testPublicActions() {
 		StringResponse resp;
 
-		// GET: PUBLIC GET
-		resp = sc.doRequest(new HttpGet(PUBLIC_GET_URL));
+		// GET: PUBLIC GET -----------------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PUBLIC_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_GET_URL, resp.getContentString());
-
 		expectNullPhaseHeaders(resp);
+		
+		resp = sc2.doRequest(new HttpGet(PUBLIC_GET_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_GET_URL, resp.getContentString());
+		expectNullPhaseHeaders(resp);
+		// ---------------------------------------------------------------------
 
-		// GET: PUBLIC MAPPED GET
-		resp = sc.doRequest(new HttpGet(PUBLIC_MAPPED_GET_URL));
+		// GET: PUBLIC MAPPED GET ----------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PUBLIC_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_GET_URL, resp.getContentString());
-
 		expectNullPhaseHeaders(resp);
+		
+		resp = sc2.doRequest(new HttpGet(PUBLIC_MAPPED_GET_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MAPPED_GET_URL, resp.getContentString());
+		expectNullPhaseHeaders(resp);
+		// ---------------------------------------------------------------------
 
-		// POST: PUBLIC POST
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_POST_URL));
+		// POST: PUBLIC POST ---------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_POST_URL, resp.getContentString());
-
 		expectNullPhaseHeaders(resp);
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_POST_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_POST_URL, resp.getContentString());
+		expectNullPhaseHeaders(resp);
+		// ---------------------------------------------------------------------
 
-		// POST: PUBLIC MAPPED POST
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_POST_URL));
+		// POST: PUBLIC MAPPED POST --------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MAPPED_POST_URL, resp.getContentString());
-
 		expectNullPhaseHeaders(resp);
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_POST_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MAPPED_POST_URL, resp.getContentString());
+		expectNullPhaseHeaders(resp);
+		// ---------------------------------------------------------------------
 
-		// GET: PUBLIC POST
-		resp = sc.doRequest(new HttpGet(PUBLIC_POST_URL));
+		// GET: PUBLIC POST ----------------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PUBLIC_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		
+		resp = sc2.doRequest(new HttpGet(PUBLIC_POST_URL));
+		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		// ---------------------------------------------------------------------
 
-		// GET: PUBLIC MAPPED POST
-		resp = sc.doRequest(new HttpGet(PUBLIC_MAPPED_POST_URL));
+		// GET: PUBLIC MAPPED POST ---------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PUBLIC_MAPPED_POST_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		
+		resp = sc2.doRequest(new HttpGet(PUBLIC_MAPPED_POST_URL));
+		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		// ---------------------------------------------------------------------
 
-		// POST: PUBLIC GET
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_GET_URL));
+		// POST: PUBLIC GET ----------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_GET_URL));
+		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		// ---------------------------------------------------------------------
 
-		// POST: PUBLIC MAPPED GET
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_GET_URL));
+		// POST: PUBLIC MAPPED GET ---------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_GET_URL));
 		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MAPPED_GET_URL));
+		Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatusCode());
+		// ---------------------------------------------------------------------
 	}
 
 	@Test
@@ -255,27 +394,46 @@ public class ControllerGeneralTest {
 		StringResponse resp;
 
 		// Multiple @WebAction's...
-		// GET:
-		resp = sc.doRequest(new HttpGet(PUBLIC_WEBACTIONS_URL));
+		// GET -----------------------------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PUBLIC_WEBACTIONS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "GET", resp.getContentString());
 
-		// POST:
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_WEBACTIONS_URL));
+		resp = sc2.doRequest(new HttpGet(PUBLIC_WEBACTIONS_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "GET", resp.getContentString());
+		// ---------------------------------------------------------------------
+		
+		// POST ----------------------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_WEBACTIONS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "POST", resp.getContentString());
-
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_WEBACTIONS_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_WEBACTIONS_URL + "POST", resp.getContentString());
+		// ---------------------------------------------------------------------
 
 		// Multiple methods, same @WebAction...
-		// GET:
-		resp = sc.doRequest(new HttpGet(PUBLIC_MULTIPLE_METHODS_URL));
+		// GET -----------------------------------------------------------------
+		resp = sc1.doRequest(new HttpGet(PUBLIC_MULTIPLE_METHODS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "GET", resp.getContentString());
-
-		// POST:
-		resp = sc.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MULTIPLE_METHODS_URL));
+		
+		resp = sc2.doRequest(new HttpGet(PUBLIC_MULTIPLE_METHODS_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "GET", resp.getContentString());
+		// ---------------------------------------------------------------------
+		
+		// POST ----------------------------------------------------------------
+		resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MULTIPLE_METHODS_URL));
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "POST", resp.getContentString());
+		
+		resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PUBLIC_MULTIPLE_METHODS_URL));
+		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
+		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "POST", resp.getContentString());
+		// ---------------------------------------------------------------------
 	}
 	// =========================================================================
 }

@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -76,7 +75,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
 		Map<String, Class<? extends Controller>> controllerMap = new LinkedHashMap<>();
 
 		for (String line : lines) {
-			String[] components = line.split(Pattern.quote(" "));
+			String[] components = line.split(":");
 			String controllerName = components[0].trim();
 
 			try {
