@@ -29,6 +29,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import rcf.ServletContainerBuilder;
+import rcf.integration.controllers.Controller1;
+import rcf.integration.controllers.Controller2;
 import rcf.integration.controllers.DefaultController;
 import rcf.integration.controllers.PhaseController;
 import rcf.integration.controllers.PublicController;
@@ -434,6 +436,17 @@ public class ControllerGeneralTest {
 		Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
 		Assert.assertEquals(PUBLIC_MULTIPLE_METHODS_URL + "POST", resp.getContentString());
 		// ---------------------------------------------------------------------
+	}
+	
+	@Test
+	public void testControllerRegisteredWithClassNames() {
+		StringResponse resp;
+		
+		resp = sc2.doRequest(new HttpGet("/%s/get", Controller1.class.getSimpleName()));
+		Assert.assertEquals(200, resp.getStatusCode());
+		
+		resp = sc2.doRequest(new HttpGet("/%s/get", Controller2.class.getSimpleName()));
+		Assert.assertEquals(200, resp.getStatusCode());
 	}
 	// =========================================================================
 }
