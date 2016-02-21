@@ -1,0 +1,6 @@
+# Application controllers
+rcf.integration.controllers.DefaultController
+rcf.integration.controllers.PhaseController
+rcf.integration.controllers.PublicController
+rcf.integration.controllers.Controller1
+rcf.integration.controllers.Controller2

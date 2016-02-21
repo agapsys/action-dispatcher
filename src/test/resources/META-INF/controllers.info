@@ -1,4 +1,0 @@
-# Application controllers
-default: rcf.integration.controllers.DefaultController
-phase:   rcf.integration.controllers.PhaseController
-public:  rcf.integration.controllers.PublicController
