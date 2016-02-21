@@ -21,7 +21,7 @@ limitations under the License.
 	<name>com.agapsys.libs.web-controller</name>
 
 	<listener>
-		<listener-class>com.agapsys.wcf.ControllerRegistrationListener</listener-class>
+		<listener-class>com.agapsys.rcf.ControllerRegistrationListener</listener-class>
 	</listener>
 
 </web-fragment>
