@@ -22,4 +22,4 @@ REST Controller Framework project is licensed under the **Apache License 2.0**. 
 
 ## Contact
 
-For general information visit the main project site at https://github.com/agapsys/rest-controller
+For general information visit the main project site at https://github.com/agapsys/rest-controller-framework
