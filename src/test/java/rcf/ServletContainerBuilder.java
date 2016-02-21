@@ -25,23 +25,21 @@ import com.agapsys.rcf.WebController;
  */
 public class ServletContainerBuilder extends com.agapsys.sevlet.container.ServletContainerBuilder {
 
-	public ServletContainerBuilder registerController(Class<? extends Controller> controller, String name) {
-		return (ServletContainerBuilder) super.registerServlet(controller, String.format("/%s/*", name));
+	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass, String name) {
+		return (ServletContainerBuilder) super.registerServlet(controllerClass, String.format("/%s/*", name));
 	}
 	
-	public ServletContainerBuilder registerController(Class<? extends Controller> controller) {
-		WebController[] annotations = controller.getAnnotationsByType(WebController.class);
-		
-		if (annotations.length == 0)
+	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass) {
+		WebController annotation = controllerClass.getAnnotation(WebController.class);
+
+		if (annotation == null)
 			throw new IllegalArgumentException("Controller class does not have a WebController annotation");
 
-		for (WebController annotation : annotations) {
-			String name = annotation.value();
-			if (name == null || name.trim().isEmpty())
-				name = controller.getSimpleName();
-			
-			registerController(controller, name);
-		}
+		String name = annotation.value();
+		if (name == null || name.trim().isEmpty())
+			name = controllerClass.getSimpleName();
+
+		registerController(controllerClass, name);
 	
 		return this;
 	}
