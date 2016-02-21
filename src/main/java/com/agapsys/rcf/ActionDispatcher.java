@@ -16,6 +16,7 @@
 
 package com.agapsys.rcf;
 
+import com.agapsys.exception.IllegalArgumentError;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +63,7 @@ public class ActionDispatcher {
 		}
 
 		if (map.containsKey(url)) {
-			throw new IllegalArgumentException(String.format("Duplicate method/URL: %s/%s", httpMethod.name(), url));
+			throw new IllegalArgumentError("Duplicate method/URL: %s/%s", httpMethod.name(), url);
 		}
 
 		map.put(url, action);

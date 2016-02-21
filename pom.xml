@@ -74,6 +74,13 @@ limitations under the License.
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- Compile dependencies -->
+		<dependency>
+			<groupId>com.agapsys.libs</groupId>
+			<artifactId>exception-pack</artifactId>
+			<version>[1.0.0, 2.0.0)</version>
+		</dependency>
 
 		<!-- Provided dependencies -->
 		<dependency>
