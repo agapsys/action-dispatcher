@@ -15,7 +15,6 @@
  */
 package com.agapsys.rcf;
 
-import com.agapsys.exception.RuntimeError;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,15 +92,15 @@ public class ControllerRegistrationListener implements ServletContextListener {
 				controllerMapping = components[0];
 				controllerClassName = components[1];
 			} else {
-				throw new RuntimeError("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line);
+				throw new RuntimeException("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line);
 			}
 			
 			try {
 				controllerClass = (Class<? extends Controller>) Class.forName(controllerClassName);
 			} catch (ClassNotFoundException ex) {
-				throw new RuntimeError(ex, "Error reading %s", EMBEDDED_INFO_FILE);
+				throw new RuntimeException(ex, "Error reading %s", EMBEDDED_INFO_FILE);
 			} catch (ClassCastException ex) {
-				throw new RuntimeError("Class %s does not extend %s", controllerClassName, Controller.class.getName());
+				throw new RuntimeException("Class %s does not extend %s", controllerClassName, Controller.class.getName());
 			}
 			
 			if (controllerMapping == null) {
@@ -119,7 +118,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
 			}
 			
 			if (!controllerMapping.matches("^[a-zA-Z0-9]+[a-zA-Z\\-0-9\\/]*[^\\/\\*]+$"))
-				throw new RuntimeError("Invalid controller mapping: %s => %s", controllerMapping, controllerClassName);
+				throw new RuntimeException("Invalid controller mapping: %s => %s", controllerMapping, controllerClassName);
 
 			controllerMap.put(controllerMapping, controllerClass);
 		}

@@ -16,7 +16,6 @@
 
 package com.agapsys.rcf;
 
-import com.agapsys.exception.RuntimeError;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import javax.servlet.http.HttpServlet;
@@ -70,7 +69,7 @@ public class Controller extends HttpServlet {
 			for (Annotation annotation : annotations) {
 				if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
 					if (!matchSignature(method))
-						throw new RuntimeError("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName());
+						throw new RuntimeException("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName());
 
 					WebAction[] webActions;
 
