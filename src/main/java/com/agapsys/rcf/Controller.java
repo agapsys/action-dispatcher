@@ -165,8 +165,8 @@ public class Controller extends HttpServlet {
 
 				onError(exchange, cause);
 
-				if (cause instanceof RuntimeException)
-					throw (RuntimeException) cause;
+				if (cause instanceof java.lang.RuntimeException)
+					throw (java.lang.RuntimeException) cause;
 
 				throw new RuntimeException(cause);
 			}
