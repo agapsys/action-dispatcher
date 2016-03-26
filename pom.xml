@@ -19,7 +19,7 @@ limitations under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.agapsys.libs</groupId>
-	<artifactId>rest-controller-framework</artifactId>
+	<artifactId>rcf</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -30,8 +30,8 @@ limitations under the License.
 	</properties>
 
 	<name>REST Controller Framework</name>
-	<description>REST controllers for java back-end applications</description>
-	<url>https://github.com/agapsys/rest-controller-framework</url>
+	<description>REST Controller Framework for java back-end applications</description>
+	<url>https://github.com/agapsys/rcf</url>
 
 	<licenses>
 		<license>
@@ -50,8 +50,8 @@ limitations under the License.
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com:agapsys/rest-controller-framework.git</connection>
-		<url>git@github.com:agapsys/rest-controller-framework.git</url>
+		<connection>scm:git:git@github.com:agapsys/rcf.git</connection>
+		<url>git@github.com:agapsys/rcf.git</url>
 	</scm>
 
 	<organization>
