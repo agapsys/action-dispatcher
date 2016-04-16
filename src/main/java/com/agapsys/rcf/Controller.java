@@ -190,13 +190,16 @@ public class Controller extends HttpServlet {
 						ex.getMessage()
 					);
 				} catch (Throwable ex) {
-					if (!onUncaughtError(exchange, cause)) {					
+					if (!onUncaughtError(exchange, cause)) {
+						if (ex instanceof RuntimeException)
+							throw (RuntimeException)ex;
+						
 						if (ex instanceof ServletException)
 							throw (ServletException) ex;
 
 						if (ex instanceof IOException)
 							throw (IOException) ex;
-
+						
 						throw new ServletException(ex);
 					}
 				}
