@@ -25,6 +25,7 @@ public interface Action {
 	/**
 	 * Processes the action.
 	 * @param exchange HTTP exchange
+	 * @throws Throwable if an error happened during the operation
 	 */
-	public void processRequest(HttpExchange exchange);
+	public void processRequest(HttpExchange exchange) throws Throwable;
 }

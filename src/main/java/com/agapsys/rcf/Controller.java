@@ -157,8 +157,8 @@ public class Controller extends HttpServlet {
 		} else {
 			try {
 				action.processRequest(exchange);
-			} catch (RuntimeException t) { // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
-				Throwable cause = t.getCause();
+			} catch (Throwable t) { 
+				Throwable cause = t.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
 
 				if (cause == null)
 					cause = t;
