@@ -16,7 +16,7 @@
 
 package com.agapsys.rcf.exceptions;
 
-public class ClientException extends Exception {
+public class ClientException extends RuntimeException {
 	private final int httpsStatus;
 	private final Integer appStatus;
 	
