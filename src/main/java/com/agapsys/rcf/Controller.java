@@ -16,8 +16,11 @@
 
 package com.agapsys.rcf;
 
+import com.agapsys.rcf.exceptions.ClientException;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -136,15 +139,23 @@ public class Controller extends HttpServlet {
 	}
 
 	/**
-	 * Called when an error happens while processing an action.
+	 * Called when an uncaught error happens while processing an action.
 	 * Default implementation does nothing.
-	 * @param exchange HTTP exchange
+	 * @param req HTTP request
 	 * @param throwable error
 	 */
-	protected void onError(HttpExchange exchange, Throwable throwable) {}
+	protected void onUncaughtError(HttpServletRequest req, Throwable throwable) {}
 
+	/**
+	 * Called upon a error thrown due to client request.
+	 * Default implementation does nothing.
+	 * @param req HTTP request
+	 * @param error client error.
+	 */
+	protected void onClientError(HttpServletRequest req, ClientException error) {}
+	
 	@Override
-	protected final void service(HttpServletRequest req, HttpServletResponse resp) {
+	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (!lazyInitializer.isInitialized())
 			lazyInitializer.initialize();
 
@@ -159,16 +170,33 @@ public class Controller extends HttpServlet {
 				action.processRequest(exchange);
 			} catch (Throwable t) { 
 				Throwable cause = t.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
-
+				
 				if (cause == null)
 					cause = t;
-
-				onError(exchange, cause);
-
-				if (cause instanceof java.lang.RuntimeException)
-					throw (java.lang.RuntimeException) cause;
-
-				throw new RuntimeException(cause);
+				
+				try {
+					throw cause;
+				} catch (ClientException ex) {
+					onClientError(req, ex);
+					
+					resp.setStatus(ex.getHttpsStatus());
+					Integer appErrorCode = ex.getAppStatus();
+					resp.getWriter().printf(
+						"%s%s", 
+						appErrorCode != null ? String.format("%d: ", appErrorCode) : "",
+						ex.getMessage()
+					);
+				} catch (Throwable ex) {
+					onUncaughtError(req, cause);
+					
+					if (ex instanceof ServletException)
+						throw (ServletException) ex;
+					
+					if (ex instanceof IOException)
+						throw (IOException) ex;
+					
+					throw new ServletException(ex);
+				}
 			}
 		}
 	}
