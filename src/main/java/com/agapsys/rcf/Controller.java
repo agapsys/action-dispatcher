@@ -141,10 +141,13 @@ public class Controller extends HttpServlet {
 	/**
 	 * Called when an uncaught error happens while processing an action.
 	 * Default implementation does nothing.
-	 * @param req HTTP request
+	 * @param exchange HTTP exchange
 	 * @param throwable error
+	 * @return a boolean indicating if given error was handled. Default implementation returns false
 	 */
-	protected void onUncaughtError(HttpServletRequest req, Throwable throwable) {}
+	protected boolean onUncaughtError(HttpExchange exchange, Throwable throwable) {
+		return false;
+	}
 
 	/**
 	 * Called upon a error thrown due to client request.
@@ -187,15 +190,15 @@ public class Controller extends HttpServlet {
 						ex.getMessage()
 					);
 				} catch (Throwable ex) {
-					onUncaughtError(req, cause);
-					
-					if (ex instanceof ServletException)
-						throw (ServletException) ex;
-					
-					if (ex instanceof IOException)
-						throw (IOException) ex;
-					
-					throw new ServletException(ex);
+					if (!onUncaughtError(exchange, cause)) {					
+						if (ex instanceof ServletException)
+							throw (ServletException) ex;
+
+						if (ex instanceof IOException)
+							throw (IOException) ex;
+
+						throw new ServletException(ex);
+					}
 				}
 			}
 		}
