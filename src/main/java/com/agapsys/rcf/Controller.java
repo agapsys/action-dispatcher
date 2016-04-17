@@ -186,7 +186,7 @@ public class Controller extends HttpServlet {
 					Integer appErrorCode = ex.getAppStatus();
 					resp.getWriter().printf(
 						"%s%s", 
-						appErrorCode != null ? String.format("%d: ", appErrorCode) : "",
+						appErrorCode != null ? String.format("%d:", appErrorCode) : "",
 						ex.getMessage()
 					);
 				} catch (Throwable ex) {
