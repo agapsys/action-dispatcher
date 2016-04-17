@@ -92,15 +92,15 @@ public class ControllerRegistrationListener implements ServletContextListener {
 				controllerMapping = components[0];
 				controllerClassName = components[1];
 			} else {
-				throw new RuntimeException("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line);
+				throw new RuntimeException(String.format("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line));
 			}
 			
 			try {
 				controllerClass = (Class<? extends Controller>) Class.forName(controllerClassName);
 			} catch (ClassNotFoundException ex) {
-				throw new RuntimeException(ex, "Error reading %s", EMBEDDED_INFO_FILE);
+				throw new RuntimeException(String.format("Error reading %s", EMBEDDED_INFO_FILE), ex);
 			} catch (ClassCastException ex) {
-				throw new RuntimeException("Class %s does not extend %s", controllerClassName, Controller.class.getName());
+				throw new RuntimeException(String.format("Class %s does not extend %s", controllerClassName, Controller.class.getName()));
 			}
 			
 			if (controllerMapping == null) {
@@ -118,7 +118,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
 			}
 			
 			if (!controllerMapping.matches("^[a-zA-Z0-9]+[a-zA-Z\\-0-9\\/]*[^\\/\\*]+$"))
-				throw new RuntimeException("Invalid controller mapping: %s => %s", controllerMapping, controllerClassName);
+				throw new RuntimeException(String.format("Invalid controller mapping: %s => %s", controllerMapping, controllerClassName));
 
 			controllerMap.put(controllerMapping, controllerClass);
 		}

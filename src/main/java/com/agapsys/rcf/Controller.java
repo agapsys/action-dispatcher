@@ -72,7 +72,7 @@ public class Controller extends HttpServlet {
 			for (Annotation annotation : annotations) {
 				if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
 					if (!matchSignature(method))
-						throw new RuntimeException("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName());
+						throw new RuntimeException(String.format("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName()));
 
 					WebAction[] webActions;
 
@@ -172,7 +172,7 @@ public class Controller extends HttpServlet {
 			try {
 				action.processRequest(exchange);
 			} catch (Throwable t) { 
-				Throwable cause = t.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
+				Throwable cause = t.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeError
 				
 				if (cause == null)
 					cause = t;
