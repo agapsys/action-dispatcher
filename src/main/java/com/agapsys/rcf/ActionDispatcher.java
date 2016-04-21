@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class ActionDispatcher {
 	// CLASS SCOPE =============================================================
-	public static final String DEFAULT_URL = "/";
+	public static final String ROOT_PATH = "/";
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
@@ -50,7 +50,7 @@ public class ActionDispatcher {
 		}
 
 		if (url == null || url.trim().isEmpty())
-			url = DEFAULT_URL;
+			url = ROOT_PATH;
 
 		url = url.trim();
 
@@ -88,7 +88,7 @@ public class ActionDispatcher {
 		
 		String path = req.getPathInfo();
 		if (path == null) {
-			path = DEFAULT_URL;
+			path = ROOT_PATH;
 		}
 		
 		Map<String, Action> map = ACTION_MAP.get(httpMethod);

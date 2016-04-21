@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.agapsys.rcf;
 
-import com.agapsys.rcf.exceptions.ClientException;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Servlet responsible by mapping methods to actions
+ *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class Controller extends HttpServlet {
+public class Controller extends ActionServlet {
 	// CLASS SCOPE =============================================================
+
 	/**
 	 * Checks if an annotated method signature matches with required one.
+	 *
 	 * @param method annotated method
 	 * @return boolean indicating if method signature is valid.
 	 */
@@ -53,16 +49,14 @@ public class Controller extends HttpServlet {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private final ActionDispatcher dispatcher    = new ActionDispatcher();
-	private final LazyInitializer  lazyInitializer = new LazyInitializer() {
-		@Override
-		protected void onInitialize() {
-			Controller.this._onInit();
-		}
-	};
+	/**
+	 * Called during controller initialization. Subclasses shall call this
+	 * implementation.
+	 */
+	@Override
+	protected void onInit() {
+		super.onInit();
 
-	/** Called during controller initialization. */
-	private void _onInit() {
 		Class<? extends Controller> actionServletClass = Controller.this.getClass();
 
 		// Check for WebAction annotations...
@@ -71,8 +65,9 @@ public class Controller extends HttpServlet {
 			Annotation[] annotations = method.getAnnotations();
 			for (Annotation annotation : annotations) {
 				if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
-					if (!matchSignature(method))
+					if (!matchSignature(method)) {
 						throw new RuntimeException(String.format("Invalid signature (%s). Required: public void <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName()));
+					}
 
 					WebAction[] webActions;
 
@@ -84,123 +79,21 @@ public class Controller extends HttpServlet {
 
 					for (WebAction webAction : webActions) {
 						HttpMethod[] httpMethods = webAction.httpMethods();
-						String url = webAction.mapping();
+						String path = webAction.mapping();
 
-						if (url.trim().isEmpty())
-							url = method.getName();
+						if (path.trim().isEmpty()) {
+							path = method.getName();
+						}
 
-						if (!url.startsWith("/"))
-							url = "/" + url;
-
-						MethodCallerAction methodCallerAction = new MethodCallerAction(this, method);
+						MethodCallerAction action = new MethodCallerAction(this, method);
 
 						for (HttpMethod httpMethod : httpMethods) {
-							dispatcher.registerAction(methodCallerAction, httpMethod, url);
+							registerAction(httpMethod, path, action);
 
 							if (webAction.defaultAction()) {
-								dispatcher.registerAction(methodCallerAction, httpMethod, ActionDispatcher.DEFAULT_URL);
+								registerAction(httpMethod, ActionDispatcher.ROOT_PATH, action);
 							}
 						}
-					}
-				}
-			}
-		}
-
-		onInit();
-	}
-
-	/** Called during controller initialization. Default implementation does nothing. */
-	protected void onInit() {}
-
-	/**
-	 * Called before an action.
-	 * This method will be called only if an action associated to given request is found and it it allowed to be processed (see {@link SecurityManager}).
-	 * Default implementation does nothing.
-	 * @param exchange HTTP exchange
-	 */
-	protected void beforeAction(HttpExchange exchange) {}
-
-	/**
-	 * Called after an action.
-	 * This method will be called only if an action associated to given request is found, the action is allowed to be processed (see {@link SecurityManager}), and the action was successfully processed.
-	 * Default implementation does nothing.
-	 * @param exchange HTTP exchange
-	 */
-	protected void afterAction(HttpExchange exchange) {}
-
-	/**
-	 * Called when an action is not found.
-	 * An action is not found when there is no method mapped to given request.
-	 * Default implementation sets a {@linkplain HttpServletResponse#SC_NOT_FOUND} status in the response.
-	 * @param exchange HTTP exchange
-	 */
-	protected void onNotFound(HttpExchange exchange) {
-		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
-	}
-
-	/**
-	 * Called when an uncaught error happens while processing an action.
-	 * Default implementation does nothing.
-	 * @param exchange HTTP exchange
-	 * @param throwable error
-	 * @return a boolean indicating if given error was handled. Default implementation returns false
-	 */
-	protected boolean onUncaughtError(HttpExchange exchange, Throwable throwable) {
-		return false;
-	}
-
-	/**
-	 * Called upon a error thrown due to client request.
-	 * Default implementation does nothing.
-	 * @param req HTTP request
-	 * @param error client error.
-	 */
-	protected void onClientError(HttpServletRequest req, ClientException error) {}
-	
-	@Override
-	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!lazyInitializer.isInitialized())
-			lazyInitializer.initialize();
-
-		Action action = dispatcher.getAction(req);
-
-		HttpExchange exchange = new HttpExchange(req, resp);
-
-		if (action == null) {
-			onNotFound(exchange);
-		} else {
-			try {
-				action.processRequest(exchange);
-			} catch (Throwable t) { 
-				Throwable cause = t.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeError
-				
-				if (cause == null)
-					cause = t;
-				
-				try {
-					throw cause;
-				} catch (ClientException ex) {
-					onClientError(req, ex);
-					
-					resp.setStatus(ex.getHttpsStatus());
-					Integer appErrorCode = ex.getAppStatus();
-					resp.getWriter().printf(
-						"%s%s", 
-						appErrorCode != null ? String.format("%d:", appErrorCode) : "",
-						ex.getMessage()
-					);
-				} catch (Throwable ex) {
-					if (!onUncaughtError(exchange, cause)) {
-						if (ex instanceof RuntimeException)
-							throw (RuntimeException)ex;
-						
-						if (ex instanceof ServletException)
-							throw (ServletException) ex;
-
-						if (ex instanceof IOException)
-							throw (IOException) ex;
-						
-						throw new ServletException(ex);
 					}
 				}
 			}

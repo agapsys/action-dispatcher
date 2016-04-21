@@ -31,7 +31,7 @@ public @interface WebAction {
 	/** @return Accepted HTTP methods */
 	HttpMethod[] httpMethods()    default {HttpMethod.GET};
 	
-	/** @return name of the mapping. Passing an null/empty string will use the method name as URL mapping. */
+	/** @return name of the mapping. Passing an null/empty string will use the method name as path mapping. */
 	String       mapping()       default "";
 	
 	/** @return a boolean indicating if annotated method will be the default action handled by servlet. */
