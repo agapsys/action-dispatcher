@@ -86,7 +86,7 @@ public class Controller extends ActionServlet {
 		public void processRequest(HttpExchange exchange) {
 			try {
 				Object returnedObj = method.invoke(Controller.this, exchange.getRequest());
-				if (returnedObj == null && method.getReturnType() == Void.class)
+				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
 				
 				serializer.getInstance().writeObject(exchange.getResponse(), returnedObj);
