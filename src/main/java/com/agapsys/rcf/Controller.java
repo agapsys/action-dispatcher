@@ -61,7 +61,7 @@ public class Controller extends ActionServlet {
 
 		@Override
 		protected ObjectSerializer getLazyInstance() {
-			return geCustomSerializer();
+			return getCustomSerializer();
 		}
 
 	};
@@ -110,7 +110,7 @@ public class Controller extends ActionServlet {
 	 *
 	 * @return control's default object serializer.
 	 */
-	protected ObjectSerializer geCustomSerializer() {
+	protected ObjectSerializer getCustomSerializer() {
 		return DEFAULT_SERIALIZER;
 	}
 
