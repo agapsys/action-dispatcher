@@ -15,6 +15,7 @@
  */
 package com.agapsys.rcf;
 
+import com.agapsys.rcf.exceptions.BadRequestException;
 import com.agapsys.rcf.exceptions.ClientException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -33,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 public class Controller extends ActionServlet {
 
 	// CLASS SCOPE =============================================================
-	private static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
+	public static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
 
 	/**
 	 * Checks if an annotated method signature matches with required one.
@@ -60,7 +61,7 @@ public class Controller extends ActionServlet {
 
 		@Override
 		protected ObjectSerializer getLazyInstance() {
-			return getSerializer();
+			return geCustomSerializer();
 		}
 
 	};
@@ -107,7 +108,7 @@ public class Controller extends ActionServlet {
 	 *
 	 * @return control's default object serializer.
 	 */
-	protected ObjectSerializer getSerializer() {
+	protected ObjectSerializer geCustomSerializer() {
 		return DEFAULT_SERIALIZER;
 	}
 
@@ -177,6 +178,18 @@ public class Controller extends ActionServlet {
 		return false;
 	}
 
+	/**
+	 * Reads an objected send with the request
+	 * @param <T> object type
+	 * @param req HTTP request
+	 * @param targetClass object class
+	 * @return read object
+	 * @throws BadRequestException if it was not possible to read an object of given type.
+	 */
+	protected <T> T readObject(HttpServletRequest req, Class<T> targetClass) throws BadRequestException {
+		return serializer.getInstance().readObject(req, targetClass);
+	}
+	
 	@Override
 	protected final boolean onUncaughtError(HttpExchange exchange, Throwable throwable) throws ServletException, IOException {
 		super.onUncaughtError(exchange, throwable);
