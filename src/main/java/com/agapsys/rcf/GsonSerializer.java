@@ -211,16 +211,12 @@ public class GsonSerializer implements JsonSerializer {
 	}
 
 	@Override
-	public void writeObject(HttpServletResponse resp, Object object) {
+	public void writeObject(HttpServletResponse resp, Object object) throws IOException {
 		resp.setContentType(JSON_CONTENT_TYPE);
 		resp.setCharacterEncoding(JSON_ENCODING);
 
 		PrintWriter out;
-		try {
-			out = resp.getWriter();
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
+		out = resp.getWriter();
 		String json = _getGson().toJson(object);
 		out.write(json);
 	}

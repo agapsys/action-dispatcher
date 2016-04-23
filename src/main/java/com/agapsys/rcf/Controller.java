@@ -84,7 +84,7 @@ public class Controller extends ActionServlet {
 		}
 
 		@Override
-		public void processRequest(HttpExchange exchange) {
+		public void processRequest(HttpExchange exchange) throws Throwable {
 			try {
 				Object passedParam = method.getParameterTypes()[0].equals(HttpExchange.class) ? exchange : exchange.getRequest();
 				
@@ -190,6 +190,17 @@ public class Controller extends ActionServlet {
 	 */
 	protected <T> T readObject(HttpServletRequest req, Class<T> targetClass) throws BadRequestException {
 		return serializer.getInstance().readObject(req, targetClass);
+	}
+	
+	/**
+	 * Writes an object into response
+	 * 
+	 * @param resp HTTP response
+	 * @param obj object to be written
+	 * @throws IOException if an error happened during writing operation
+	 */
+	protected void writeObject(HttpServletResponse resp, Object obj) throws IOException {
+		serializer.getInstance().writeObject(resp, obj);
 	}
 	
 	@Override

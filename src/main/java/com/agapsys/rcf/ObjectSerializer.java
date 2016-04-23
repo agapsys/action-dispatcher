@@ -17,6 +17,7 @@
 package com.agapsys.rcf;
 
 import com.agapsys.rcf.exceptions.BadRequestException;
+import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,6 +41,7 @@ public interface ObjectSerializer {
 	 * Sends given object to the client (contained in the response).
 	 * @param resp HTTP response
 	 * @param object object to be sent
+	 * @throws IOException if an error happened during writing operation
 	 */
-	public void writeObject(HttpServletResponse resp, Object object);
+	public void writeObject(HttpServletResponse resp, Object object) throws IOException ;
 }
