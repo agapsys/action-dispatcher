@@ -52,7 +52,7 @@ public class Controller extends ActionServlet {
 		int indexOfCloseParenthesis = signature.indexOf(")");
 
 		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis);
-		return args.equals(HttpServletRequest.class.getName());
+		return args.equals(HttpServletRequest.class.getName()) || args.equals(HttpExchange.class.getName());
 	}
 	// =========================================================================
 
@@ -86,7 +86,9 @@ public class Controller extends ActionServlet {
 		@Override
 		public void processRequest(HttpExchange exchange) {
 			try {
-				Object returnedObj = method.invoke(Controller.this, exchange.getRequest());
+				Object passedParam = method.getParameterTypes()[0].equals(HttpExchange.class) ? exchange : exchange.getRequest();
+				
+				Object returnedObj = method.invoke(Controller.this, passedParam);
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
 				
