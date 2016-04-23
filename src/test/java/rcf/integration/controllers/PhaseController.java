@@ -20,6 +20,9 @@ import com.agapsys.rcf.HttpExchange;
 import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import rcf.integration.ControllerGeneralTest;
 
@@ -27,30 +30,28 @@ import rcf.integration.ControllerGeneralTest;
 public class PhaseController extends PublicController {
 
 	@Override
-	public void beforeAction(HttpExchange exchange){
+	public void beforeAction(HttpExchange exchange) throws ServletException, IOException {
 		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
 	}
 
 	@Override
-	public void afterAction(HttpExchange exchange){
+	public void afterAction(HttpExchange exchange) throws ServletException, IOException {
 		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
 	}
 
 	@Override
-	public void onNotFound(HttpExchange exchange){
+	public void onNotFound(HttpExchange exchange) throws ServletException, IOException {
 		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
 		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
 	}
 
-	@Override
 	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
-	public void get(HttpExchange exchange) {
-		processRequest(ControllerGeneralTest.PHASE_DEFAULT_URL, exchange);
+	public String get(HttpServletRequest req) {
+		return ControllerGeneralTest.PHASE_DEFAULT_URL;
 	}
 
-	@Override
 	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
-	public void post(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PHASE_DEFAULT_URL, exchange);
+	public String post(HttpServletRequest req){
+		return ControllerGeneralTest.PHASE_DEFAULT_URL;
 	}
 }

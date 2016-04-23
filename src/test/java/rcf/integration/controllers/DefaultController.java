@@ -16,23 +16,23 @@
 
 package rcf.integration.controllers;
 
-import com.agapsys.rcf.HttpExchange;
 import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
+import javax.servlet.http.HttpServletRequest;
 import rcf.integration.ControllerGeneralTest;
 
 @WebController("default")
 public class DefaultController extends PublicController {
-	@Override
+
 	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
-	public void get(HttpExchange exchange) {
-		processRequest(ControllerGeneralTest.DEFAULT_ACTION_GET_URL, exchange);
+	public String get(HttpServletRequest req) {
+		return ControllerGeneralTest.DEFAULT_ACTION_GET_URL;
 	}
 
-	@Override
+
 	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
-	public void post(HttpExchange exchange) {
-		processRequest(ControllerGeneralTest.DEFAULT_ACTION_POST_URL, exchange);
+	public String post(HttpServletRequest req) {
+		return ControllerGeneralTest.DEFAULT_ACTION_POST_URL;
 	}
 }

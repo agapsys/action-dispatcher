@@ -16,14 +16,12 @@
 package rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.HttpExchange;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
+import javax.servlet.http.HttpServletRequest;
 
 @WebController
 public class Controller2 extends Controller{
 	@WebAction
-	public void get(HttpExchange exchange) {
-		exchange.getResponse().setStatus(200);
-	}
+	public void get(HttpServletRequest req) {}
 }

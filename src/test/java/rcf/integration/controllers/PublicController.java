@@ -17,59 +17,48 @@
 package rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.HttpExchange;
 import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebActions;
 import com.agapsys.rcf.WebController;
-import java.io.IOException;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import rcf.integration.ControllerGeneralTest;
 
 @WebController("public")
 public class PublicController extends Controller {
 
-	protected void processRequest(String msg, HttpExchange exchange){
-		exchange.getResponse().setStatus(HttpServletResponse.SC_OK);
-		try {
-			exchange.getResponse().getWriter().print(msg);
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-
 	@WebAction
-	public void get(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_GET_URL, exchange);
+	public String get(HttpServletRequest req){
+		return ControllerGeneralTest.PUBLIC_GET_URL;
 	}
 
-	@WebAction(mapping = "mapped/get")
-	public void mappedGet(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_MAPPED_GET_URL, exchange);
+	@WebAction(mapping = "/mapped/get")
+	public String mappedGet(HttpServletRequest exchange){
+		return ControllerGeneralTest.PUBLIC_MAPPED_GET_URL;
 	}
 
 	@WebAction(mapping = "/mapped/get2")
-	public void mappedWithSlash(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL, exchange);
+	public String mappedWithSlash(HttpServletRequest req){
+		return ControllerGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL;
 	}
 
 	@WebAction(httpMethods = HttpMethod.POST)
-	public void post(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_POST_URL, exchange);
+	public String post(HttpServletRequest req){
+		return ControllerGeneralTest.PUBLIC_POST_URL;
 	}
 
 	@WebAction(httpMethods = HttpMethod.POST, mapping = "mapped/post")
-	public void mappedPost(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_MAPPED_POST_URL, exchange);
+	public String mappedPost(HttpServletRequest req){
+		return ControllerGeneralTest.PUBLIC_MAPPED_POST_URL;
 	}
 
 	@WebActions({@WebAction(httpMethods = HttpMethod.GET),@WebAction(httpMethods = HttpMethod.POST)})
-	public void repeatableGetOrPost(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_WEBACTIONS_URL + exchange.getRequest().getMethod(), exchange);
+	public String repeatableGetOrPost(HttpServletRequest req){
+		return ControllerGeneralTest.PUBLIC_WEBACTIONS_URL + req.getMethod();
 	}
 
 	@WebAction(httpMethods = {HttpMethod.GET, HttpMethod.POST})
-	public void multipleMethods(HttpExchange exchange){
-		processRequest(ControllerGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + exchange.getRequest().getMethod(), exchange);
+	public String multipleMethods(HttpServletRequest req){
+		return ControllerGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + req.getMethod();
 	}
 }

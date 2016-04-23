@@ -19,15 +19,19 @@ public class ActionServlet extends HttpServlet {
 		}
 	};
 
-	protected void onInit() {}
+	protected void onInit() {
+	}
 
 	/**
 	 * Called upon endpoint not found
 	 *
 	 * @param exchange HTTP exchange. Default implementation sends a
 	 * {@linkplain HttpServletResponse#SC_NOT_FOUND} status.
+	 * @throws IOException if an input or output error occurs while the servlet
+	 * is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void onNotFound(HttpExchange exchange) {
+	protected void onNotFound(HttpExchange exchange) throws ServletException, IOException {
 		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 
@@ -37,10 +41,13 @@ public class ActionServlet extends HttpServlet {
 	 *
 	 * @param exchange HTTP exchange
 	 * @param throwable error
+	 * @throws IOException if an input or output error occurs while the servlet
+	 * is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled
 	 * @return a boolean indicating if given error was handled. Default
 	 * implementation returns false
 	 */
-	protected boolean onUncaughtError(HttpExchange exchange, Throwable throwable) {
+	protected boolean onUncaughtError(HttpExchange exchange, Throwable throwable) throws ServletException, IOException {
 		return false;
 	}
 
@@ -75,8 +82,11 @@ public class ActionServlet extends HttpServlet {
 	 * (see {@link SecurityManager}). Default implementation does nothing.
 	 *
 	 * @param exchange HTTP exchange
+	 * @throws IOException if an input or output error occurs while the servlet
+	 * is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void beforeAction(HttpExchange exchange) {
+	protected void beforeAction(HttpExchange exchange) throws ServletException, IOException {
 	}
 
 	/**
@@ -86,14 +96,18 @@ public class ActionServlet extends HttpServlet {
 	 * processed. Default implementation does nothing.
 	 *
 	 * @param exchange HTTP exchange
+	 * @throws IOException if an input or output error occurs while the servlet
+	 * is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void afterAction(HttpExchange exchange) {
+	protected void afterAction(HttpExchange exchange) throws ServletException, IOException {
 	}
 
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!lazyInitializer.isInitialized())
+		if (!lazyInitializer.isInitialized()) {
 			lazyInitializer.initialize();
+		}
 
 		Action action = actionDispatcher.getAction(req);
 

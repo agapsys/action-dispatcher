@@ -60,6 +60,14 @@ limitations under the License.
 	</organization>
 
 	<dependencies>
+		<!-- Compile dependencies -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.6.2</version>
+			<scope>compile</scope>
+		</dependency>
+		
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.agapsys.libs</groupId>
