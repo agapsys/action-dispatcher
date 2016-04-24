@@ -52,7 +52,7 @@ public class Controller extends ActionServlet {
 		int indexOfCloseParenthesis = signature.indexOf(")");
 
 		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis);
-		return args.equals(HttpServletRequest.class.getName()) || args.equals(HttpExchange.class.getName());
+		return args.equals(HttpServletRequest.class.getName()) || args.equals(HttpServletResponse.class.getName()) ||  args.equals(HttpExchange.class.getName());
 	}
 	// =========================================================================
 
@@ -86,7 +86,16 @@ public class Controller extends ActionServlet {
 		@Override
 		public void processRequest(HttpExchange exchange) throws Throwable {
 			try {
-				Object passedParam = method.getParameterTypes()[0].equals(HttpExchange.class) ? exchange : exchange.getRequest();
+				Class<?> type = method.getParameterTypes()[0];
+				Object passedParam;
+				
+				if (type == HttpExchange.class) {
+					passedParam = exchange;
+				} else if (type == HttpServletRequest.class) {
+					passedParam = exchange.getRequest();
+				} else {
+					passedParam = exchange.getResponse();
+				}
 				
 				Object returnedObj = method.invoke(Controller.this, passedParam);
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
@@ -208,6 +217,7 @@ public class Controller extends ActionServlet {
 		super.onUncaughtError(exchange, throwable);
 
 		Throwable cause = throwable.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
+		
 		if (cause == null) {
 			cause = throwable;
 		}
