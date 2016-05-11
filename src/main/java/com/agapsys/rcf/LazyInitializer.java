@@ -56,7 +56,7 @@ public abstract class LazyInitializer<T> {
 	
 	/** 
 	 * Return an instance associated with this initializer.
-	 * Returned instance will be obtained via {@linkplain LazyInitializer#getLazyInstance(Object...)}.
+	 * Returned instance will be obtained via {@linkplain LazyInitializer#getLazyInstance()}.
 	 * @return the instance associated with this initializer.
 	 */
 	public final T getInstance() {

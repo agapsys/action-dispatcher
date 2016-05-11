@@ -22,7 +22,6 @@ import java.lang.annotation.Target;
 
 /**
  * Web action annotation.
- * Every method of an {@linkplain ActionServlet} (with the signature <code>public void methodName(HttpExchange)</code>) annotated with {@linkplain WebAction} or {@linkplain WebActions} will be mapped to an {@linkplain MethodCallerAction}
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
