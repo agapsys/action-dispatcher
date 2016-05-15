@@ -20,7 +20,6 @@ import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.exceptions.ForbiddenException;
 import com.agapsys.rcf.exceptions.UnauthorizedException;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
@@ -38,8 +37,10 @@ public class Controller extends ActionServlet {
 	// CLASS SCOPE =============================================================	
 	public static final String SESSION_ATTR_USER = Controller.class.getName() + ".sessionUser";
 	
+	private static final String[] EMPTY_STR_ARRAY = new String[] {};
+	
 	public static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
-
+	
 	/**
 	 * Checks if an annotated method signature matches with required one.
 	 *
@@ -71,9 +72,7 @@ public class Controller extends ActionServlet {
 	};
 
 	private class MethodCallerAction implements Action {
-		private final String[] EMPTY_STR_ARRAY = new String[] {};
-
-		private final String[] requiredUserRoles;
+		private final String[] requiredRoles;
 		private final Method   method;
 
 		private MethodCallerAction(Method method, boolean secured, String[] requiredUserRoles) {
@@ -84,7 +83,7 @@ public class Controller extends ActionServlet {
 				throw new IllegalArgumentException("requiredUserRoles cannot be null");
 			
 			this.method = method;
-			this.requiredUserRoles = requiredUserRoles;
+			this.requiredRoles = requiredUserRoles;
 		}
 		
 		/**
@@ -114,17 +113,17 @@ public class Controller extends ActionServlet {
 		}
 		
 		private void checkSecurity(HttpExchange exchange) throws Throwable {
-			if (requiredUserRoles != null) {
+			if (requiredRoles != null) {
 				User user = getUser(exchange.getRequest());
 				
 				if (user == null)
 					throw new UnauthorizedException();
 				
-				if (requiredUserRoles.length > 0) {
+				if (requiredRoles.length > 0) {
 					String[] userRoles = user.getRoles();
 					if (userRoles == null) userRoles = EMPTY_STR_ARRAY;
 					
-					for (String requiredUserRole : requiredUserRoles) {
+					for (String requiredUserRole : requiredRoles) {
 						if (!belongsToArray(requiredUserRole, userRoles))
 							throw new ForbiddenException();
 					}
@@ -137,18 +136,25 @@ public class Controller extends ActionServlet {
 			try {
 				checkSecurity(exchange);
 				
-				Class<?> type = method.getParameterTypes()[0];
 				Object passedParam;
 				
-				if (type == HttpExchange.class) {
-					passedParam = exchange;
-				} else if (type == HttpServletRequest.class) {
-					passedParam = exchange.getRequest();
+				if (method.getParameterCount() > 0) {
+					Class<?> type = method.getParameterTypes()[0];
+
+					if (type == HttpExchange.class) {
+						passedParam = exchange;
+					} else if (type == HttpServletRequest.class) {
+						passedParam = exchange.getRequest();
+					} else {
+						passedParam = exchange.getResponse();
+					}
 				} else {
-					passedParam = exchange.getResponse();
+					passedParam = null;
 				}
 				
-				Object returnedObj = method.invoke(Controller.this, passedParam);
+				Object[] args = passedParam != null ? new Object[] {passedParam} : new Object[] {};
+				
+				Object returnedObj = method.invoke(Controller.this, args);
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
 				
@@ -181,22 +187,20 @@ public class Controller extends ActionServlet {
 	@Override
 	protected void onInit() {
 		super.onInit();
-		final WebAction[] EMPTY_WEB_ACTION_ARRAY = new WebAction[]{};
 		
 		Class<? extends Controller> actionServletClass = Controller.this.getClass();
-
+		
 		// Check for WebAction annotations...
 		Method[] methods = actionServletClass.getDeclaredMethods();
+
 		for (Method method : methods) {
-			
 			WebActions webActionsAnnotation = method.getAnnotation(WebActions.class);
-			
 			WebAction[] webActions;
 			
 			if (webActionsAnnotation == null) {
 				WebAction webAction = method.getAnnotation(WebAction.class);
 				if (webAction == null) {
-					webActions = EMPTY_WEB_ACTION_ARRAY;
+					webActions = new WebAction[] {};
 				} else {
 					webActions = new WebAction[] {webAction};
 				}
@@ -213,17 +217,17 @@ public class Controller extends ActionServlet {
 
 				if (path.isEmpty())
 					path = method.getName();
-				
-				SecuredAction securedAction = method.getAnnotation(SecuredAction.class);
 
 				MethodCallerAction action;
 				
-				if (securedAction == null) {
+				boolean isSecured = webAction.secured() || webAction.requiredRoles().length > 0;
+
+				if (!isSecured) {
 					action = new MethodCallerAction(method);
 				} else {
-					action = new MethodCallerAction(method, securedAction.requiredUserRoles());
+					action = new MethodCallerAction(method, webAction.requiredRoles());
 				}
-					
+
 				for (HttpMethod httpMethod : httpMethods) {
 					registerAction(httpMethod, path, action);
 
@@ -285,10 +289,10 @@ public class Controller extends ActionServlet {
 	/**
 	 * Sets the user associated with a request.
 	 * @param user application user.
-	 * @param req HTTP request.
+	 * @param exchange HTTP exchange.
 	 */
-	protected void setUser(User user, HttpServletRequest req) {
-		req.getSession().setAttribute(SESSION_ATTR_USER, user);
+	protected void setUser(HttpExchange exchange, User user) {
+		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
 	}
 	
 	@Override

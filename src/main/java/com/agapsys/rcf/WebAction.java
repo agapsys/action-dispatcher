@@ -35,4 +35,10 @@ public @interface WebAction {
 	
 	/** @return a boolean indicating if annotated method will be the default action handled by servlet. */
 	boolean      defaultAction() default false;
+	
+	/** @return a boolean indicating if action execution requires a logged user. An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
+	boolean      secured() default false;
+	
+	/** @return required roles for action execution.  An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
+	String[]     requiredRoles() default {};
 }

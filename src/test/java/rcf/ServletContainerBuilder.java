@@ -23,7 +23,7 @@ import com.agapsys.rcf.WebController;
  *	Utility class to generate container with controllers
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class ServletContainerBuilder extends com.agapsys.sevlet.container.ServletContainerBuilder {
+public class ServletContainerBuilder extends com.agapsys.sevlet.container.ServletContainerBuilder<ServletContainerBuilder> {
 
 	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass, String name) {
 		return (ServletContainerBuilder) super.registerServlet(controllerClass, String.format("/%s/*", name));
