@@ -15,10 +15,13 @@
  */
 package com.agapsys.rcf;
 
-class IllegalArgumentException extends java.lang.IllegalArgumentException {
+import java.io.Serializable;
 
-	public IllegalArgumentException(String msg, Object...msgArgs) {
-		super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg);
-	}
-	
+/**
+ *
+ * Represents an user accessing the application.
+ * @author Leandro Oliveira (leandro@agapsys.com)
+ */
+public interface User extends Serializable {
+	public String[] getRoles();
 }

@@ -17,6 +17,8 @@ package com.agapsys.rcf;
 
 import com.agapsys.rcf.exceptions.BadRequestException;
 import com.agapsys.rcf.exceptions.ClientException;
+import com.agapsys.rcf.exceptions.ForbiddenException;
+import com.agapsys.rcf.exceptions.UnauthorizedException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +35,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class Controller extends ActionServlet {
 
-	// CLASS SCOPE =============================================================
+	// CLASS SCOPE =============================================================	
+	public static final String SESSION_ATTR_USER = Controller.class.getName() + ".sessionUser";
+	
 	public static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
 
 	/**
@@ -51,8 +55,8 @@ public class Controller extends ActionServlet {
 		int indexOfOpenParenthesis = signature.indexOf("(");
 		int indexOfCloseParenthesis = signature.indexOf(")");
 
-		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis);
-		return args.equals(HttpServletRequest.class.getName()) || args.equals(HttpServletResponse.class.getName()) ||  args.equals(HttpExchange.class.getName());
+		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
+		return args.isEmpty() || args.equals(HttpServletRequest.class.getName()) || args.equals(HttpServletResponse.class.getName()) ||  args.equals(HttpExchange.class.getName());
 	}
 	// =========================================================================
 
@@ -67,25 +71,72 @@ public class Controller extends ActionServlet {
 	};
 
 	private class MethodCallerAction implements Action {
+		private final String[] EMPTY_STR_ARRAY = new String[] {};
 
-		private final Method method;
+		private final String[] requiredUserRoles;
+		private final Method   method;
 
-		/**
-		 * Constructor.
-		 *
-		 * @param method mapped method
-		 */
-		public MethodCallerAction(Method method) {
-
+		private MethodCallerAction(Method method, boolean secured, String[] requiredUserRoles) {
 			if (method == null)
 				throw new IllegalArgumentException("Method cannot be null");
 
+			if (secured && requiredUserRoles == null)
+				throw new IllegalArgumentException("requiredUserRoles cannot be null");
+			
 			this.method = method;
+			this.requiredUserRoles = requiredUserRoles;
+		}
+		
+		/**
+		 * Creates an unprotected action.
+		 * @param method method associated with the action.
+		 */
+		public MethodCallerAction(Method method) {
+			this(method, false, null);
 		}
 
+		/**
+		 * Creates a secured action.
+		 * @param method method associated with the action.
+		 * @param requiredUserRoles required user roles in order to process the action.
+		 */
+		public MethodCallerAction(Method method, String[] requiredUserRoles) {
+			this(method, true, requiredUserRoles);
+		}
+		
+		private boolean belongsToArray(String test, String[] array) {
+			for (String element : array) {
+				if (test.equals(element))
+					return true;
+			}
+			
+			return false;
+		}
+		
+		private void checkSecurity(HttpExchange exchange) throws Throwable {
+			if (requiredUserRoles != null) {
+				User user = getUser(exchange.getRequest());
+				
+				if (user == null)
+					throw new UnauthorizedException();
+				
+				if (requiredUserRoles.length > 0) {
+					String[] userRoles = user.getRoles();
+					if (userRoles == null) userRoles = EMPTY_STR_ARRAY;
+					
+					for (String requiredUserRole : requiredUserRoles) {
+						if (!belongsToArray(requiredUserRole, userRoles))
+							throw new ForbiddenException();
+					}
+				}
+			}
+		}
+		
 		@Override
 		public void processRequest(HttpExchange exchange) throws Throwable {
 			try {
+				checkSecurity(exchange);
+				
 				Class<?> type = method.getParameterTypes()[0];
 				Object passedParam;
 				
@@ -130,44 +181,54 @@ public class Controller extends ActionServlet {
 	@Override
 	protected void onInit() {
 		super.onInit();
-
+		final WebAction[] EMPTY_WEB_ACTION_ARRAY = new WebAction[]{};
+		
 		Class<? extends Controller> actionServletClass = Controller.this.getClass();
 
 		// Check for WebAction annotations...
 		Method[] methods = actionServletClass.getDeclaredMethods();
 		for (Method method : methods) {
-			Annotation[] annotations = method.getAnnotations();
-			for (Annotation annotation : annotations) {
-				if ((annotation instanceof WebAction) || (annotation instanceof WebActions)) {
-					if (!matchSignature(method)) {
-						throw new RuntimeException(String.format("Invalid signature (%s). Required: public <DtoObject_or_subclass> <method_name>(%s)", method.toGenericString(), HttpExchange.class.getName()));
-					}
+			
+			WebActions webActionsAnnotation = method.getAnnotation(WebActions.class);
+			
+			WebAction[] webActions;
+			
+			if (webActionsAnnotation == null) {
+				WebAction webAction = method.getAnnotation(WebAction.class);
+				if (webAction == null) {
+					webActions = EMPTY_WEB_ACTION_ARRAY;
+				} else {
+					webActions = new WebAction[] {webAction};
+				}
+			} else {
+				webActions = webActionsAnnotation.value();
+			}
+			
+			for (WebAction webAction : webActions) {
+				if (!matchSignature(method))
+					throw new RuntimeException(String.format("Invalid action signature (%s).", method.toGenericString()));
 
-					WebAction[] webActions;
+				HttpMethod[] httpMethods = webAction.httpMethods();
+				String path = webAction.mapping().trim();
 
-					if (annotation instanceof WebActions) {
-						webActions = ((WebActions) annotation).value();
-					} else {
-						webActions = new WebAction[]{(WebAction) annotation};
-					}
+				if (path.isEmpty())
+					path = method.getName();
+				
+				SecuredAction securedAction = method.getAnnotation(SecuredAction.class);
 
-					for (WebAction webAction : webActions) {
-						HttpMethod[] httpMethods = webAction.httpMethods();
-						String path = webAction.mapping();
+				MethodCallerAction action;
+				
+				if (securedAction == null) {
+					action = new MethodCallerAction(method);
+				} else {
+					action = new MethodCallerAction(method, securedAction.requiredUserRoles());
+				}
+					
+				for (HttpMethod httpMethod : httpMethods) {
+					registerAction(httpMethod, path, action);
 
-						if (path.trim().isEmpty()) {
-							path = method.getName();
-						}
-
-						MethodCallerAction action = new MethodCallerAction(method);
-
-						for (HttpMethod httpMethod : httpMethods) {
-							registerAction(httpMethod, path, action);
-
-							if (webAction.defaultAction()) {
-								registerAction(httpMethod, ActionDispatcher.ROOT_PATH, action);
-							}
-						}
+					if (webAction.defaultAction()) {
+						registerAction(httpMethod, ActionDispatcher.ROOT_PATH, action);
 					}
 				}
 			}
@@ -210,6 +271,24 @@ public class Controller extends ActionServlet {
 	 */
 	protected void writeObject(HttpServletResponse resp, Object obj) throws IOException {
 		serializer.getInstance().writeObject(resp, obj);
+	}
+	
+	/**
+	 * Returns the user associated with given request.
+	 * @param req HTTP request.
+	 * @return the user associated with given request. Default implementation returns the user stored in session attribute {@linkplain Controller#SESSION_ATTR_USER}.
+	 */
+	protected User getUser(HttpServletRequest req) {
+		return (User) req.getSession().getAttribute(SESSION_ATTR_USER);
+	}
+	
+	/**
+	 * Sets the user associated with a request.
+	 * @param user application user.
+	 * @param req HTTP request.
+	 */
+	protected void setUser(User user, HttpServletRequest req) {
+		req.getSession().setAttribute(SESSION_ATTR_USER, user);
 	}
 	
 	@Override

@@ -62,7 +62,7 @@ public class ActionDispatcher {
 		}
 
 		if (map.containsKey(url)) {
-			throw new IllegalArgumentException("Duplicate method/URL: %s/%s", httpMethod.name(), url);
+			throw new IllegalArgumentException(String.format("Duplicate method/URL: %s/%s", httpMethod.name(), url));
 		}
 
 		map.put(url, action);
