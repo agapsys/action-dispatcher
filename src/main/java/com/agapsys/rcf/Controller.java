@@ -15,7 +15,6 @@
  */
 package com.agapsys.rcf;
 
-import com.agapsys.rcf.exceptions.BadRequestException;
 import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.exceptions.ForbiddenException;
 import com.agapsys.rcf.exceptions.UnauthorizedException;
@@ -32,15 +31,11 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public class Controller extends ActionServlet {
+public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 	// CLASS SCOPE =============================================================	
-	public static final String SESSION_ATTR_USER = Controller.class.getName() + ".sessionUser";
-	
 	private static final String[] EMPTY_STR_ARRAY = new String[] {};
-	
-	public static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
-	
+		
 	/**
 	 * Checks if an annotated method signature matches with required one.
 	 *
@@ -57,20 +52,19 @@ public class Controller extends ActionServlet {
 		int indexOfCloseParenthesis = signature.indexOf(")");
 
 		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
-		return args.isEmpty() || args.equals(HttpServletRequest.class.getName()) || args.equals(HttpServletResponse.class.getName()) ||  args.equals(HttpExchange.class.getName());
+		if (args.indexOf(",") != -1) return false; // <-- only one arg method is accepted
+		if (args.isEmpty()) return true; // <-- accepts no args 
+		
+		try {
+			Class<?> clazz = Class.forName(args);
+			return HttpExchange.class.isAssignableFrom(clazz) || HttpServletRequest.class.isAssignableFrom(clazz) || HttpServletResponse.class.isAssignableFrom(clazz);			
+		} catch (ClassNotFoundException ex) {
+			return false;
+		}
 	}
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private final LazyInitializer<ObjectSerializer> serializer = new LazyInitializer<ObjectSerializer>() {
-
-		@Override
-		protected ObjectSerializer getLazyInstance() {
-			return getCustomSerializer();
-		}
-
-	};
-
 	private class MethodCallerAction implements Action {
 		private final String[] requiredRoles;
 		private final Method   method;
@@ -114,7 +108,7 @@ public class Controller extends ActionServlet {
 		
 		private void checkSecurity(HttpExchange exchange) throws Throwable {
 			if (requiredRoles != null) {
-				User user = getUser(exchange.getRequest());
+				User user = exchange.getCurrentUser();
 				
 				if (user == null)
 					throw new UnauthorizedException();
@@ -141,12 +135,14 @@ public class Controller extends ActionServlet {
 				if (method.getParameterCount() > 0) {
 					Class<?> type = method.getParameterTypes()[0];
 
-					if (type == HttpExchange.class) {
+					if (HttpExchange.class.isAssignableFrom(type)) {
 						passedParam = exchange;
-					} else if (type == HttpServletRequest.class) {
+					} else if (HttpServletRequest.class.isAssignableFrom(type)) {
 						passedParam = exchange.getRequest();
-					} else {
+					} else if (HttpServletResponse.class.isAssignableFrom(type)) {
 						passedParam = exchange.getResponse();
+					} else {
+						throw new RuntimeException("Unsupported arg type: " + type.getName());
 					}
 				} else {
 					passedParam = null;
@@ -158,7 +154,7 @@ public class Controller extends ActionServlet {
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
 				
-				serializer.getInstance().writeObject(exchange.getResponse(), returnedObj);
+				exchange.writeObject(returnedObj);
 
 			} catch (InvocationTargetException | IllegalAccessException ex) {
 				if (ex instanceof InvocationTargetException) {
@@ -170,22 +166,8 @@ public class Controller extends ActionServlet {
 		}
 	}
 
-	/**
-	 * Returns control's default object serializer. This method will be called
-	 * only once.
-	 *
-	 * @return control's default object serializer.
-	 */
-	protected ObjectSerializer getCustomSerializer() {
-		return DEFAULT_SERIALIZER;
-	}
-
-	/**
-	 * Called during controller initialization. Subclasses shall call this
-	 * implementation.
-	 */
 	@Override
-	protected void onInit() {
+	protected final void onInit() {
 		super.onInit();
 		
 		Class<? extends Controller> actionServletClass = Controller.this.getClass();
@@ -237,8 +219,15 @@ public class Controller extends ActionServlet {
 				}
 			}
 		}
+		
+		onControllerInit();
 	}
 
+	/**
+	 * Called during controller initialization.
+	 */
+	protected void onControllerInit() {}
+	
 	/**
 	 * Called upon controller uncaught error.
 	 *
@@ -250,53 +239,12 @@ public class Controller extends ActionServlet {
 	 * @return a boolean indicating if given error was handled. Default
 	 * implementation returns false
 	 */
-	protected boolean onControllerError(HttpExchange exchange, Throwable throwable) throws ServletException, IOException {
+	protected boolean onControllerError(HE exchange, Throwable throwable) throws ServletException, IOException {
 		return false;
 	}
 
-	/**
-	 * Reads an objected send with the request
-	 * @param <T> object type
-	 * @param req HTTP request
-	 * @param targetClass object class
-	 * @return read object
-	 * @throws BadRequestException if it was not possible to read an object of given type.
-	 */
-	protected <T> T readObject(HttpServletRequest req, Class<T> targetClass) throws BadRequestException {
-		return serializer.getInstance().readObject(req, targetClass);
-	}
-	
-	/**
-	 * Writes an object into response
-	 * 
-	 * @param resp HTTP response
-	 * @param obj object to be written
-	 * @throws IOException if an error happened during writing operation
-	 */
-	protected void writeObject(HttpServletResponse resp, Object obj) throws IOException {
-		serializer.getInstance().writeObject(resp, obj);
-	}
-	
-	/**
-	 * Returns the user associated with given request.
-	 * @param req HTTP request.
-	 * @return the user associated with given request. Default implementation returns the user stored in session attribute {@linkplain Controller#SESSION_ATTR_USER}.
-	 */
-	protected User getUser(HttpServletRequest req) {
-		return (User) req.getSession().getAttribute(SESSION_ATTR_USER);
-	}
-	
-	/**
-	 * Sets the user associated with a request.
-	 * @param user application user.
-	 * @param exchange HTTP exchange.
-	 */
-	protected void setUser(HttpExchange exchange, User user) {
-		exchange.getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
-	}
-	
 	@Override
-	protected final boolean onUncaughtError(HttpExchange exchange, Throwable throwable) throws ServletException, IOException {
+	protected final boolean onUncaughtError(HE exchange, Throwable throwable) throws ServletException, IOException {
 		super.onUncaughtError(exchange, throwable);
 
 		Throwable cause = throwable.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
@@ -305,13 +253,12 @@ public class Controller extends ActionServlet {
 			cause = throwable;
 		}
 
-		HttpServletRequest req = exchange.getRequest();
 		HttpServletResponse resp = exchange.getResponse();
 
 		if (cause instanceof ClientException) {
 			ClientException ex = (ClientException) cause;
 
-			onClientError(req, ex);
+			onClientError(exchange, ex);
 
 			resp.setStatus(ex.getHttpsStatus());
 			Integer appStatus = ex.getAppStatus();

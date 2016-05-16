@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class ActionServlet extends HttpServlet {
+public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 
 	private final ActionDispatcher actionDispatcher = new ActionDispatcher();
 	private final LazyInitializer lazyInitializer = new LazyInitializer() {
@@ -19,8 +19,7 @@ public class ActionServlet extends HttpServlet {
 		}
 	};
 
-	protected void onInit() {
-	}
+	protected void onInit() {}
 
 	/**
 	 * Called upon endpoint not found
@@ -31,7 +30,7 @@ public class ActionServlet extends HttpServlet {
 	 * is handling the HTTP request.
 	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void onNotFound(HttpExchange exchange) throws ServletException, IOException {
+	protected void onNotFound(HE exchange) throws ServletException, IOException {
 		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 
@@ -47,7 +46,7 @@ public class ActionServlet extends HttpServlet {
 	 * @return a boolean indicating if given error was handled. Default
 	 * implementation returns false
 	 */
-	protected boolean onUncaughtError(HttpExchange exchange, Throwable throwable) throws ServletException, IOException {
+	protected boolean onUncaughtError(HE exchange, Throwable throwable) throws ServletException, IOException {
 		return false;
 	}
 
@@ -55,11 +54,10 @@ public class ActionServlet extends HttpServlet {
 	 * Called upon a error thrown due to client request. Default implementation
 	 * does nothing.
 	 *
-	 * @param req HTTP request
+	 * @param exchange HTTP exchange
 	 * @param error client error.
 	 */
-	protected void onClientError(HttpServletRequest req, ClientException error) {
-	}
+	protected void onClientError(HE exchange, ClientException error) {}
 
 	/**
 	 * Register an action
@@ -86,8 +84,7 @@ public class ActionServlet extends HttpServlet {
 	 * is handling the HTTP request.
 	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void beforeAction(HttpExchange exchange) throws ServletException, IOException {
-	}
+	protected void beforeAction(HE exchange) throws ServletException, IOException {}
 
 	/**
 	 * Called after an action. This method will be called only if an action
@@ -100,9 +97,18 @@ public class ActionServlet extends HttpServlet {
 	 * is handling the HTTP request.
 	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void afterAction(HttpExchange exchange) throws ServletException, IOException {
-	}
+	protected void afterAction(HE exchange) throws ServletException, IOException {}
 
+	/**
+	 * Returns the HTTP exchange used by this servlet.
+	 * @param req HTTP request.
+	 * @param resp HTTP response.
+	 * @return HTTP exchange.
+	 */
+	protected HE getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
+		return (HE) new HttpExchange(req, resp);
+	}
+	
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (!lazyInitializer.isInitialized()) {
@@ -111,17 +117,17 @@ public class ActionServlet extends HttpServlet {
 
 		Action action = actionDispatcher.getAction(req);
 
-		HttpExchange exchange = new HttpExchange(req, resp);
+		HE exchange = getHttpExchange(req, resp);
 
 		if (action == null) {
 			onNotFound(exchange);
 		} else {
 			try {
 				beforeAction(exchange);
-				action.processRequest(new HttpExchange(req, resp));
+				action.processRequest(exchange);
 				afterAction(exchange);
 			} catch (ClientException ex) {
-				onClientError(req, ex);
+				onClientError(exchange, ex);
 
 				resp.setStatus(ex.getHttpsStatus());
 				Integer appStatus = ex.getAppStatus();

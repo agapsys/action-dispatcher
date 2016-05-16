@@ -17,13 +17,17 @@
 package com.agapsys.rcf;
 
 import com.agapsys.rcf.exceptions.BadRequestException;
+import java.io.IOException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /** Default HttpExchange implementation. */
-public final class HttpExchange {
-	// STATIC SCOPE ============================================================	
+public class HttpExchange {
+	// STATIC SCOPE ============================================================
+	public static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
+	public static final String SESSION_ATTR_USER = HttpExchange.class.getName() + ".sessionUser";
+
 	/**
 	 * @return origin IP
 	 * @param req HTTP request
@@ -169,11 +173,53 @@ public final class HttpExchange {
 		
 		return val;
 	}
+	
+	/**
+	 * Reads an objected send with the request.
+	 * @param <T> object type.
+	 * @param req HTTP request.
+	 * @param targetClass object class.
+	 * @param serializer object serializer.
+	 * @return read object.
+	 * @throws BadRequestException if it was not possible to read an object of given type.
+	 */
+	public <T> T readObject(ObjectSerializer serializer, HttpServletRequest req, Class<T> targetClass) throws BadRequestException {
+		return serializer.readObject(req, targetClass);
+	}
+	
+	/**
+	 * Writes an object into response
+	 * 
+	 * @param serializer object serializer.
+	 * @param resp HTTP response
+	 * @param obj object to be written
+	 * @throws IOException if an error happened during writing operation
+	 */
+	public void writeObject(ObjectSerializer serializer, HttpServletResponse resp, Object obj) throws IOException {
+		serializer.writeObject(resp, obj);
+	}
 	// =========================================================================
 	
 	// INSTANCE SCOPE ==========================================================
 	private final HttpServletRequest req;
 	private final HttpServletResponse resp;
+	private final LazyInitializer<ObjectSerializer> serializer = new LazyInitializer<ObjectSerializer>() {
+
+		@Override
+		protected ObjectSerializer getLazyInstance() {
+			return getObjectSerializer();
+		}
+
+	};
+	
+	/**
+	 * Return the object serializer used by this instance. This method will be called only once.
+	 * @return the object serializer used by this instance.
+	 */
+	protected ObjectSerializer getObjectSerializer() {
+		return DEFAULT_SERIALIZER;
+	}
+	
 
 	public HttpExchange(HttpServletRequest req, HttpServletResponse resp) {
 		
@@ -240,6 +286,41 @@ public final class HttpExchange {
 		return getMandatoryParameter(getRequest(), paramName, errorMessage, errMsgArgs);
 	}	
 	
+	/**
+	 * Returns the user associated with this HTTP exchange.
+	 * @return the user associated with this HTTP exchange. Default implementation returns the user stored in session attribute {@linkplain Controller#SESSION_ATTR_USER}.
+	 */
+	public User getCurrentUser() {
+		return (User) getRequest().getSession().getAttribute(SESSION_ATTR_USER);
+	}
+	
+	/**
+	 * Sets the user associated with this HTTP exchange.
+	 * @param user application user.
+	 */
+	public void setCurrentUser(User user) {
+		getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
+	}
+	
+	/**
+	 * Reads an object sent with the request.
+	 * @param <T> expected object type.
+	 * @param targetClass expected object class.
+	 * @return read object.
+	 * @throws BadRequestException if it was not possible to read an object of given class.
+	 */
+	public <T> T readObject(Class<T> targetClass) throws BadRequestException {
+		return readObject(serializer.getInstance(), getRequest(), targetClass);
+	}
+	
+	/**
+	 * Writes an object in the response.
+	 * @param obj object to be written.
+	 * @throws IOException If an error happens while sending the response.
+	 */
+	public void writeObject(Object obj) throws IOException {
+		writeObject(serializer.getInstance(), getResponse(), obj);
+	}
 	
 	@Override
 	public String toString() {
