@@ -288,7 +288,7 @@ public class HttpExchange {
 	
 	/**
 	 * Returns the user associated with this HTTP exchange.
-	 * @return the user associated with this HTTP exchange. Default implementation returns the user stored in session attribute {@linkplain Controller#SESSION_ATTR_USER}.
+	 * @return the user associated with this HTTP exchange. Default implementation returns the user stored in session attribute {@linkplain HttpExchange#SESSION_ATTR_USER}.
 	 */
 	public User getCurrentUser() {
 		return (User) getRequest().getSession().getAttribute(SESSION_ATTR_USER);
