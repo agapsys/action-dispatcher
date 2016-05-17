@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 /** Default HttpExchange implementation. */
 public class HttpExchange {
 	// STATIC SCOPE ============================================================
-	public static final ObjectSerializer DEFAULT_SERIALIZER = new GsonSerializer();
+	public static final HttpSerializer DEFAULT_SERIALIZER = new GsonHttpSerializer();
 	public static final String SESSION_ATTR_USER = HttpExchange.class.getName() + ".sessionUser";
 
 	/**
@@ -183,7 +183,7 @@ public class HttpExchange {
 	 * @return read object.
 	 * @throws BadRequestException if it was not possible to read an object of given type.
 	 */
-	public <T> T readObject(ObjectSerializer serializer, HttpServletRequest req, Class<T> targetClass) throws BadRequestException {
+	public <T> T readObject(HttpSerializer serializer, HttpServletRequest req, Class<T> targetClass) throws BadRequestException, IOException {
 		return serializer.readObject(req, targetClass);
 	}
 	
@@ -195,7 +195,7 @@ public class HttpExchange {
 	 * @param obj object to be written
 	 * @throws IOException if an error happened during writing operation
 	 */
-	public void writeObject(ObjectSerializer serializer, HttpServletResponse resp, Object obj) throws IOException {
+	public void writeObject(HttpSerializer serializer, HttpServletResponse resp, Object obj) throws IOException {
 		serializer.writeObject(resp, obj);
 	}
 	// =========================================================================
@@ -203,10 +203,10 @@ public class HttpExchange {
 	// INSTANCE SCOPE ==========================================================
 	private final HttpServletRequest req;
 	private final HttpServletResponse resp;
-	private final LazyInitializer<ObjectSerializer> serializer = new LazyInitializer<ObjectSerializer>() {
+	private final LazyInitializer<HttpSerializer> serializer = new LazyInitializer<HttpSerializer>() {
 
 		@Override
-		protected ObjectSerializer getLazyInstance() {
+		protected HttpSerializer getLazyInstance() {
 			return getObjectSerializer();
 		}
 
@@ -216,7 +216,7 @@ public class HttpExchange {
 	 * Return the object serializer used by this instance. This method will be called only once.
 	 * @return the object serializer used by this instance.
 	 */
-	protected ObjectSerializer getObjectSerializer() {
+	protected HttpSerializer getObjectSerializer() {
 		return DEFAULT_SERIALIZER;
 	}
 	
@@ -309,7 +309,7 @@ public class HttpExchange {
 	 * @return read object.
 	 * @throws BadRequestException if it was not possible to read an object of given class.
 	 */
-	public <T> T readObject(Class<T> targetClass) throws BadRequestException {
+	public <T> T readObject(Class<T> targetClass) throws BadRequestException, IOException {
 		return readObject(serializer.getInstance(), getRequest(), targetClass);
 	}
 	

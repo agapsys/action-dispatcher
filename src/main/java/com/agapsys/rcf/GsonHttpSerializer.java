@@ -16,12 +16,12 @@
 
 package com.agapsys.rcf;
 
-import com.agapsys.rcf.exceptions.BadRequestException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
@@ -29,7 +29,6 @@ import com.google.gson.JsonSyntaxException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
@@ -41,15 +40,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-public class GsonSerializer implements JsonSerializer {
+public class GsonHttpSerializer extends JsonHttpSerializer {
 
 	// CLASS SCOPE =============================================================
-	public static final String JSON_CONTENT_TYPE = "application/json";
-	public static final String JSON_ENCODING = "UTF-8";
-
 	private static final Gson DEFAULT_GSON;
 	
 	static {
@@ -61,16 +55,7 @@ public class GsonSerializer implements JsonSerializer {
 		builder.registerTypeAdapter(Timestamp.class, adapter);
 		DEFAULT_GSON = builder.create();
 	}
-
-	// Check if given request is valid for GSON parsing
-	private static void checkJsonContentType(HttpServletRequest req) throws BadRequestException {
-		String reqContentType = req.getContentType();
-
-		if (!reqContentType.startsWith(JSON_CONTENT_TYPE)) {
-			throw new BadRequestException("Invalid content-type: " + reqContentType);
-		}
-	}
-
+	
 	private static class ListType implements ParameterizedType {
 
 		private final Type[] typeArguments = new Type[1];
@@ -143,96 +128,41 @@ public class GsonSerializer implements JsonSerializer {
 	protected Gson getGson() {
 		return DEFAULT_GSON;
 	}
-
+	
 	@Override
-	public <T> T readObject(String json, Class<T> targetClass) {
-		return _getGson().fromJson(json, targetClass);
-	}
+	public <T> T readObject(InputStream json, String charset, Class<T> targetClass) throws SerializerException, IOException {
 
-	@Override
-	public <T> T readObject(Reader json, Class<T> targetClass) {
-		return _getGson().fromJson(json, targetClass);
-	}
+		if (targetClass == null) throw new IllegalArgumentException("Null targetClass");
 
-	@Override
-	public <T> T readObject(InputStream json, String charset, Class<T> targetClass) {
 		try {
 			Reader reader = new InputStreamReader(json, charset);
-			return readObject(reader, targetClass);
+			return _getGson().fromJson(reader, targetClass);
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex);
+		} catch (JsonSyntaxException ex) {
+			throw new SerializerException("Malformed JSON");
+		} catch (JsonIOException ex) {
+			throw new IOException(ex);
 		}
 	}
 
 	@Override
-	public <T> List<T> getJsonList(String json, Class<T> elementType) {
-		return _getGson().fromJson(json, new ListType(elementType));
-	}
-
-	@Override
-	public <T> List<T> getJsonList(Reader json, Class<T> elementType) {
-		return _getGson().fromJson(json, new ListType(elementType));
-	}
-
-	@Override
-	public <T> List<T> getJsonList(InputStream json, String charset, Class<T> elementType) {
+	public <T> List<T> getJsonList(InputStream json, String charset, Class<T> elementType) throws IOException, SerializerException {
 		try {
 			Reader reader = new InputStreamReader(json, charset);
-			return getJsonList(reader, elementType);
+			return _getGson().fromJson(reader, new ListType(elementType));
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex);
+		} catch (JsonSyntaxException ex) {
+			throw new SerializerException("Malformed JSON");
+		} catch (JsonIOException ex) {
+			throw new IOException(ex);
 		}
 	}
 
 	@Override
-	public String toJson(Object obj) {
+	public String toString(Object obj) {
 		return _getGson().toJson(obj);
-	}
-
-	@Override
-	public <T> T readObject(HttpServletRequest req, Class<T> targetClass) throws BadRequestException {
-		if (targetClass == null) {
-			throw new IllegalArgumentException("Null targetClass");
-		}
-
-		checkJsonContentType(req);
-
-		try {
-			return readObject(req.getReader(), targetClass);
-		} catch (JsonSyntaxException ex) {
-			throw new BadRequestException("Malformed JSON");
-		} catch (Throwable t) {
-			if (t instanceof RuntimeException) {
-				throw (RuntimeException) t;
-			} else {
-				throw new RuntimeException(t);
-			}
-		}
-	}
-
-	@Override
-	public void writeObject(HttpServletResponse resp, Object object) throws IOException {
-		resp.setContentType(JSON_CONTENT_TYPE);
-		resp.setCharacterEncoding(JSON_ENCODING);
-
-		PrintWriter out;
-		out = resp.getWriter();
-		String json = _getGson().toJson(object);
-		out.write(json);
-	}
-
-
-	@Override
-	public <T> List<T> getJsonList(HttpServletRequest req, Class<T> elementType) throws BadRequestException {
-		checkJsonContentType(req);
-
-		try {
-			return getJsonList(req.getReader(), elementType);
-		} catch (JsonSyntaxException ex) {
-			throw new BadRequestException("Malformed JSON");
-		} catch (Throwable t) {
-			throw new RuntimeException(t);
-		}
 	}
 	// =========================================================================
 }
