@@ -16,7 +16,7 @@
 
 package com.agapsys.rcf.exceptions;
 
-public class ClientException extends RuntimeException {
+public class ClientException extends UncheckedException {
 	private final int httpsStatus;
 	private final Integer appStatus;
 	
@@ -33,7 +33,7 @@ public class ClientException extends RuntimeException {
 	}
 	
 	public ClientException(int httpStatus, Integer appStatus, String msg, Object...msgArgs) {
-		super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg);
+		super(msg, msgArgs);
 		this.httpsStatus = httpStatus;
 		this.appStatus = appStatus;
 	}
