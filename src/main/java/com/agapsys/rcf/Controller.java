@@ -111,7 +111,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				User user = exchange.getCurrentUser();
 				
 				if (user == null)
-					throw new UnauthorizedException();
+					throw new UnauthorizedException("Unauthorized");
 				
 				if (requiredRoles.length > 0) {
 					String[] userRoles = user.getRoles();
@@ -119,7 +119,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 					
 					for (String requiredUserRole : requiredRoles) {
 						if (!belongsToArray(requiredUserRole, userRoles))
-							throw new ForbiddenException();
+							throw new ForbiddenException("Forbidden");
 					}
 				}
 			}
