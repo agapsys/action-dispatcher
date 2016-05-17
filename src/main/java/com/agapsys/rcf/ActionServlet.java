@@ -51,8 +51,7 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 	}
 
 	/**
-	 * Called upon a error thrown due to client request. Default implementation
-	 * does nothing.
+	 * Called upon a error thrown due to client request. Default implementation does nothing.
 	 *
 	 * @param exchange HTTP exchange
 	 * @param error client error.
