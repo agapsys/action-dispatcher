@@ -308,6 +308,7 @@ public class HttpExchange {
 	 * @param targetClass expected object class.
 	 * @return read object.
 	 * @throws BadRequestException if it was not possible to read an object of given class.
+	 * @throws java.io.IOException if an I/O happened during the operation.
 	 */
 	public <T> T readObject(Class<T> targetClass) throws BadRequestException, IOException {
 		return readObject(serializer.getInstance(), getRequest(), targetClass);
