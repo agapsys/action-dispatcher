@@ -20,7 +20,7 @@ limitations under the License.
 
 	<groupId>com.agapsys.libs</groupId>
 	<artifactId>rcf</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -67,7 +67,7 @@ limitations under the License.
 			<version>2.6.2</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.agapsys.libs</groupId>
