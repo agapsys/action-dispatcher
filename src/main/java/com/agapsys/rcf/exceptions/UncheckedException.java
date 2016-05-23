@@ -17,10 +17,10 @@ package com.agapsys.rcf.exceptions;
 
 /**
  *
- * @author Leandro Oliveira (leandro@agapsys)
+ * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class UncheckedException extends RuntimeException {
-	
+
 	public UncheckedException() {}
 
 	public UncheckedException(String msg, Object...msgArgs) {

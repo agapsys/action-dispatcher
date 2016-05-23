@@ -17,10 +17,10 @@ package com.agapsys.rcf.exceptions;
 
 /**
  *
- * @author Leandro Oliveira (leandro@agapsys)
+ * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class CheckedException extends Exception {
-	
+
 	public CheckedException() {}
 
 	public CheckedException(String msg, Object...msgArgs) {
