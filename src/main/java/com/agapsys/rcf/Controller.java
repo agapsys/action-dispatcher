@@ -33,9 +33,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
-	// CLASS SCOPE =============================================================	
+	// CLASS SCOPE =============================================================
 	private static final String[] EMPTY_STR_ARRAY = new String[] {};
-		
+
 	/**
 	 * Checks if an annotated method signature matches with required one.
 	 *
@@ -53,11 +53,11 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
 		if (args.indexOf(",") != -1) return false; // <-- only one arg method is accepted
-		if (args.isEmpty()) return true; // <-- accepts no args 
-		
+		if (args.isEmpty()) return true; // <-- accepts no args
+
 		try {
 			Class<?> clazz = Class.forName(args);
-			return HttpExchange.class.isAssignableFrom(clazz) || HttpServletRequest.class.isAssignableFrom(clazz) || HttpServletResponse.class.isAssignableFrom(clazz);			
+			return HttpExchange.class.isAssignableFrom(clazz) || HttpServletRequest.class.isAssignableFrom(clazz) || HttpServletResponse.class.isAssignableFrom(clazz);
 		} catch (ClassNotFoundException ex) {
 			return false;
 		}
@@ -75,11 +75,11 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 			if (secured && requiredUserRoles == null)
 				throw new IllegalArgumentException("requiredUserRoles cannot be null");
-			
+
 			this.method = method;
 			this.requiredRoles = requiredUserRoles;
 		}
-		
+
 		/**
 		 * Creates an unprotected action.
 		 * @param method method associated with the action.
@@ -96,27 +96,27 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 		public MethodCallerAction(Method method, String[] requiredUserRoles) {
 			this(method, true, requiredUserRoles);
 		}
-		
+
 		private boolean belongsToArray(String test, String[] array) {
 			for (String element : array) {
 				if (test.equals(element))
 					return true;
 			}
-			
+
 			return false;
 		}
-		
+
 		private void checkSecurity(HttpExchange exchange) throws Throwable {
 			if (requiredRoles != null) {
 				User user = exchange.getCurrentUser();
-				
+
 				if (user == null)
 					throw new UnauthorizedException("Unauthorized");
-				
+
 				if (requiredRoles.length > 0) {
 					String[] userRoles = user.getRoles();
 					if (userRoles == null) userRoles = EMPTY_STR_ARRAY;
-					
+
 					for (String requiredUserRole : requiredRoles) {
 						if (!belongsToArray(requiredUserRole, userRoles))
 							throw new ForbiddenException("Forbidden");
@@ -124,14 +124,14 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				}
 			}
 		}
-		
+
 		@Override
 		public void processRequest(HttpExchange exchange) throws Throwable {
 			try {
 				checkSecurity(exchange);
-				
+
 				Object passedParam;
-				
+
 				if (method.getParameterCount() > 0) {
 					Class<?> type = method.getParameterTypes()[0];
 
@@ -147,14 +147,14 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				} else {
 					passedParam = null;
 				}
-				
+
 				Object[] args = passedParam != null ? new Object[] {passedParam} : new Object[] {};
-				
+
 				Object returnedObj = method.invoke(Controller.this, args);
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
-				
-				exchange.writeObject(returnedObj);
+
+				exchange.writeObject(getDtoObject(returnedObj));
 
 			} catch (InvocationTargetException | IllegalAccessException ex) {
 				if (ex instanceof InvocationTargetException) {
@@ -169,16 +169,16 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 	@Override
 	protected final void onInit() {
 		super.onInit();
-		
+
 		Class<? extends Controller> actionServletClass = Controller.this.getClass();
-		
+
 		// Check for WebAction annotations...
 		Method[] methods = actionServletClass.getDeclaredMethods();
 
 		for (Method method : methods) {
 			WebActions webActionsAnnotation = method.getAnnotation(WebActions.class);
 			WebAction[] webActions;
-			
+
 			if (webActionsAnnotation == null) {
 				WebAction webAction = method.getAnnotation(WebAction.class);
 				if (webAction == null) {
@@ -189,7 +189,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			} else {
 				webActions = webActionsAnnotation.value();
 			}
-			
+
 			for (WebAction webAction : webActions) {
 				if (!matchSignature(method))
 					throw new RuntimeException(String.format("Invalid action signature (%s).", method.toGenericString()));
@@ -201,7 +201,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 					path = method.getName();
 
 				MethodCallerAction action;
-				
+
 				boolean isSecured = webAction.secured() || webAction.requiredRoles().length > 0;
 
 				if (!isSecured) {
@@ -219,7 +219,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				}
 			}
 		}
-		
+
 		onControllerInit();
 	}
 
@@ -227,7 +227,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 	 * Called during controller initialization.
 	 */
 	protected void onControllerInit() {}
-	
+
 	/**
 	 * Called upon controller uncaught error.
 	 *
@@ -248,7 +248,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 		super.onUncaughtError(exchange, throwable);
 
 		Throwable cause = throwable.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
-		
+
 		if (cause == null) {
 			cause = throwable;
 		}
@@ -267,9 +267,9 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				appStatus == null ? "" : String.format("%d:", appStatus),
 				ex.getMessage()
 			);
-			
+
 			return true;
-			
+
 		} else {
 			if (!onControllerError(exchange, cause)) {
 				if (cause instanceof RuntimeException)
@@ -287,7 +287,17 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			}
 		}
 	}
+
+	/**
+	 * Returns the Data Transfer Object associated with given source objet.
+	 *
+	 * @param src source object.
+	 * @return associated DTO object. Default implementation just returns given source object.
+	 */
+	protected Object getDtoObject(Object src) {
+		return src;
+	}
 	// =========================================================================
-	
+
 }
 
