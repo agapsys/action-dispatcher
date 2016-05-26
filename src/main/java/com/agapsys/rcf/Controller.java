@@ -19,8 +19,15 @@ import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.exceptions.ForbiddenException;
 import com.agapsys.rcf.exceptions.UnauthorizedException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -288,14 +295,71 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 		}
 	}
 
-	/**
-	 * Returns the Data Transfer Object associated with given source objet.
-	 *
-	 * @param src source object.
-	 * @return associated DTO object. Default implementation just returns given source object.
-	 */
-	protected Object getDtoObject(Object src) {
-		return src;
+	private Object getSingleDto(Object obj) {
+		if (obj == null)
+			return null;
+
+		Dto dtoAnnotation = obj.getClass().getAnnotation(Dto.class);
+
+		if (dtoAnnotation == null)
+			return obj;
+
+		Class<?> dtoClass = dtoAnnotation.value();
+
+		try {
+			Constructor constructor = dtoClass.getConstructor(obj.getClass());
+			return constructor.newInstance(obj);
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+			throw new RuntimeException(String.format("DTO class (%s) does not have an accessible constructor accepting an instance of '%s'", dtoClass.getName(), obj.getClass().getName()), ex);
+		}
+
+	}
+
+	private List getDtoList(List objList) {
+		List dto = new LinkedList();
+
+		for (Object obj : objList) {
+			dto.add(getSingleDto(obj));
+		}
+
+		return dto;
+	}
+
+	private Map getDtoMap(Map<Object, Object> objMap) {
+		Map dto = new LinkedHashMap();
+
+		for (Map.Entry entry : objMap.entrySet()) {
+			dto.put(getSingleDto(entry.getKey()), getSingleDto(entry.getValue()));
+		}
+
+		return dto;
+	}
+
+	private Set getDtoSet(Set objSet) {
+		Set dto = new LinkedHashSet();
+
+		for (Object obj : objSet) {
+			dto.add(getSingleDto(obj));
+		}
+
+		return dto;
+	}
+
+	private Object getDtoObject(Object src) {
+		
+		Object dto;
+
+		if (src instanceof List) {
+			dto = getDtoList((List) src);
+		} else if (src instanceof Set) {
+			dto = getDtoSet((Set) src);
+		} else if (src instanceof Map) {
+			dto = getDtoMap((Map<Object, Object>) src);
+		} else {
+			dto = getSingleDto(src);
+		}
+
+		return dto;
 	}
 	// =========================================================================
 
