@@ -16,6 +16,7 @@
 package com.agapsys.rcf;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  *
@@ -23,5 +24,5 @@ import java.io.Serializable;
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface User extends Serializable {
-	public String[] getRoles();
+	public Set<String> getRoles();
 }

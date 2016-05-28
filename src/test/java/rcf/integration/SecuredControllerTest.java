@@ -25,6 +25,8 @@ import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,41 +37,46 @@ import rcf.ServletContainerBuilder;
 public class SecuredControllerTest extends Controller {
 	// STATIC CLASS ============================================================
 	public static class AppUser implements User {
-		
-		public String[] roles;
-		
+
+		public Set<String> roles;
+
 		@Override
-		public String[] getRoles() {
+		public Set<String> getRoles() {
 			return roles;
 		}
-		
+
 		public AppUser(String...roles) {
-			this.roles = roles;
+			this.roles = new LinkedHashSet<>();
+			for (String role : roles) {
+				if (role != null) {
+					this.roles.add(role);
+				}
+			}
 		}
-		
+
 	}
-	
+
 	public static final String ROLE = "role";
 	public static final String PARAM_ROLE = "role";
 	// =========================================================================
-	
+
 	// INSTANCE SCOPE ==========================================================
 	@WebAction(secured = true)
 	public void securedGet() {}
-	
+
 	@WebAction(requiredRoles = {ROLE})
 	public void securedGetWithRoles() {}
-	
+
 	@WebAction
 	public void logUser(HttpExchange exchange) {
 		exchange.setCurrentUser(new AppUser(exchange.getOptionalRequestParameter(PARAM_ROLE, "")));
 	}
-	
+
 	@WebAction
 	public void unlogUser(HttpExchange exchange) {
 		exchange.setCurrentUser(null);
 	}
-	
+
 	// Test scope --------------------------------------------------------------
 	ServletContainer sc;
 	StringResponse resp;
@@ -79,12 +86,12 @@ public class SecuredControllerTest extends Controller {
 		sc = new ServletContainerBuilder().registerController(SecuredControllerTest.class).setErrorHandler(new StacktraceErrorHandler()).build();
 		sc.startServer();
 	}
-	
+
 	@After
 	public void after() {
 		sc.stopServer();
 	}
-	
+
 	@Test
 	public void testUnlogged() {
 		resp = sc.doRequest(new HttpGet("/secured/securedGet"));
@@ -92,11 +99,11 @@ public class SecuredControllerTest extends Controller {
 		resp = sc.doRequest(new HttpGet("/secured/securedGetWithRoles"));
 		Assert.assertEquals(401, resp.getStatusCode());
 	}
-	
+
 	@Test
 	public void testLoggedWithoutRoles() {
 		HttpClient client = new HttpClient();
-		
+
 		resp = sc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", PARAM_ROLE, ""));
 
 		resp = sc.doRequest(client, new HttpGet("/secured/logUser"));
@@ -106,7 +113,7 @@ public class SecuredControllerTest extends Controller {
 		resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
 		Assert.assertEquals(403, resp.getStatusCode());
 	}
-	
+
 	@Test
 	public void testLoggedWithRoles() {
 		HttpClient client = new HttpClient();
@@ -118,7 +125,7 @@ public class SecuredControllerTest extends Controller {
 		resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
 		Assert.assertEquals(200, resp.getStatusCode());
 	}
-	
+
 	@Test
 	public void testSignInAndSignOut() {
 		HttpClient client = new HttpClient();
@@ -130,7 +137,7 @@ public class SecuredControllerTest extends Controller {
 		Assert.assertEquals(200, resp.getStatusCode());
 		resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
 		Assert.assertEquals(200, resp.getStatusCode());
-		
+
 		// Unlogging
 		resp = sc.doRequest(client, new HttpGet("/secured/unlogUser"));
 		Assert.assertEquals(200, resp.getStatusCode());

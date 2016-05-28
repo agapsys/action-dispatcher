@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -41,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 	// CLASS SCOPE =============================================================
-	private static final String[] EMPTY_STR_ARRAY = new String[] {};
+	private static final Set<String> EMPTY_ROLE_SET = Collections.unmodifiableSet(new LinkedHashSet<String>());
 
 	/**
 	 * Checks if an annotated method signature matches with required one.
@@ -104,15 +105,6 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			this(method, true, requiredUserRoles);
 		}
 
-		private boolean belongsToArray(String test, String[] array) {
-			for (String element : array) {
-				if (test.equals(element))
-					return true;
-			}
-
-			return false;
-		}
-
 		private void checkSecurity(HttpExchange exchange) throws Throwable {
 			if (requiredRoles != null) {
 				User user = exchange.getCurrentUser();
@@ -121,11 +113,11 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 					throw new UnauthorizedException("Unauthorized");
 
 				if (requiredRoles.length > 0) {
-					String[] userRoles = user.getRoles();
-					if (userRoles == null) userRoles = EMPTY_STR_ARRAY;
+					Set<String> userRoles = user.getRoles();
+					if (userRoles == null) userRoles = EMPTY_ROLE_SET;
 
 					for (String requiredUserRole : requiredRoles) {
-						if (!belongsToArray(requiredUserRole, userRoles))
+						if (!userRoles.contains(requiredUserRole))
 							throw new ForbiddenException("Forbidden");
 					}
 				}
@@ -346,7 +338,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 	}
 
 	private Object getDtoObject(Object src) {
-		
+
 		Object dto;
 
 		if (src instanceof List) {
