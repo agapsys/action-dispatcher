@@ -73,7 +73,7 @@ public class HttpExchange {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Adds a cookie.
 	 * @param resp HTTP response
@@ -85,13 +85,13 @@ public class HttpExchange {
 	public static void addCookie(HttpServletResponse resp, String name, String value, int maxAge, String path) {
 		if (path == null || !path.startsWith("/"))
 			throw new IllegalArgumentException("Invalid path: " + path);
-		
+
 		Cookie cookie = new Cookie(name, value);
 		cookie.setPath(path);
 		cookie.setMaxAge(maxAge);
 		resp.addCookie(cookie);
 	}
-	
+
 	/**
 	 * Adds a cookie for request context path
 	 * @param req  HTTP request
@@ -103,7 +103,7 @@ public class HttpExchange {
 	public static void addCookie(HttpServletRequest req, HttpServletResponse resp, String name, String value, int maxAge) {
 		addCookie(resp, name, value, maxAge, req.getContextPath());
 	}
-	
+
 	/**
 	 * Removes a cookie.
 	 * @param resp HTTP response
@@ -113,7 +113,7 @@ public class HttpExchange {
 	public static void removeCookie(HttpServletResponse resp, String name, String path) {
 		addCookie(resp, name, null, 0, path);
 	}
-	
+
 	/**
 	 * Removes a cookie for request context path.
 	 * @param req  HTTP request
@@ -123,7 +123,7 @@ public class HttpExchange {
 	public static void removeCookie(HttpServletRequest req, HttpServletResponse resp, String name) {
 		removeCookie(resp, name, req.getContextPath());
 	}
-	
+
 	/**
 	 * Returns an optional parameter contained in the request
 	 * @param req  HTTP request
@@ -132,16 +132,17 @@ public class HttpExchange {
 	 * @return parameter value
 	 */
 	public static String getOptionalParameter(HttpServletRequest req, String paramName, String defaultValue) {
-		
+
 		String val = req.getParameter(paramName);
 		if (val == null || val.trim().isEmpty())
 			val = defaultValue;
-		
-		val = val.trim();
-		
+
+		if (val != null)
+			val = val.trim();
+
 		return val;
 	}
-	
+
 	/**
 	 * Returns a mandatory parameter contained in the request.
 	 * @param req  HTTP request
@@ -152,7 +153,7 @@ public class HttpExchange {
 	public static String getMandatoryParameter(HttpServletRequest req, String paramName) throws BadRequestException {
 		return getMandatoryParameter(req, paramName, "Missing parameter: %s", paramName);
 	}
-	
+
 	/**
 	 * Returns a mandatory parameter contained in the request.
 	 * @param req  HTTP request
@@ -167,13 +168,13 @@ public class HttpExchange {
 		if (val == null || val.trim().isEmpty()) {
 			if (errMsgArgs.length > 0)
 				errorMessage = String.format(errorMessage, errMsgArgs);
-			
+
 			throw new BadRequestException(errorMessage);
 		}
-		
+
 		return val;
 	}
-	
+
 	/**
 	 * Reads an objected send with the request.
 	 * @param <T> object type.
@@ -186,10 +187,10 @@ public class HttpExchange {
 	public <T> T readObject(HttpSerializer serializer, HttpServletRequest req, Class<T> targetClass) throws BadRequestException, IOException {
 		return serializer.readObject(req, targetClass);
 	}
-	
+
 	/**
 	 * Writes an object into response
-	 * 
+	 *
 	 * @param serializer object serializer.
 	 * @param resp HTTP response
 	 * @param obj object to be written
@@ -199,7 +200,7 @@ public class HttpExchange {
 		serializer.writeObject(resp, obj);
 	}
 	// =========================================================================
-	
+
 	// INSTANCE SCOPE ==========================================================
 	private final HttpServletRequest req;
 	private final HttpServletResponse resp;
@@ -211,7 +212,7 @@ public class HttpExchange {
 		}
 
 	};
-	
+
 	/**
 	 * Return the object serializer used by this instance. This method will be called only once.
 	 * @return the object serializer used by this instance.
@@ -219,13 +220,13 @@ public class HttpExchange {
 	protected HttpSerializer getObjectSerializer() {
 		return DEFAULT_SERIALIZER;
 	}
-	
+
 
 	public HttpExchange(HttpServletRequest req, HttpServletResponse resp) {
-		
+
 		if (req == null)
 			throw new IllegalArgumentException("Request cannot be null");
-		
+
 		if (resp == null)
 			throw new IllegalArgumentException("Response cannot be null");
 
@@ -257,11 +258,11 @@ public class HttpExchange {
 	public String getRequestCookieValue(String name) {
 		return getCookieValue(getRequest(), name);
 	}
-	
+
 	public void addCookie(String name, String value, int maxAge, String path) {
 		addCookie(getResponse(), name, value, maxAge, path);
 	}
-	
+
 	public void addCookie(String name, String value, int maxAge) {
 		addCookie(getRequest(), getResponse(), name, value, maxAge);
 	}
@@ -269,23 +270,23 @@ public class HttpExchange {
 	public void removeCookie(String name, String path) {
 		removeCookie(getResponse(), name, path);
 	}
-	
+
 	public void removeCookie(String name) {
 		removeCookie(getResponse(), name, getRequest().getContextPath());
 	}
-	
+
 	public String getOptionalRequestParameter(String paramName, String defaultValue) {
 		return getOptionalParameter(getRequest(), paramName, defaultValue);
 	}
-	
+
 	public String getMandatoryRequestParameter(String paramName) throws BadRequestException {
 		return getMandatoryParameter(getRequest(), paramName);
 	}
-	
+
 	public String getMandatoryRequestParameter(String paramName, String errorMessage, Object...errMsgArgs) throws BadRequestException {
 		return getMandatoryParameter(getRequest(), paramName, errorMessage, errMsgArgs);
-	}	
-	
+	}
+
 	/**
 	 * Returns the user associated with this HTTP exchange.
 	 * @return the user associated with this HTTP exchange. Default implementation returns the user stored in session attribute {@linkplain HttpExchange#SESSION_ATTR_USER}.
@@ -293,7 +294,7 @@ public class HttpExchange {
 	public User getCurrentUser() {
 		return (User) getRequest().getSession().getAttribute(SESSION_ATTR_USER);
 	}
-	
+
 	/**
 	 * Sets the user associated with this HTTP exchange.
 	 * @param user application user.
@@ -301,7 +302,7 @@ public class HttpExchange {
 	public void setCurrentUser(User user) {
 		getRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
 	}
-	
+
 	/**
 	 * Reads an object sent with the request.
 	 * @param <T> expected object type.
@@ -313,7 +314,7 @@ public class HttpExchange {
 	public <T> T readObject(Class<T> targetClass) throws BadRequestException, IOException {
 		return readObject(serializer.getInstance(), getRequest(), targetClass);
 	}
-	
+
 	/**
 	 * Writes an object in the response.
 	 * @param obj object to be written.
@@ -322,7 +323,7 @@ public class HttpExchange {
 	public void writeObject(Object obj) throws IOException {
 		writeObject(serializer.getInstance(), getResponse(), obj);
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("%s %s %s", req.getMethod(), req.getRequestURI(), req.getProtocol());
