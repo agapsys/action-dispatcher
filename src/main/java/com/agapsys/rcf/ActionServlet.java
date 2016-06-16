@@ -19,6 +19,11 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 		}
 	};
 
+	/**
+	 * Called during servlet initialization.
+	 * This is the place to register actions. This method will be called only
+	 * once during servlet instance life-cycle.
+	 */
 	protected void onInit() {}
 
 	/**
@@ -66,6 +71,10 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 	 * @param action action associated with given parameters.
 	 */
 	protected void registerAction(HttpMethod method, String path, Action action) {
+
+		if (lazyInitializer.isInitialized())
+			throw new IllegalStateException("Servlet is already initialized");
+
 		if (!path.startsWith("/")) {
 			path = "/" + path;
 		}
@@ -107,7 +116,7 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 	protected HE getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
 		return (HE) new HttpExchange(req, resp);
 	}
-	
+
 	@Override
 	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (!lazyInitializer.isInitialized()) {
