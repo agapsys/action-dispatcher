@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import rcf.integration.ControllerGeneralTest;
 
-@WebController("phase")
+@WebController // <-- default mapping will be "phase"
 public class PhaseController extends PublicController {
 
 	@Override

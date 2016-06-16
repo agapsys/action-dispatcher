@@ -17,6 +17,7 @@
 package rcf;
 
 import com.agapsys.rcf.Controller;
+import com.agapsys.rcf.ControllerRegistrationListener;
 import com.agapsys.rcf.WebController;
 
 /**
@@ -28,20 +29,21 @@ public class ServletContainerBuilder extends com.agapsys.sevlet.container.Servle
 	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass, String name) {
 		return (ServletContainerBuilder) super.registerServlet(controllerClass, String.format("/%s/*", name));
 	}
-	
+
 	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass) {
 		WebController annotation = controllerClass.getAnnotation(WebController.class);
 
 		if (annotation == null)
 			throw new IllegalArgumentException("Controller class does not have a WebController annotation");
 
-		String name = annotation.value();
-		if (name == null || name.trim().isEmpty())
-			name = controllerClass.getSimpleName();
+		String name = annotation.value().trim();
+
+		if (name.isEmpty())
+			name = ControllerRegistrationListener.getDefaultMapping(controllerClass);
 
 		registerController(controllerClass, name);
-	
+
 		return this;
 	}
-	 
+
 }

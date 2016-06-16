@@ -22,7 +22,7 @@ import com.agapsys.rcf.WebController;
 import javax.servlet.http.HttpServletRequest;
 import rcf.integration.ControllerGeneralTest;
 
-@WebController("default")
+@WebController("defaultController")
 public class DefaultController extends PublicController {
 
 	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)

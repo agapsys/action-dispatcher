@@ -37,6 +37,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
 
 	// STATIC SCOPE ============================================================
 	public static final String EMBEDDED_INFO_FILE = "META-INF/rcf.info";
+	private static final String MAPPING_DEFAULT_SUFFIX = "controller";
 
 	private static List<String> readEmbeddedInfo(String embeddedFileName, String encoding) {
 		try (InputStream is = ControllerRegistrationListener.class.getClassLoader().getResourceAsStream(embeddedFileName)) {
@@ -76,16 +77,16 @@ public class ControllerRegistrationListener implements ServletContextListener {
 
 		for (String line : lines) {
 			String[] components = line.split(":");
-			
+
 			for (int i = 0 ; i < components.length; i++) {
 				components[i] = components[i].trim();
 			}
-			
+
 			String controllerClassName;
 			String controllerMapping = null;
-			
+
 			Class<? extends Controller> controllerClass;
-			
+
 			if (components.length == 1) {
 				controllerClassName = components[0];
 			} else if (components.length == 2) {
@@ -94,7 +95,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
 			} else {
 				throw new RuntimeException(String.format("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line));
 			}
-			
+
 			try {
 				controllerClass = (Class<? extends Controller>) Class.forName(controllerClassName);
 			} catch (ClassNotFoundException ex) {
@@ -102,21 +103,23 @@ public class ControllerRegistrationListener implements ServletContextListener {
 			} catch (ClassCastException ex) {
 				throw new RuntimeException(String.format("Class %s does not extend %s", controllerClassName, Controller.class.getName()));
 			}
-			
+
 			if (controllerMapping == null) {
 				// Retrieve mapping via reflection
 				WebController annotation = controllerClass.getAnnotation(WebController.class);
+
 				if (annotation == null) {
-					controllerMapping = controllerClass.getSimpleName();
+					controllerMapping = getDefaultMapping(controllerClass);
 				} else {
 					controllerMapping = annotation.value();
 					controllerMapping = controllerMapping.trim();
-					
-					if (controllerMapping.isEmpty())
-						controllerMapping = controllerClass.getSimpleName();
+
+					if (controllerMapping.isEmpty()) {
+						controllerMapping = getDefaultMapping(controllerClass);
+					}
 				}
 			}
-			
+
 			if (!controllerMapping.matches("^[a-zA-Z0-9]+[a-zA-Z\\-0-9\\/]*[^\\/\\*]+$"))
 				throw new RuntimeException(String.format("Invalid controller mapping: %s => %s", controllerMapping, controllerClassName));
 
@@ -124,6 +127,15 @@ public class ControllerRegistrationListener implements ServletContextListener {
 		}
 
 		return controllerMap;
+	}
+
+	public static String getDefaultMapping(Class<? extends Controller> controllerClass) {
+		String mapping = controllerClass.getSimpleName();
+
+		if (mapping.toLowerCase().endsWith(MAPPING_DEFAULT_SUFFIX.toLowerCase()))
+			mapping = mapping.substring(0, 1).toLowerCase() + mapping.substring(1, mapping.length() - MAPPING_DEFAULT_SUFFIX.length());
+
+		return mapping;
 	}
 	// =========================================================================
 
@@ -135,9 +147,9 @@ public class ControllerRegistrationListener implements ServletContextListener {
 			for (Map.Entry<String, Class<? extends Controller>> entry : getControllerMap().entrySet()) {
 				Class<? extends Controller> controllerClass = entry.getValue();
 				final Dynamic dn = sc.addServlet(controllerClass.getName(), controllerClass);
-				
+
 				String controllerName = entry.getKey();
-				
+
 				String urlPattern = String.format("/%s/*", controllerName);
 				dn.addMapping(urlPattern);
 			}

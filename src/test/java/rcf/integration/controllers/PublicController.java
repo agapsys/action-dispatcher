@@ -24,7 +24,7 @@ import com.agapsys.rcf.WebController;
 import javax.servlet.http.HttpServletRequest;
 import rcf.integration.ControllerGeneralTest;
 
-@WebController("public")
+@WebController // <-- default mapping will be "public"
 public class PublicController extends Controller {
 
 	@WebAction
