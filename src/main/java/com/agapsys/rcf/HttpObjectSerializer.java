@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
  * Serializer/Deserializer of objects in HTTP communication
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-public abstract class HttpSerializer {
+public abstract class HttpObjectSerializer {
 	// STATIC SCOPE ============================================================
 	/**
 	 * Checks if given request contains expected content-type.

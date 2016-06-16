@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
-public abstract class JsonHttpSerializer extends HttpSerializer {
+public abstract class JsonHttpSerializer extends HttpObjectSerializer {
 	// STATIC SCOPE ============================================================
 	private static final String JSON_CONTENT_TYPE = "application/json";
 	private static final String JSON_ENCODING = "UTF-8";
@@ -57,7 +57,7 @@ public abstract class JsonHttpSerializer extends HttpSerializer {
 	 * @throws IOException if an error happened during the operation
 	 */
 	public final <T> List<T> getJsonList(HttpServletRequest req, Class<T> elementClass) throws BadRequestException, IOException {
-		HttpSerializer.checkContentType(req, getContentType());
+		HttpObjectSerializer.checkContentType(req, getContentType());
 
 		try {
 			return getJsonList(req.getInputStream(), getCharset(), elementClass);
