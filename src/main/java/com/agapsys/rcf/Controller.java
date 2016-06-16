@@ -19,7 +19,6 @@ import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.exceptions.ForbiddenException;
 import com.agapsys.rcf.exceptions.UnauthorizedException;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -291,20 +290,10 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 		if (obj == null)
 			return null;
 
-		Dto dtoAnnotation = obj.getClass().getAnnotation(Dto.class);
+		if (obj instanceof Dto)
+			return ((Dto) obj).getDto();
 
-		if (dtoAnnotation == null)
-			return obj;
-
-		Class<?> dtoClass = dtoAnnotation.value();
-
-		try {
-			Constructor constructor = dtoClass.getConstructor(obj.getClass());
-			return constructor.newInstance(obj);
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-			throw new RuntimeException(String.format("DTO class (%s) does not have an accessible constructor accepting an instance of '%s'", dtoClass.getName(), obj.getClass().getName()), ex);
-		}
-
+		return obj;
 	}
 
 	private List getDtoList(List objList) {

@@ -41,8 +41,8 @@ import org.junit.Test;
  */
 @WebController("dto")
 public class DtoControllerTest extends Controller {
-	@Dto(DoubleDto.class)
-	public static class SourceObject {
+
+	public static class SourceObject implements Dto {
 		public final int srcVal;
 
 		public SourceObject(int val) {
@@ -54,7 +54,10 @@ public class DtoControllerTest extends Controller {
 			return String.format("srcVal:%d", srcVal);
 		}
 
-
+		@Override
+		public Object getDto() {
+			return new DoubleDto(this);
+		}
 	}
 
 	public static class DoubleDto {

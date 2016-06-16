@@ -15,23 +15,17 @@
  */
 package com.agapsys.rcf;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Marks an object to be associated with a Data Transfer Object class
+ * Defines a Data Transfer Object
  *
  * @author Leandro Oliveira (leandro@agapsys.com)
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Dto {
+public interface Dto {
+	
 	/**
-	 * Specifies the DTO class associated with annotated class. DTO class must have a constructor which receives an instance of annotated class.
+	 * Returns a transfer object associated with this instance.
 	 *
-	 * @return DTO class associated with annotated class.
+	 * @return a transfer object associated with this instance.
 	 */
-	Class<?> value();
+	public Object getDto();
 }

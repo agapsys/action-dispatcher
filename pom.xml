@@ -20,7 +20,7 @@ limitations under the License.
 
 	<groupId>com.agapsys.libs</groupId>
 	<artifactId>rcf</artifactId>
-	<version>3.0.1</version>
+	<version>4.0.0</version>
 	<packaging>jar</packaging>
 
 	<properties>
