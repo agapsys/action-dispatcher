@@ -45,7 +45,7 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 
 	// CLASS SCOPE =============================================================
 	private static final Gson DEFAULT_GSON;
-	
+
 	static {
 		GsonBuilder builder = new GsonBuilder();
 		IsoDateAdapter adapter = new IsoDateAdapter();
@@ -55,7 +55,7 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 		builder.registerTypeAdapter(Timestamp.class, adapter);
 		DEFAULT_GSON = builder.create();
 	}
-	
+
 	private static class ListType implements ParameterizedType {
 
 		private final Type[] typeArguments = new Type[1];
@@ -104,7 +104,7 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 			if (!(json instanceof JsonPrimitive)) {
 				throw new JsonParseException("Invalid date");
 			}
-			
+
 			try {
 				return sdf.parse(json.getAsString());
 			} catch (ParseException ex) {
@@ -115,20 +115,18 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
-	private Gson gson = null;
-
-	private synchronized Gson _getGson() {
-		if (gson == null) {
-			gson = getGson();
+	private final LazyInitializer<Gson> gson = new LazyInitializer<Gson>() {
+		@Override
+		protected Gson getLazyInstance() {
+			return getGson();
 		}
 
-		return gson;
-	}
+	};
 
 	protected Gson getGson() {
 		return DEFAULT_GSON;
 	}
-	
+
 	@Override
 	public <T> T readObject(InputStream json, String charset, Class<T> targetClass) throws SerializerException, IOException {
 
@@ -136,11 +134,11 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 
 		try {
 			Reader reader = new InputStreamReader(json, charset);
-			return _getGson().fromJson(reader, targetClass);
+			return gson.getInstance().fromJson(reader, targetClass);
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex);
 		} catch (JsonSyntaxException ex) {
-			throw new SerializerException("Malformed JSON");
+			throw new SerializerException(ex, "Malformed JSON");
 		} catch (JsonIOException ex) {
 			throw new IOException(ex);
 		}
@@ -150,11 +148,11 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 	public <T> List<T> getJsonList(InputStream json, String charset, Class<T> elementType) throws IOException, SerializerException {
 		try {
 			Reader reader = new InputStreamReader(json, charset);
-			return _getGson().fromJson(reader, new ListType(elementType));
+			return gson.getInstance().fromJson(reader, new ListType(elementType));
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex);
 		} catch (JsonSyntaxException ex) {
-			throw new SerializerException("Malformed JSON");
+			throw new SerializerException(ex, "Malformed JSON");
 		} catch (JsonIOException ex) {
 			throw new IOException(ex);
 		}
@@ -162,7 +160,7 @@ public class GsonHttpSerializer extends JsonHttpSerializer {
 
 	@Override
 	public String toString(Object obj) {
-		return _getGson().toJson(obj);
+		return gson.getInstance().toJson(obj);
 	}
 	// =========================================================================
 }
