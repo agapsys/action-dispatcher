@@ -156,7 +156,13 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 			} catch (InvocationTargetException | IllegalAccessException ex) {
 				if (ex instanceof InvocationTargetException) {
-					throw new RuntimeException(((InvocationTargetException) ex).getTargetException());
+					Throwable targetException = ((InvocationTargetException)ex).getTargetException();
+
+					if (targetException instanceof ClientException) {
+						throw (ClientException) targetException;
+					} else {
+						throw new RuntimeException(targetException);
+					}
 				}
 
 				throw new RuntimeException(ex);
@@ -249,38 +255,19 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			cause = throwable;
 		}
 
-		HttpServletResponse resp = exchange.getCoreResponse();
+		if (!onControllerError(exchange, cause)) {
+			if (cause instanceof RuntimeException)
+				throw (RuntimeException) cause;
 
-		if (cause instanceof ClientException) {
-			ClientException ex = (ClientException) cause;
+			if (cause instanceof ServletException)
+				throw (ServletException) cause;
 
-			onClientError(exchange, ex);
+			if (cause instanceof IOException)
+				throw (IOException) cause;
 
-			resp.setStatus(ex.getHttpStatus());
-			Integer appStatus = ex.getAppStatus();
-			resp.getWriter().printf(
-				"%s%s",
-				appStatus == null ? "" : String.format("%d:", appStatus),
-				ex.getMessage()
-			);
-
-			return true;
-
+			throw new ServletException(cause);
 		} else {
-			if (!onControllerError(exchange, cause)) {
-				if (cause instanceof RuntimeException)
-					throw (RuntimeException) cause;
-
-				if (cause instanceof ServletException)
-					throw (ServletException) cause;
-
-				if (cause instanceof IOException)
-					throw (IOException) cause;
-
-				throw new ServletException(cause);
-			} else {
-				return true;
-			}
+			return true;
 		}
 	}
 
