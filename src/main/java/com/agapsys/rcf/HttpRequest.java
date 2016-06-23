@@ -57,7 +57,7 @@ public class HttpRequest {
 	 *
 	 * @return origin user-agent.
 	 */
-	public String getOriginUserAgent() {
+	public String getUserAgent() {
 		return getCoreRequest().getHeader("user-agent");
 	}
 
