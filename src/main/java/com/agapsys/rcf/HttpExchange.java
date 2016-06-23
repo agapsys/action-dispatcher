@@ -57,7 +57,7 @@ public class HttpExchange {
 	 *
 	 * @return the default serializer used by this exchange.
 	 */
-	public final HttpObjectSerializer getHttpObjectSerializer() {
+	public HttpObjectSerializer getHttpObjectSerializer() {
 		if (serializer == null) {
 			serializer = getCustomHttpObjectSerializer();
 		}
@@ -81,7 +81,7 @@ public class HttpExchange {
 	 *
 	 * @return the request associated with this exchange.
 	 */
-	public final HttpRequest getRequest() {
+	public HttpRequest getRequest() {
 		if (req == null) {
 			req = getCustomRequest(getCoreRequest());
 		}
@@ -108,7 +108,7 @@ public class HttpExchange {
 	 *
 	 * @return the response associated with this exchange.
 	 */
-	public final HttpResponse getResponse() {
+	public HttpResponse getResponse() {
 		if (resp == null) {
 			resp = getCustomResponse(getCoreResponse());
 		}
@@ -144,7 +144,6 @@ public class HttpExchange {
 	public void setCurrentUser(User user) {
 		getCoreRequest().getSession().setAttribute(SESSION_ATTR_USER, user);
 	}
-
 
 	@Override
 	public String toString() {
