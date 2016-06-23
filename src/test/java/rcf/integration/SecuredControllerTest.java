@@ -69,7 +69,7 @@ public class SecuredControllerTest extends Controller {
 
 	@WebAction
 	public void logUser(HttpExchange exchange) {
-		exchange.setCurrentUser(new AppUser(exchange.getOptionalRequestParameter(PARAM_ROLE, "")));
+		exchange.setCurrentUser(new AppUser(exchange.getRequest().getOptionalParameter(PARAM_ROLE, "")));
 	}
 
 	@WebAction

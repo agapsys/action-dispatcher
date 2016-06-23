@@ -31,18 +31,18 @@ public class PhaseController extends PublicController {
 
 	@Override
 	public void beforeAction(HttpExchange exchange) throws ServletException, IOException {
-		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
+		exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
 	}
 
 	@Override
 	public void afterAction(HttpExchange exchange) throws ServletException, IOException {
-		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
+		exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
 	}
 
 	@Override
 	public void onNotFound(HttpExchange exchange) throws ServletException, IOException {
-		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
-		exchange.getResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
+		exchange.getCoreResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
+		exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
 	}
 
 	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)

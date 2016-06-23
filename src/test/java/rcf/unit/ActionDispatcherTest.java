@@ -28,14 +28,14 @@ public class ActionDispatcherTest {
 	private static class TestAction implements Action {
 		@Override
 		public void processRequest(HttpExchange exchange) {
-			exchange.getResponse().setStatus(HttpServletResponse.SC_OK);
+			exchange.getCoreResponse().setStatus(HttpServletResponse.SC_OK);
 		}
 	}
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
 	private ActionDispatcher dispatcher;
-	
+
 	@Before
 	public void setUp() {
 		dispatcher = new ActionDispatcher();
@@ -58,7 +58,7 @@ public class ActionDispatcherTest {
 		dispatcher.registerAction(action, HttpMethod.GET, "/test");
 		dispatcher.registerAction(action, HttpMethod.POST, "/test");
 	}
-	
+
 	@Test (expected = IllegalArgumentException.class)
 	public void testSameUrlSameMethod() {
 		TestAction action = new TestAction();

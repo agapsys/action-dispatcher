@@ -21,47 +21,45 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 
 	/**
 	 * Called during servlet initialization.
-	 * This is the place to register actions. This method will be called only
-	 * once during servlet instance life-cycle.
+	 *
+	 * This is the place to register actions. This method will be called only once during servlet instance life-cycle.
 	 */
 	protected void onInit() {}
 
 	/**
-	 * Called upon endpoint not found
+	 * Called upon endpoint not found.
 	 *
-	 * @param exchange HTTP exchange. Default implementation sends a
-	 * {@linkplain HttpServletResponse#SC_NOT_FOUND} status.
-	 * @throws IOException if an input or output error occurs while the servlet
-	 * is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param exchange HTTP exchange. Default implementation sends a {@linkplain HttpServletResponse#SC_NOT_FOUND} status.
+	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled.
 	 */
 	protected void onNotFound(HE exchange) throws ServletException, IOException {
-		exchange.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
+		exchange.getCoreResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 
 	/**
-	 * Called when an uncaught error happens while processing an action. Default
-	 * implementation does nothing.
+	 * Called when an uncaught error happens while processing an action. Default implementation does nothing.
 	 *
-	 * @param exchange HTTP exchange
-	 * @param throwable error
-	 * @throws IOException if an input or output error occurs while the servlet
-	 * is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled
-	 * @return a boolean indicating if given error was handled. Default
-	 * implementation returns false
+	 * @param exchange HTTP exchange.
+	 * @param throwable error.
+	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled.
+	 * @return a boolean indicating if given error was handled. Default implementation returns false.
 	 */
 	protected boolean onUncaughtError(HE exchange, Throwable throwable) throws ServletException, IOException {
 		return false;
 	}
 
 	/**
-	 * Called upon a error thrown due to client request. Default implementation does nothing.
+	 * Called upon a error thrown due to client request.
 	 *
-	 * @param exchange HTTP exchange
-	 * @param error client error.
+	 * @param exchange HTTP exchange. Default implementation sends a {@linkplain HttpServletResponse#SC_BAD_REQUEST} status.
+	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled
 	 */
-	protected void onClientError(HE exchange, ClientException error) {}
+	protected void onClientError(HE exchange, ClientException error) throws ServletException, IOException {
+		exchange.getCoreResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
+	}
 
 	/**
 	 * Register an action
@@ -83,32 +81,26 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 	}
 
 	/**
-	 * Called before an action. This method will be called only if an action
-	 * associated to given request is found and it it allowed to be processed
-	 * (see {@link SecurityManager}). Default implementation does nothing.
+	 * Called before an action. This method will be called only if an action associated to given request is found and it it allowed to be processed (see {@link SecurityManager}). Default implementation does nothing.
 	 *
-	 * @param exchange HTTP exchange
-	 * @throws IOException if an input or output error occurs while the servlet
-	 * is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param exchange HTTP exchange.
+	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled.
 	 */
 	protected void beforeAction(HE exchange) throws ServletException, IOException {}
 
 	/**
-	 * Called after an action. This method will be called only if an action
-	 * associated to given request is found, the action is allowed to be
-	 * processed (see {@link SecurityManager}), and the action was successfully
-	 * processed. Default implementation does nothing.
+	 * Called after an action. This method will be called only if an action associated to given request is found, the action is allowed to be processed (see {@link SecurityManager}), and the action was successfully processed. Default implementation does nothing.
 	 *
-	 * @param exchange HTTP exchange
-	 * @throws IOException if an input or output error occurs while the servlet
-	 * is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled
+	 * @param exchange HTTP exchange.
+	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled.
 	 */
 	protected void afterAction(HE exchange) throws ServletException, IOException {}
 
 	/**
 	 * Returns the HTTP exchange used by this servlet.
+	 *
 	 * @param req HTTP request.
 	 * @param resp HTTP response.
 	 * @return HTTP exchange.

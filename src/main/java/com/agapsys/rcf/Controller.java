@@ -46,7 +46,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 	/**
 	 * Checks if an annotated method signature matches with required one.
 	 *
-	 * @param method annotated method
+	 * @param method annotated method.
 	 * @return boolean indicating if method signature is valid.
 	 */
 	private static boolean matchSignature(Method method) {
@@ -136,9 +136,9 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 					if (HttpExchange.class.isAssignableFrom(type)) {
 						passedParam = exchange;
 					} else if (HttpServletRequest.class.isAssignableFrom(type)) {
-						passedParam = exchange.getRequest();
+						passedParam = exchange.getCoreRequest();
 					} else if (HttpServletResponse.class.isAssignableFrom(type)) {
-						passedParam = exchange.getResponse();
+						passedParam = exchange.getCoreResponse();
 					} else {
 						throw new RuntimeException("Unsupported arg type: " + type.getName());
 					}
@@ -152,7 +152,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
 
-				exchange.writeObject(getDtoObject(returnedObj));
+				exchange.getResponse().writeObject(getDtoObject(returnedObj));
 
 			} catch (InvocationTargetException | IllegalAccessException ex) {
 				if (ex instanceof InvocationTargetException) {
@@ -229,13 +229,11 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 	/**
 	 * Called upon controller uncaught error.
 	 *
-	 * @param exchange HTTP exchange
-	 * @param throwable uncaught error
-	 * @throws IOException if an input or output error occurs while the servlet
-	 * is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled
-	 * @return a boolean indicating if given error was handled. Default
-	 * implementation returns false
+	 * @param exchange HTTP exchange.
+	 * @param throwable uncaught error.
+	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+	 * @throws ServletException if the HTTP request cannot be handled.
+	 * @return a boolean indicating if given error was handled. Default implementation returns false.
 	 */
 	protected boolean onControllerError(HE exchange, Throwable throwable) throws ServletException, IOException {
 		return false;
@@ -251,7 +249,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			cause = throwable;
 		}
 
-		HttpServletResponse resp = exchange.getResponse();
+		HttpServletResponse resp = exchange.getCoreResponse();
 
 		if (cause instanceof ClientException) {
 			ClientException ex = (ClientException) cause;
@@ -285,6 +283,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			}
 		}
 	}
+
 
 	private Object getSingleDto(Object obj) {
 		if (obj == null)
