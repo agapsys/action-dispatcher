@@ -53,12 +53,20 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 	/**
 	 * Called upon a error thrown due to client request.
 	 *
-	 * @param exchange HTTP exchange. Default implementation sends a {@linkplain HttpServletResponse#SC_BAD_REQUEST} status.
+	 * @param exchange HTTP exchange. Default implementation sends a 4XX status according to given exception.
 	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
 	 * @throws ServletException if the HTTP request cannot be handled
 	 */
 	protected void onClientError(HE exchange, ClientException error) throws ServletException, IOException {
-		exchange.getCoreResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
+		HttpServletResponse coreResp = exchange.getCoreResponse();
+
+		coreResp.setStatus(error.getHttpStatus());
+		Integer appStatus = error.getAppStatus();
+		coreResp.getWriter().printf(
+			"%s%s",
+			appStatus == null ? "" : String.format("%d:", appStatus),
+			error.getMessage()
+		);
 	}
 
 	/**
@@ -128,14 +136,6 @@ public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
 				afterAction(exchange);
 			} catch (ClientException ex) {
 				onClientError(exchange, ex);
-
-				resp.setStatus(ex.getHttpsStatus());
-				Integer appStatus = ex.getAppStatus();
-				resp.getWriter().printf(
-						"%s%s",
-						appStatus == null ? "" : String.format("%d:", appStatus),
-						ex.getMessage()
-				);
 			} catch (Throwable ex) {
 				if (!onUncaughtError(exchange, ex)) {
 					if (ex instanceof RuntimeException) {

@@ -256,7 +256,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 			onClientError(exchange, ex);
 
-			resp.setStatus(ex.getHttpsStatus());
+			resp.setStatus(ex.getHttpStatus());
 			Integer appStatus = ex.getAppStatus();
 			resp.getWriter().printf(
 				"%s%s",

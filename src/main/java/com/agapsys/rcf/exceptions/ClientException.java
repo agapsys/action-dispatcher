@@ -38,7 +38,7 @@ public class ClientException extends UncheckedException {
 		this.appStatus = appStatus;
 	}
 	
-	public int getHttpsStatus() {
+	public int getHttpStatus() {
 		return httpsStatus;
 	}
 
