@@ -65,9 +65,9 @@ public class HttpExchange {
 	}
 
 	/**
-	 * Returns a customized serialized used by this exchange.
+	 * Returns a customized serializer used by this exchange.
 	 *
-	 * @return a customized serialized used by this exchange.
+	 * @return a customized serializer used by this exchange.
 	 */
 	protected HttpObjectSerializer getCustomHttpObjectSerializer() {
 		return DEFAULT_SERIALIZER;
