@@ -66,7 +66,7 @@ public class HttpRequest {
 	 *
 	 * @return request URI.
 	 */
-	public String getRequestUri() {
+	public String getUri() {
 		HttpServletRequest req = getCoreRequest();
 
 		StringBuffer requestUrl = req.getRequestURL();
