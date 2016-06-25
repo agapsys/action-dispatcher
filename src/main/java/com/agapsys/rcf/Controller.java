@@ -42,46 +42,108 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 	// CLASS SCOPE =============================================================
 	private static final Set<String> EMPTY_ROLE_SET = Collections.unmodifiableSet(new LinkedHashSet<String>());
+	private static final Object[] EMPTY_OBJ_ARRAY = new Object[] {};
 
-	/**
-	 * Checks if an annotated method signature matches with required one.
-	 *
-	 * @param method annotated method.
-	 * @return boolean indicating if method signature is valid.
-	 */
-	private static boolean matchSignature(Method method) {
-		String signature = method.toGenericString();
-		String[] tokens = signature.split(Pattern.quote(" "));
+	private static class MethodActionValidator {
 
-		if (!tokens[0].equals("public")) return false;
+		private static final Class[] SUPPORTED_CLASSES = new Class[] {
+			HttpExchange.class,
+			HttpServletRequest.class,
+			HttpServletResponse.class,
+			HttpRequest.class,
+			HttpResponse.class
+		};
 
-		int indexOfOpenParenthesis = signature.indexOf("(");
-		int indexOfCloseParenthesis = signature.indexOf(")");
+		/**
+		 * Returns a boolean indicating if a class is supported as an argument of an action method.
+		 *
+		 * @param tested tested class
+		 * @param supportedClasses supported classes
+		 * @return a boolean indicating if a class is supported as an argument of an action method.
+		 */
+		public static boolean isSupported(Class tested) {
+			for (Class c : SUPPORTED_CLASSES) {
+				if (c.isAssignableFrom(tested)) {
+					return true;
+				}
+			}
 
-		String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
-		if (args.indexOf(",") != -1) return false; // <-- only one arg method is accepted
-		if (args.isEmpty()) return true; // <-- accepts no args
-
-		try {
-			Class<?> clazz = Class.forName(args);
-			return HttpExchange.class.isAssignableFrom(clazz) || HttpServletRequest.class.isAssignableFrom(clazz) || HttpServletResponse.class.isAssignableFrom(clazz);
-		} catch (ClassNotFoundException ex) {
 			return false;
+		}
+
+		/**
+		 * Checks if an annotated method signature matches with required one.
+		 *
+		 * @param method annotated method.
+		 * @return boolean indicating if method signature is valid.
+		 */
+		public static boolean matchSignature(Method method) {
+			String signature = method.toGenericString();
+			String[] tokens = signature.split(Pattern.quote(" "));
+
+			if (!tokens[0].equals("public")) {
+				return false;
+			}
+
+			int indexOfOpenParenthesis = signature.indexOf("(");
+			int indexOfCloseParenthesis = signature.indexOf(")");
+
+			String args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
+			if (args.indexOf(",") != -1) {
+				return false; // <-- only one arg method is accepted
+			}
+			if (args.isEmpty()) {
+				return true; // <-- accepts no args
+			}
+
+
+			try {
+				Class<?> clazz = Class.forName(args);
+				return isSupported(clazz);
+			} catch (ClassNotFoundException ex) {
+				return false;
+			}
+		}
+
+		public static Object[] getCallParams(Method method, HttpExchange exchange) {
+			if (method.getParameterCount() == 0) return EMPTY_OBJ_ARRAY;
+
+			Class<?> type = method.getParameterTypes()[0];
+
+			if (HttpExchange.class.isAssignableFrom(type))
+				return new Object[] {exchange};
+
+			if (HttpServletRequest.class.isAssignableFrom(type))
+				return new Object[] {exchange.getCoreRequest()};
+
+			if (HttpServletResponse.class.isAssignableFrom(type))
+				return new Object[] {exchange.getCoreResponse()};
+
+			if (HttpRequest.class.isAssignableFrom(type))
+				return new Object[] {exchange.getRequest()};
+
+			if (HttpResponse.class.isAssignableFrom(type))
+				return new Object[] {exchange.getResponse()};
+
+			throw new UnsupportedOperationException(String.format("Unsupported param type: %s", type.getName()));
 		}
 	}
 	// =========================================================================
 
 	// INSTANCE SCOPE ==========================================================
 	private class MethodCallerAction implements Action {
+
 		private final String[] requiredRoles;
-		private final Method   method;
+		private final Method method;
 
 		private MethodCallerAction(Method method, boolean secured, String[] requiredUserRoles) {
-			if (method == null)
+			if (method == null) {
 				throw new IllegalArgumentException("Method cannot be null");
+			}
 
-			if (secured && requiredUserRoles == null)
+			if (secured && requiredUserRoles == null) {
 				throw new IllegalArgumentException("requiredUserRoles cannot be null");
+			}
 
 			this.method = method;
 			this.requiredRoles = requiredUserRoles;
@@ -89,6 +151,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 		/**
 		 * Creates an unprotected action.
+		 *
 		 * @param method method associated with the action.
 		 */
 		public MethodCallerAction(Method method) {
@@ -97,58 +160,108 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 		/**
 		 * Creates a secured action.
+		 *
 		 * @param method method associated with the action.
-		 * @param requiredUserRoles required user roles in order to process the action.
+		 * @param requiredUserRoles required user roles in order to process the
+		 * action.
 		 */
 		public MethodCallerAction(Method method, String[] requiredUserRoles) {
 			this(method, true, requiredUserRoles);
 		}
 
+
 		private void checkSecurity(HttpExchange exchange) throws Throwable {
 			if (requiredRoles != null) {
 				User user = exchange.getCurrentUser();
 
-				if (user == null)
+				if (user == null) {
 					throw new UnauthorizedException("Unauthorized");
+				}
 
 				if (requiredRoles.length > 0) {
 					Set<String> userRoles = user.getRoles();
-					if (userRoles == null) userRoles = EMPTY_ROLE_SET;
+					if (userRoles == null) {
+						userRoles = EMPTY_ROLE_SET;
+					}
 
 					for (String requiredUserRole : requiredRoles) {
-						if (!userRoles.contains(requiredUserRole))
+						if (!userRoles.contains(requiredUserRole)) {
 							throw new ForbiddenException("Forbidden");
+						}
 					}
 				}
 			}
 		}
+
+		private Object getSingleDto(Object obj) {
+			if (obj == null) {
+				return null;
+			}
+
+			if (obj instanceof Dto) {
+				return ((Dto) obj).getDto();
+			}
+
+			return obj;
+		}
+
+		private List getDtoList(List objList) {
+			List dto = new LinkedList();
+
+			for (Object obj : objList) {
+				dto.add(getSingleDto(obj));
+			}
+
+			return dto;
+		}
+
+		private Map getDtoMap(Map<Object, Object> objMap) {
+			Map dto = new LinkedHashMap();
+
+			for (Map.Entry entry : objMap.entrySet()) {
+				dto.put(getSingleDto(entry.getKey()), getSingleDto(entry.getValue()));
+			}
+
+			return dto;
+		}
+
+		private Set getDtoSet(Set objSet) {
+			Set dto = new LinkedHashSet();
+
+			for (Object obj : objSet) {
+				dto.add(getSingleDto(obj));
+			}
+
+			return dto;
+		}
+
+		private Object getDtoObject(Object src) {
+
+			Object dto;
+
+			if (src instanceof List) {
+				dto = getDtoList((List) src);
+			} else if (src instanceof Set) {
+				dto = getDtoSet((Set) src);
+			} else if (src instanceof Map) {
+				dto = getDtoMap((Map<Object, Object>) src);
+			} else {
+				dto = getSingleDto(src);
+			}
+
+			return dto;
+		}
+
 
 		@Override
 		public void processRequest(HttpExchange exchange) throws Throwable {
 			try {
 				checkSecurity(exchange);
 
-				Object passedParam;
+				Object[] callParams = MethodActionValidator.getCallParams(method, exchange);
 
-				if (method.getParameterCount() > 0) {
-					Class<?> type = method.getParameterTypes()[0];
+				Object returnedObj = method.invoke(Controller.this, callParams);
 
-					if (HttpExchange.class.isAssignableFrom(type)) {
-						passedParam = exchange;
-					} else if (HttpServletRequest.class.isAssignableFrom(type)) {
-						passedParam = exchange.getCoreRequest();
-					} else if (HttpServletResponse.class.isAssignableFrom(type)) {
-						passedParam = exchange.getCoreResponse();
-					} else {
-						throw new RuntimeException("Unsupported arg type: " + type.getName());
-					}
-				} else {
-					passedParam = null;
-				}
-
-				Object[] args = passedParam != null ? new Object[] {passedParam} : new Object[] {};
-
-				Object returnedObj = method.invoke(Controller.this, args);
 				if (returnedObj == null && method.getReturnType().equals(Void.TYPE))
 					return;
 
@@ -156,7 +269,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 
 			} catch (InvocationTargetException | IllegalAccessException ex) {
 				if (ex instanceof InvocationTargetException) {
-					Throwable targetException = ((InvocationTargetException)ex).getTargetException();
+					Throwable targetException = ((InvocationTargetException) ex).getTargetException();
 
 					if (targetException instanceof ClientException) {
 						throw (ClientException) targetException;
@@ -168,8 +281,12 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 				throw new RuntimeException(ex);
 			}
 		}
+		
 	}
 
+	/**
+	 * Registers action methods.
+	 */
 	@Override
 	protected final void onInit() {
 		super.onInit();
@@ -186,23 +303,25 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 			if (webActionsAnnotation == null) {
 				WebAction webAction = method.getAnnotation(WebAction.class);
 				if (webAction == null) {
-					webActions = new WebAction[] {};
+					webActions = new WebAction[]{};
 				} else {
-					webActions = new WebAction[] {webAction};
+					webActions = new WebAction[]{webAction};
 				}
 			} else {
 				webActions = webActionsAnnotation.value();
 			}
 
 			for (WebAction webAction : webActions) {
-				if (!matchSignature(method))
+				if (!MethodActionValidator.matchSignature(method)) {
 					throw new RuntimeException(String.format("Invalid action signature (%s).", method.toGenericString()));
+				}
 
 				HttpMethod[] httpMethods = webAction.httpMethods();
 				String path = webAction.mapping().trim();
 
-				if (path.isEmpty())
+				if (path.isEmpty()) {
 					path = method.getName();
+				}
 
 				MethodCallerAction action;
 
@@ -228,7 +347,7 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 	}
 
 	/**
-	 * Called during controller initialization.
+	 * Called during controller initialization. Default implementation does nothing.
 	 */
 	protected void onControllerInit() {}
 
@@ -256,79 +375,23 @@ public class Controller<HE extends HttpExchange> extends ActionServlet<HE> {
 		}
 
 		if (!onControllerError(exchange, cause)) {
-			if (cause instanceof RuntimeException)
+			if (cause instanceof RuntimeException) {
 				throw (RuntimeException) cause;
+			}
 
-			if (cause instanceof ServletException)
+			if (cause instanceof ServletException) {
 				throw (ServletException) cause;
+			}
 
-			if (cause instanceof IOException)
+			if (cause instanceof IOException) {
 				throw (IOException) cause;
+			}
 
 			throw new ServletException(cause);
 		} else {
 			return true;
 		}
 	}
-
-
-	private Object getSingleDto(Object obj) {
-		if (obj == null)
-			return null;
-
-		if (obj instanceof Dto)
-			return ((Dto) obj).getDto();
-
-		return obj;
-	}
-
-	private List getDtoList(List objList) {
-		List dto = new LinkedList();
-
-		for (Object obj : objList) {
-			dto.add(getSingleDto(obj));
-		}
-
-		return dto;
-	}
-
-	private Map getDtoMap(Map<Object, Object> objMap) {
-		Map dto = new LinkedHashMap();
-
-		for (Map.Entry entry : objMap.entrySet()) {
-			dto.put(getSingleDto(entry.getKey()), getSingleDto(entry.getValue()));
-		}
-
-		return dto;
-	}
-
-	private Set getDtoSet(Set objSet) {
-		Set dto = new LinkedHashSet();
-
-		for (Object obj : objSet) {
-			dto.add(getSingleDto(obj));
-		}
-
-		return dto;
-	}
-
-	private Object getDtoObject(Object src) {
-
-		Object dto;
-
-		if (src instanceof List) {
-			dto = getDtoList((List) src);
-		} else if (src instanceof Set) {
-			dto = getDtoSet((Set) src);
-		} else if (src instanceof Map) {
-			dto = getDtoMap((Map<Object, Object>) src);
-		} else {
-			dto = getSingleDto(src);
-		}
-
-		return dto;
-	}
 	// =========================================================================
 
 }
-

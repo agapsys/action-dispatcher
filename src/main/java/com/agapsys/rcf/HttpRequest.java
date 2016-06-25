@@ -129,7 +129,7 @@ public class HttpRequest {
 	 * Returns a mandatory parameter contained in the request.
 	 *
 	 * @param paramName parameter name
-	 * @param errorMessage error message used by thrown exception
+	 * @param errorMessage error message if parameter is not found.
 	 * @param errMsgArgs optional error message args if error message is a formatted string.
 	 * @return parameter value.
 	 * @throws BadRequestException if parameter is not contained in given request.
