@@ -18,12 +18,12 @@ package com.agapsys.rcf;
 
 /** Represents a HTTP method. */
 public enum HttpMethod {
-	DELETE,
-	GET,
-	HEAD,
-	OPTIONS,
-	POST,
-	PUT,
-	TRACE,
-	PATCH;
+    DELETE,
+    GET,
+    HEAD,
+    OPTIONS,
+    POST,
+    PUT,
+    TRACE,
+    PATCH;
 }

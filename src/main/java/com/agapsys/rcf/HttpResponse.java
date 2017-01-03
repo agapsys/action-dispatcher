@@ -20,96 +20,95 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author Leandro Oliveira (leandro@agapsys.com)
- */
-public class HttpResponse {
+public class HttpResponse extends ServletExchange {
 
-	private final HttpServletResponse coreResponse;
-	public HttpServletResponse getCoreResponse() {
-		return coreResponse;
-	}
+    private final HttpResponse wrappedResponse;
 
-	private final HttpExchange exchange;
-	public HttpExchange getExchange() {
-		return exchange;
-	}
+    HttpResponse(HttpResponse wrappedResponse, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        super(servletRequest, servletResponse);
+        this.wrappedResponse = wrappedResponse;
+    }
 
-	public HttpResponse(HttpExchange exchange, HttpServletResponse coreResponse) {
-		if (exchange == null) throw new IllegalArgumentException("Exchange cannot be null");
-		if (coreResponse == null) throw new IllegalArgumentException("Core response cannot be null");
+    HttpResponse(HttpServletRequest serlvetRequest, HttpServletResponse servletResponse) {
+        this(null, serlvetRequest, servletResponse);
+    }
 
-		this.coreResponse = coreResponse;
-		this.exchange = exchange;
-	}
+    protected HttpResponse(HttpResponse wrappedResponse) {
+        this(wrappedResponse, wrappedResponse._getServletRequest(), wrappedResponse.getServletResponse());
+    }
 
-	/**
-	 * Adds a cookie.
-	 *
-	 * @param name cookie name
-	 * @param value cookie value
-	 * @param maxAge an integer specifying the maximum age of the cookie in seconds; if negative, means the cookie is not stored; if zero, deletes the cookie
-	 * @param path cookie path (usually {@linkplain HttpServletRequest#getContextPath()})
-	 */
-	public void addCookie(String name, String value, int maxAge, String path) {
-		if (path == null || !path.startsWith("/"))
-			throw new IllegalArgumentException("Invalid path: " + path);
+    protected final HttpResponse getWrappedResponse() {
+        return wrappedResponse;
+    }
 
-		Cookie cookie = new Cookie(name, value);
-		cookie.setPath(path);
-		cookie.setMaxAge(maxAge);
-		getCoreResponse().addCookie(cookie);
-	}
+    /**
+     * Adds a cookie.
+     *
+     * @param name cookie name
+     * @param value cookie value
+     * @param maxAge an integer specifying the maximum age of the cookie in seconds; if negative, means the cookie is not stored; if zero, deletes the cookie
+     * @param path cookie path (usually {@linkplain HttpServletRequest#getContextPath()})
+     * @return this
+     */
+    public final HttpResponse addCookie(String name, String value, int maxAge, String path) {
+        if (path == null || !path.startsWith("/"))
+            throw new IllegalArgumentException("Invalid path: " + path);
 
-	/**
-	 * Adds a cookie for request context path.
-	 *
-	 * @param name cookie name
-	 * @param value cookie value
-	 * @param maxAge an integer specifying the maximum age of the cookie in seconds; if negative, means the cookie is not stored; if zero, deletes the cookie
-	 */
-	public final void addCookie(String name, String value, int maxAge) {
-		addCookie(name, value, maxAge, getExchange().getRequest().getCoreRequest().getContextPath());
-	}
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath(path);
+        cookie.setMaxAge(maxAge);
+        getServletResponse().addCookie(cookie);
+        return this;
+    }
 
-	/**
-	 * Removes a cookie.
-	 *
-	 * @param name name of the cookie to be removed
-	 * @param path cookie path ((usually {@linkplain HttpServletRequest#getContextPath()})
-	 */
-	public void removeCookie(String name, String path) {
-		addCookie(name, null, 0, path);
-	}
+    /**
+     * Adds a cookie for request context path.
+     *
+     * @param name cookie name
+     * @param value cookie value
+     * @param maxAge an integer specifying the maximum age of the cookie in seconds; if negative, means the cookie is not stored; if zero, deletes the cookie
+     * @return this
+     */
+    public final HttpResponse addCookie(String name, String value, int maxAge) {
+        addCookie(name, value, maxAge, _getServletRequest().getContextPath());
+        return this;
+    }
 
-	/**
-	 * Removes a cookie for request context path.
-	 *
-	 * @param name name of the cookie to be removed
-	 */
-	public final void removeCookie(String name) {
-		removeCookie(name, getExchange().getRequest().getCoreRequest().getContextPath());
-	}
+    /**
+     * Removes a cookie.
+     *
+     * @param name name of the cookie to be removed
+     * @param path cookie path ((usually {@linkplain HttpServletRequest#getContextPath()})
+     * @return this
+     */
+    public final HttpResponse removeCookie(String name, String path) {
+        addCookie(name, null, 0, path);
+        return this;
+    }
 
-	/**
-	 * Writes an object into response
-	 *
-	 * @param serializer object serializer.
-	 * @param obj object to be written
-	 * @throws IOException if an error happened during writing operation
-	 */
-	public void writeObject(HttpObjectSerializer serializer, Object obj) throws IOException {
-		serializer.writeObject(getCoreResponse(), obj);
-	}
+    /**
+     * Removes a cookie for request context path.
+     *
+     * @param name name of the cookie to be removed
+     * @return this
+     */
+    public final HttpResponse removeCookie(String name) {
+        removeCookie(name, _getServletRequest().getContextPath());
+        return this;
+    }
 
-	/**
-	 * Writes an object into response using exchange default serializer.
-	 *
-	 * @param obj object to be written
-	 * @throws IOException if an error happened during writing operation
-	 */
-	public final void writeObject(Object obj) throws IOException {
-		writeObject(getExchange().getHttpObjectSerializer(), obj);
-	}
+    public final HttpResponse sendRedirect(String location) throws IOException {
+        getServletResponse().sendRedirect(location);
+        return this;
+    }
+
+    public final HttpResponse setStatus(int status) throws IOException {
+        getServletResponse().setStatus(status);
+        return this;
+    }
+
+    public final HttpServletResponse getServletResponse() {
+        return _getServletResponse();
+    }
+
 }

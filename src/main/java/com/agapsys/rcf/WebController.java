@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface WebController {
-	/** @return controller mapping value. Passing an null/empty string will use the type name as URL mapping. */
-	String value() default "";
+
+    /** @return controller mapping value. Passing an null/empty string will use the type name as URL mapping. */
+    String value() default "";
+    
 }

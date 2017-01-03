@@ -22,12 +22,11 @@ import java.lang.annotation.Target;
 
 /**
  * Web action annotation group.
- * @author Leandro Oliveira (leandro@agapsys.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface WebActions {
 
-	/** @return the group of web actions associated with this annotation instance. */
-	WebAction[] value();
+    /** @return the group of web actions associated with this annotation instance. */
+    WebAction[] value();
 }

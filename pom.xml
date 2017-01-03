@@ -1,6 +1,6 @@
 <!--
 
- Copyright 2015 Agapsys Tecnologia Ltda-ME.
+ Copyright 2015-2017 Agapsys Tecnologia Ltda-ME.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,79 +16,80 @@ limitations under the License.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.agapsys.libs</groupId>
-	<artifactId>rcf</artifactId>
-	<version>5.1.0</version>
-	<packaging>jar</packaging>
+    <groupId>com.agapsys</groupId>
+    <artifactId>rcf</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
-	</properties>
+    <packaging>jar</packaging>
 
-	<name>REST Controller Framework</name>
-	<description>REST Controller Framework for java back-end applications</description>
-	<url>https://github.com/agapsys/rcf</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 
-	<licenses>
-		<license>
-			<name>The Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		</license>
-	</licenses>
+    <name>REST Controller Framework</name>
+    <description>REST Controller Framework for java back-end applications</description>
+    <url>https://github.com/agapsys/rcf</url>
 
-	<developers>
-		<developer>
-			<name>Leandro Oliveira</name>
-			<email>leandro@agapsys.com</email>
-			<organization>Agapsys Tecnologia Ltda-ME</organization>
-			<organizationUrl>http://www.agapsys.com</organizationUrl>
-		</developer>
-	</developers>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
-	<scm>
-		<connection>scm:git:git@github.com:agapsys/rcf.git</connection>
-		<url>git@github.com:agapsys/rcf.git</url>
-	</scm>
+    <developers>
+        <developer>
+            <name>Agapsys Tecnologia Ltda-ME</name>
+            <email>contact@agapsys.com</email>
+            <organization>Agapsys Tecnologia Ltda-ME</organization>
+            <organizationUrl>http://www.agapsys.com</organizationUrl>
+        </developer>
+    </developers>
 
-	<organization>
-		<name>Agapsys Tecnologia Ltda-ME</name>
-		<url>http://www.agapsys.com</url>
-	</organization>
+    <scm>
+        <connection>scm:git:git@github.com:agapsys/rcf.git</connection>
+        <url>git@github.com:agapsys/rcf.git</url>
+    </scm>
 
-	<dependencies>
-		<!-- Compile dependencies -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.6.2</version>
-			<scope>compile</scope>
-		</dependency>
+    <organization>
+        <name>Agapsys Tecnologia Ltda-ME</name>
+        <url>http://www.agapsys.com</url>
+    </organization>
 
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>com.agapsys.libs</groupId>
-			<artifactId>embedded-servlet-container</artifactId>
-			<version>[0.1.0, 1.0.0)</version>
-			<scope>test</scope>
-		</dependency>
+    <dependencies>
+        <!-- Compile dependencies -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.6.2</version>
+            <scope>compile</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-			<scope>test</scope>
-		</dependency>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>com.agapsys</groupId>
+            <artifactId>embedded-servlet-container</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- Provided dependencies -->
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-web-api</artifactId>
-			<version>7.0</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Provided dependencies -->
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

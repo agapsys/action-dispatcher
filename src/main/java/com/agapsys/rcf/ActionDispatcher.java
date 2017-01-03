@@ -16,87 +16,159 @@
 
 package com.agapsys.rcf;
 
+import com.agapsys.rcf.exceptions.NotFoundException;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Pattern;
+import javax.servlet.ServletException;
 
 /**
  * Action dispatcher.
+ *
  * The dispatcher is responsible by mapping request to actions.
- * <p><b>ATTENTION:</b> This class is NOT thread-safe</p>
- * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public class ActionDispatcher {
-	// CLASS SCOPE =============================================================
-	public static final String ROOT_PATH = "/";
-	// =========================================================================
-	
-	// INSTANCE SCOPE ==========================================================
-	private final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new LinkedHashMap<>();
 
-	/**
-	 * Registers an action with given URL
-	 * @param action action to be associated with given URL and HTTP method
-	 * @param httpMethod associated HTTP method
-	 * @param url URL associated with given action and HTTP method
-	 */
-	public void registerAction(Action action, HttpMethod httpMethod, String url) {
-		if (action == null) {
-			throw new IllegalArgumentException("action == null");
-		}
+    // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
+    // =========================================================================
+    private static final String PATH_PATTERN = "^/\\*?$|^/([a-zA-Z]+[a-zA-Z0-9_]*)+(/\\*)?$";
 
-		if (httpMethod == null) {
-			throw new IllegalArgumentException("httpMethod == null");
-		}
+    private static String __getWildcardPath(String path) {
+        if (path.endsWith("/*"))
+            return path;
 
-		if (url == null || url.trim().isEmpty())
-			url = ROOT_PATH;
+        if (path.endsWith("/"))
+            return path + "*";
 
-		url = url.trim();
+        return path + "/*";
+    }
+    // =========================================================================
+    // </editor-fold>
 
-		Map<String, Action> map = ACTION_MAP.get(httpMethod);
+    private final Map<HttpMethod, Map<String, Action>> actionMap = new LinkedHashMap<>();
 
-		if (map == null) {
-			map = new LinkedHashMap<>();
-			ACTION_MAP.put(httpMethod, map);
-		}
+    /**
+     * Registers an action with given URL.
+     * @param method associated HTTP method.
+     * @param path relative path associated with given action.
+     * @param action action to be associated with given path and HTTP method.
+     * @return this.
+     */
+    public synchronized ActionDispatcher registerAction(HttpMethod method, String path, Action action) {
+        if (method == null)
+            throw new IllegalArgumentException("Null method");
 
-		if (map.containsKey(url)) {
-			throw new IllegalArgumentException(String.format("Duplicate method/URL: %s/%s", httpMethod.name(), url));
-		}
+        if (!Pattern.matches(PATH_PATTERN, path))
+            throw new IllegalArgumentException(String.format("Invalid path: '%s'", path));
 
-		map.put(url, action);
-	}
+        if (action == null)
+            throw new IllegalArgumentException("Null action");
 
-	/** Removes all registered actions. */
-	public void clearActions() {
-		ACTION_MAP.clear();
-	}
-	
-	/**
-	 * Return the action associated with given request
-	 * @return the action associated with given request. If there is no mapping, returns null
-	 * @param req HTTP request
-	 */
-	public Action getAction(HttpServletRequest req) {
-		HttpMethod httpMethod;
-		try {
-			httpMethod = HttpMethod.valueOf(req.getMethod());
-		} catch (IllegalArgumentException ex) {
-			httpMethod = null;
-		}
-		
-		String path = req.getPathInfo();
-		if (path == null) {
-			path = ROOT_PATH;
-		}
-		
-		Map<String, Action> map = ACTION_MAP.get(httpMethod);
-		if (map == null) {
-			return null;
-		} else {
-			return map.get(path);
-		}
-	}
-	// =========================================================================
+        Map<String, Action> methodMap = actionMap.get(method);
+
+        if (methodMap == null) {
+            methodMap = new LinkedHashMap<>();
+            actionMap.put(method, methodMap);
+        }
+
+        if (methodMap.containsKey(path))
+            throw new IllegalArgumentException(String.format("Mapping already exists: %s %s", method, path));
+
+        methodMap.put(path, action);
+        return this;
+    }
+
+    /** Removes all registered actions. */
+    public synchronized void clearActions() {
+        actionMap.clear();
+    }
+
+    /**
+     * Dispatches a request to an action.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     * @throws NotFoundException if there is not action to process given request.
+     */
+    public synchronized void dispatch(HttpRequest request, HttpResponse response) throws ServletException, IOException, NotFoundException {
+        String uri = request.getRequestUri();
+        int secondSlashIndex = uri.indexOf("/", 1);
+
+        String actionPath = secondSlashIndex == -1 ? uri : uri.substring(0, secondSlashIndex);
+
+        Map<String, Action> methodMap = actionMap.get(request.getMethod());
+
+        Action action;
+        boolean usingWildcard = false;
+
+        action = methodMap.get(actionPath);
+
+        if (action == null) { // <-- Test for wildcard action
+            action = methodMap.get(__getWildcardPath(actionPath));
+
+            if (action != null) {
+                usingWildcard = true;
+            } else { // <-- Test for root-wildcard action
+                action = methodMap.get("/*");
+
+                if (action != null) {
+                    actionPath = "/";
+                    usingWildcard = true;
+                }
+            }
+        }
+
+        if (action == null)
+            throw new NotFoundException();
+
+        if (actionPath.equals(uri) && !uri.endsWith("/") && usingWildcard) { // <-- mapping: '/foo/*', uri: '/foo[?query=string]'. => redirects to '/foo/[?query=string]'
+            String queryString = request.getQueryString();
+            String redirectPath = request.getRequestUri() + "/";
+            if (queryString != null)
+                redirectPath = redirectPath + "?" + queryString;
+
+            response.sendRedirect(redirectPath);
+        } else {
+            if (!usingWildcard && !uri.equals(actionPath)) { // <-- mapping: '/foo', uri: '/foo/[?query=string]'. => redirects to '/foo[?query=string]'
+                if (HttpRequest._getRelativePath(actionPath, uri).equals("/")) {
+                    String redirectPath = uri.substring(0, uri.length() - 1);
+                    String queryString = request.getQueryString();
+                    if (queryString != null)
+                        redirectPath = redirectPath + "?" + queryString;
+
+                    response.sendRedirect(redirectPath);
+                } else {
+                    throw new NotFoundException();
+                }
+            } else {
+                beforeAction(request, response);
+                action.processRequest(new HttpRequest(actionPath, request), response);
+                afterAction(request, response);
+            }
+        }
+    }
+
+    /**
+     * Called before an action. Default implementation does nothing.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     */
+    protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
+
+    /**
+     * Called after an action processing. Default implementation does nothing.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     */
+    protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
+
 }

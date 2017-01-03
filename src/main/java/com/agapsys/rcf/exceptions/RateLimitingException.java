@@ -17,25 +17,27 @@
 package com.agapsys.rcf.exceptions;
 
 public class RateLimitingException extends ClientException {
-	// CLASS SCOPE =============================================================
-	public static final int CODE = 429;
-	// =========================================================================
 
-	// INSTANCE SCOPE ==========================================================
-	public RateLimitingException() {
-		this(null);
-	}
+    // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
+    // =========================================================================
+    public static final int CODE = 429;
+    // =========================================================================
+    // </editor-fold>
 
-	public RateLimitingException(Integer appStatus) {
-		this(appStatus, "");
-	}
+    public RateLimitingException() {
+        this(null);
+    }
 
-	public RateLimitingException(String msg, Object...msgArgs) {
-		this(null, msg, msgArgs);
-	}
-	
-	public RateLimitingException(Integer appStatus, String msg, Object... msgArgs) {
-		super(CODE, appStatus, msg, msgArgs);
-	}
-	// =========================================================================
+    public RateLimitingException(Integer appStatus) {
+        this(appStatus, "");
+    }
+
+    public RateLimitingException(String msg, Object...msgArgs) {
+        this(null, msg, msgArgs);
+    }
+
+    public RateLimitingException(Integer appStatus, String msg, Object... msgArgs) {
+        super(CODE, appStatus, msg, msgArgs);
+    }
+
 }

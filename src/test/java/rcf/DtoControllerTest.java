@@ -35,122 +35,118 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- *
- * @author Leandro Oliveira (leandro@agapsys.com)
- */
 @WebController("dto")
 public class DtoControllerTest extends Controller {
 
-	public static class SourceObject implements Dto {
-		public final int srcVal;
+    public static class SourceObject implements Dto {
+        public final int srcVal;
 
-		public SourceObject(int val) {
-			this.srcVal = val;
-		}
+        public SourceObject(int val) {
+            this.srcVal = val;
+        }
 
-		@Override
-		public String toString() {
-			return String.format("srcVal:%d", srcVal);
-		}
+        @Override
+        public String toString() {
+            return String.format("srcVal:%d", srcVal);
+        }
 
-		@Override
-		public Object getDto() {
-			return new DoubleDto(this);
-		}
-	}
+        @Override
+        public Object getDto() {
+            return new DoubleDto(this);
+        }
+    }
 
-	public static class DoubleDto {
-		public final int dtoVal;
+    public static class DoubleDto {
+        public final int dtoVal;
 
-		public DoubleDto(SourceObject obj) {
-			this.dtoVal = obj.srcVal * 2;
-		}
+        public DoubleDto(SourceObject obj) {
+            this.dtoVal = obj.srcVal * 2;
+        }
 
-		@Override
-		public String toString() {
-			return String.format("dtoVal:%d", dtoVal);
-		}
-	}
+        @Override
+        public String toString() {
+            return String.format("dtoVal:%d", dtoVal);
+        }
+    }
 
-	@WebAction
-	public SourceObject getObject(HttpExchange exchange) {
-		return new SourceObject(1);
-	}
+    @WebAction
+    public SourceObject getObject(HttpExchange exchange) {
+        return new SourceObject(1);
+    }
 
-	@WebAction
-	public List<SourceObject> getList(HttpExchange exchange) {
-		List<SourceObject> list = new LinkedList<>();
-		list.add(new SourceObject(0));
-		list.add(new SourceObject(1));
-		list.add(new SourceObject(2));
+    @WebAction
+    public List<SourceObject> getList(HttpExchange exchange) {
+        List<SourceObject> list = new LinkedList<>();
+        list.add(new SourceObject(0));
+        list.add(new SourceObject(1));
+        list.add(new SourceObject(2));
 
-		return list;
-	}
+        return list;
+    }
 
-	@WebAction
-	public Set<SourceObject> getSet(HttpExchange exchange) {
-		Set<SourceObject> set = new LinkedHashSet<>();
-		set.add(new SourceObject(3));
-		set.add(new SourceObject(4));
-		set.add(new SourceObject(5));
-		return set;
-	}
+    @WebAction
+    public Set<SourceObject> getSet(HttpExchange exchange) {
+        Set<SourceObject> set = new LinkedHashSet<>();
+        set.add(new SourceObject(3));
+        set.add(new SourceObject(4));
+        set.add(new SourceObject(5));
+        return set;
+    }
 
-	@WebAction
-	public Map<Object, SourceObject> getMap(HttpExchange exchange) {
-		Map<Object, SourceObject> map = new LinkedHashMap<>();
-		map.put("a", new SourceObject(1));
-		map.put("b", new SourceObject(3));
-		map.put("c", new SourceObject(5));
-		return map;
-	}
+    @WebAction
+    public Map<Object, SourceObject> getMap(HttpExchange exchange) {
+        Map<Object, SourceObject> map = new LinkedHashMap<>();
+        map.put("a", new SourceObject(1));
+        map.put("b", new SourceObject(3));
+        map.put("c", new SourceObject(5));
+        return map;
+    }
 
-	// Test code ---------------------------------------------------------------
-	private ServletContainer sc;
+    // Test code ---------------------------------------------------------------
+    private ServletContainer sc;
 
-	@Before
-	public void before() {
-		// Register controllers directly...
-		sc = new ServletContainerBuilder()
-			.registerController(DtoControllerTest.class)
-			.setErrorHandler(new StacktraceErrorHandler())
-			.build();
+    @Before
+    public void before() {
+        // Register controllers directly...
+        sc = new ServletContainerBuilder()
+            .registerController(DtoControllerTest.class)
+            .setErrorHandler(new StacktraceErrorHandler())
+            .build();
 
-		sc.startServer();
-	}
+        sc.startServer();
+    }
 
-	@After
-	public void after() {
-		sc.stopServer();
-	}
+    @After
+    public void after() {
+        sc.stopServer();
+    }
 
-	@Test
-	public void testGetObject() {
-		HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getObject"));
-		Assert.assertEquals(200, resp.getStatusCode());
-		Assert.assertEquals(String.format("{\"dtoVal\":%s}", 2), resp.getContentString());
-	}
+    @Test
+    public void testGetObject() {
+        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getObject"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        Assert.assertEquals(String.format("{\"dtoVal\":%s}", 2), resp.getContentString());
+    }
 
-	@Test
-	public void testGetList() {
-		HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getList"));
-		Assert.assertEquals(200, resp.getStatusCode());
-		Assert.assertEquals(String.format("[{\"dtoVal\":%s},{\"dtoVal\":%s},{\"dtoVal\":%s}]", 0, 2, 4), resp.getContentString());
-	}
+    @Test
+    public void testGetList() {
+        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getList"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        Assert.assertEquals(String.format("[{\"dtoVal\":%s},{\"dtoVal\":%s},{\"dtoVal\":%s}]", 0, 2, 4), resp.getContentString());
+    }
 
-	@Test
-	public void testGetSet() {
-		HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getSet"));
-		Assert.assertEquals(200, resp.getStatusCode());
-		Assert.assertEquals(String.format("[{\"dtoVal\":%s},{\"dtoVal\":%s},{\"dtoVal\":%s}]", 6, 8, 10), resp.getContentString());
-	}
+    @Test
+    public void testGetSet() {
+        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getSet"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        Assert.assertEquals(String.format("[{\"dtoVal\":%s},{\"dtoVal\":%s},{\"dtoVal\":%s}]", 6, 8, 10), resp.getContentString());
+    }
 
-	@Test
-	public void testGetMap() {
-		HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getMap"));
-		Assert.assertEquals(200, resp.getStatusCode());
-		Assert.assertEquals(String.format("{\"a\":{\"dtoVal\":%s},\"b\":{\"dtoVal\":%s},\"c\":{\"dtoVal\":%s}}", 2, 6, 10), resp.getContentString());
-	}
+    @Test
+    public void testGetMap() {
+        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getMap"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        Assert.assertEquals(String.format("{\"a\":{\"dtoVal\":%s},\"b\":{\"dtoVal\":%s},\"c\":{\"dtoVal\":%s}}", 2, 6, 10), resp.getContentString());
+    }
 
 }

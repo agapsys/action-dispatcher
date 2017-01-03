@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2017 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.agapsys.rcf.exceptions;
 
-public class NotFoundException extends ClientException {
+public class MethodNotAllowedException extends ClientException {
 
     // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
     // =========================================================================
-    public static final int CODE = 404;
+    public static final int CODE = 405;
     // =========================================================================
     // </editor-fold>
 
-    public NotFoundException() {
+    public MethodNotAllowedException() {
         this(null);
     }
 
-    public NotFoundException(Integer appStatus) {
+    public MethodNotAllowedException(Integer appStatus) {
         this(appStatus, "");
     }
 
-    public NotFoundException(String msg, Object...msgArgs) {
+    public MethodNotAllowedException(String msg, Object...msgArgs) {
         this(null, msg, msgArgs);
     }
 
-    public NotFoundException(Integer appStatus, String msg, Object... msgArgs) {
+    public MethodNotAllowedException(Integer appStatus, String msg, Object... msgArgs) {
         super(CODE, appStatus, msg, msgArgs);
     }
 

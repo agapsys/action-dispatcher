@@ -22,6 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 
 @WebController
 public class Controller2 extends Controller{
-	@WebAction
-	public void get(HttpServletRequest req) {}
+    @WebAction
+    public void get(HttpServletRequest req) {}
 }

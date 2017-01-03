@@ -22,23 +22,24 @@ import java.lang.annotation.Target;
 
 /**
  * Web action annotation.
- * @author Leandro Oliveira (leandro@agapsys.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface WebAction {
-	/** @return Accepted HTTP methods */
-	HttpMethod[] httpMethods()    default {HttpMethod.GET};
-	
-	/** @return name of the mapping. Passing an null/empty string will use the method name as path mapping. */
-	String       mapping()       default "";
-	
-	/** @return a boolean indicating if annotated method will be the default action handled by servlet. */
-	boolean      defaultAction() default false;
-	
-	/** @return a boolean indicating if action execution requires a logged user. An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
-	boolean      secured() default false;
-	
-	/** @return required roles for action execution.  An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
-	String[]     requiredRoles() default {};
+
+    /** @return Accepted HTTP methods */
+    HttpMethod[] httpMethods()    default {HttpMethod.GET};
+
+    /** @return name of the mapping. Passing an null/empty string will use the method name as path mapping. */
+    String       mapping()       default "";
+
+    /** @return a boolean indicating if annotated method will be the default action handled by servlet. */
+    boolean      defaultAction() default false;
+
+    /** @return a boolean indicating if action execution requires a logged user. An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
+    boolean      secured() default false;
+
+    /** @return required roles for action execution.  An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
+    String[]     requiredRoles() default {};
+
 }

@@ -20,6 +20,6 @@ import com.agapsys.rcf.WebAction;
 import javax.servlet.http.HttpServletRequest;
 
 public class Controller1 extends Controller{
-	@WebAction
-	public void get(HttpServletRequest req) {}
+    @WebAction
+    public void get(HttpServletRequest req) {}
 }

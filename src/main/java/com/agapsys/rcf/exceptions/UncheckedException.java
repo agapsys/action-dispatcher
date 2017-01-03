@@ -15,23 +15,20 @@
  */
 package com.agapsys.rcf.exceptions;
 
-/**
- *
- * @author Leandro Oliveira (leandro@agapsys.com)
- */
 public class UncheckedException extends RuntimeException {
 
-	public UncheckedException() {}
+    public UncheckedException() {}
 
-	public UncheckedException(String msg, Object...msgArgs) {
-		super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg);
-	}
+    public UncheckedException(String msg, Object...msgArgs) {
+        super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg);
+    }
 
-	public UncheckedException(Throwable throwable) {
-		super(throwable);
-	}
+    public UncheckedException(Throwable throwable) {
+        super(throwable);
+    }
 
-	public UncheckedException(Throwable throwable, String msg, Object...msgArgs) {
-		super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg, throwable);
-	}
+    public UncheckedException(Throwable throwable, String msg, Object...msgArgs) {
+        super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg, throwable);
+    }
+
 }

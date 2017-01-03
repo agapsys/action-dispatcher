@@ -24,46 +24,46 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ActionDispatcherTest {
-	// CLASS SCOPE =============================================================
-	private static class TestAction implements Action {
-		@Override
-		public void processRequest(HttpExchange exchange) {
-			exchange.getCoreResponse().setStatus(HttpServletResponse.SC_OK);
-		}
-	}
-	// =========================================================================
+    // CLASS SCOPE =============================================================
+    private static class TestAction implements Action {
+        @Override
+        public void processRequest(HttpExchange exchange) {
+            exchange.getCoreResponse().setStatus(HttpServletResponse.SC_OK);
+        }
+    }
+    // =========================================================================
 
-	// INSTANCE SCOPE ==========================================================
-	private ActionDispatcher dispatcher;
+    // INSTANCE SCOPE ==========================================================
+    private ActionDispatcher dispatcher;
 
-	@Before
-	public void setUp() {
-		dispatcher = new ActionDispatcher();
-	}
+    @Before
+    public void setUp() {
+        dispatcher = new ActionDispatcher();
+    }
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testPassNullAction() {
-		dispatcher.registerAction(null, HttpMethod.POST, "/test");
-	}
+    @Test(expected = IllegalArgumentException.class)
+    public void testPassNullAction() {
+        dispatcher.registerAction(null, HttpMethod.POST, "/test");
+    }
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testPassNullMethod() {
-		TestAction action = new TestAction();
-		dispatcher.registerAction(action, null, "/test");
-	}
+    @Test(expected = IllegalArgumentException.class)
+    public void testPassNullMethod() {
+        TestAction action = new TestAction();
+        dispatcher.registerAction(action, null, "/test");
+    }
 
-	@Test
-	public void testSameUrlDistinctMethods() {
-		TestAction action = new TestAction();
-		dispatcher.registerAction(action, HttpMethod.GET, "/test");
-		dispatcher.registerAction(action, HttpMethod.POST, "/test");
-	}
+    @Test
+    public void testSameUrlDistinctMethods() {
+        TestAction action = new TestAction();
+        dispatcher.registerAction(action, HttpMethod.GET, "/test");
+        dispatcher.registerAction(action, HttpMethod.POST, "/test");
+    }
 
-	@Test (expected = IllegalArgumentException.class)
-	public void testSameUrlSameMethod() {
-		TestAction action = new TestAction();
-		dispatcher.registerAction(action, HttpMethod.GET, "/test");
-		dispatcher.registerAction(action, HttpMethod.GET, "/test");
-	}
-	// =========================================================================
+    @Test (expected = IllegalArgumentException.class)
+    public void testSameUrlSameMethod() {
+        TestAction action = new TestAction();
+        dispatcher.registerAction(action, HttpMethod.GET, "/test");
+        dispatcher.registerAction(action, HttpMethod.GET, "/test");
+    }
+    // =========================================================================
 }

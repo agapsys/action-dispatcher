@@ -18,19 +18,19 @@ package com.agapsys.rcf.exceptions;
 
 public class InvalidDataException extends BadRequestException {
 
-	public InvalidDataException() {
-		this(null);
-	}
+    public InvalidDataException() {
+        this(null);
+    }
 
-	public InvalidDataException(Integer appStatus) {
-		this(appStatus, "");
-	}
-	
-	public InvalidDataException(String msg, Object...msgArgs) {
-		this(null, msg, msgArgs);
-	}
-	
-	public InvalidDataException(Integer appStatus, String msg, Object... msgArgs) {
-		super(appStatus, msg, msgArgs);
-	}
+    public InvalidDataException(Integer appStatus) {
+        this(appStatus, "");
+    }
+    
+    public InvalidDataException(String msg, Object...msgArgs) {
+        this(null, msg, msgArgs);
+    }
+    
+    public InvalidDataException(Integer appStatus, String msg, Object... msgArgs) {
+        super(appStatus, msg, msgArgs);
+    }
 }

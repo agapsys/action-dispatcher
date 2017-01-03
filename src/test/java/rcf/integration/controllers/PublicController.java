@@ -27,38 +27,38 @@ import rcf.integration.ControllerGeneralTest;
 @WebController // <-- default mapping will be "public"
 public class PublicController extends Controller {
 
-	@WebAction
-	public String get(HttpServletRequest req){
-		return ControllerGeneralTest.PUBLIC_GET_URL;
-	}
+    @WebAction
+    public String get(HttpServletRequest req){
+        return ControllerGeneralTest.PUBLIC_GET_URL;
+    }
 
-	@WebAction(mapping = "/mapped/get")
-	public String mappedGet(HttpServletRequest exchange){
-		return ControllerGeneralTest.PUBLIC_MAPPED_GET_URL;
-	}
+    @WebAction(mapping = "/mapped/get")
+    public String mappedGet(HttpServletRequest exchange){
+        return ControllerGeneralTest.PUBLIC_MAPPED_GET_URL;
+    }
 
-	@WebAction(mapping = "/mapped/get2")
-	public String mappedWithSlash(HttpServletRequest req){
-		return ControllerGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL;
-	}
+    @WebAction(mapping = "/mapped/get2")
+    public String mappedWithSlash(HttpServletRequest req){
+        return ControllerGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL;
+    }
 
-	@WebAction(httpMethods = HttpMethod.POST)
-	public String post(HttpServletRequest req){
-		return ControllerGeneralTest.PUBLIC_POST_URL;
-	}
+    @WebAction(httpMethods = HttpMethod.POST)
+    public String post(HttpServletRequest req){
+        return ControllerGeneralTest.PUBLIC_POST_URL;
+    }
 
-	@WebAction(httpMethods = HttpMethod.POST, mapping = "mapped/post")
-	public String mappedPost(HttpServletRequest req){
-		return ControllerGeneralTest.PUBLIC_MAPPED_POST_URL;
-	}
+    @WebAction(httpMethods = HttpMethod.POST, mapping = "mapped/post")
+    public String mappedPost(HttpServletRequest req){
+        return ControllerGeneralTest.PUBLIC_MAPPED_POST_URL;
+    }
 
-	@WebActions({@WebAction(httpMethods = HttpMethod.GET),@WebAction(httpMethods = HttpMethod.POST)})
-	public String repeatableGetOrPost(HttpServletRequest req){
-		return ControllerGeneralTest.PUBLIC_WEBACTIONS_URL + req.getMethod();
-	}
+    @WebActions({@WebAction(httpMethods = HttpMethod.GET),@WebAction(httpMethods = HttpMethod.POST)})
+    public String repeatableGetOrPost(HttpServletRequest req){
+        return ControllerGeneralTest.PUBLIC_WEBACTIONS_URL + req.getMethod();
+    }
 
-	@WebAction(httpMethods = {HttpMethod.GET, HttpMethod.POST})
-	public String multipleMethods(HttpServletRequest req){
-		return ControllerGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + req.getMethod();
-	}
+    @WebAction(httpMethods = {HttpMethod.GET, HttpMethod.POST})
+    public String multipleMethods(HttpServletRequest req){
+        return ControllerGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + req.getMethod();
+    }
 }

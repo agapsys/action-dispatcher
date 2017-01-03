@@ -17,32 +17,34 @@
 package com.agapsys.rcf.exceptions;
 
 public class ClientException extends UncheckedException {
-	private final int httpsStatus;
-	private final Integer appStatus;
-	
-	public ClientException(int httpStatus) {
-		this(httpStatus, null);
-	}
-	
-	public ClientException(int httpStatus, Integer appStatus) {
-		this(httpStatus, appStatus, "");
-	}
-	
-	public ClientException(int httpStatus, String msg, Object...msgArgs) {
-		this(httpStatus, null, msg, msgArgs);
-	}
-	
-	public ClientException(int httpStatus, Integer appStatus, String msg, Object...msgArgs) {
-		super(msg, msgArgs);
-		this.httpsStatus = httpStatus;
-		this.appStatus = appStatus;
-	}
-	
-	public int getHttpStatus() {
-		return httpsStatus;
-	}
 
-	public Integer getAppStatus() {
-		return appStatus;
-	}
+    private final int httpsStatus;
+    private final int appStatus;
+
+    public ClientException(int httpStatus) {
+        this(httpStatus, null);
+    }
+
+    public ClientException(int httpStatus, Integer appStatus) {
+        this(httpStatus, appStatus, "");
+    }
+
+    public ClientException(int httpStatus, String msg, Object...msgArgs) {
+        this(httpStatus, null, msg, msgArgs);
+    }
+
+    public ClientException(int httpStatus, Integer appStatus, String msg, Object...msgArgs) {
+        super(msg, msgArgs);
+        this.httpsStatus = httpStatus;
+        this.appStatus = appStatus;
+    }
+
+    public int getHttpStatus() {
+        return httpsStatus;
+    }
+
+    public Integer getAppStatus() {
+        return appStatus;
+    }
+    
 }

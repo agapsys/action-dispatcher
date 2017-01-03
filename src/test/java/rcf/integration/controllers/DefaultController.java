@@ -25,14 +25,14 @@ import rcf.integration.ControllerGeneralTest;
 @WebController("defaultController")
 public class DefaultController extends PublicController {
 
-	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
-	public String get(HttpServletRequest req) {
-		return ControllerGeneralTest.DEFAULT_ACTION_GET_URL;
-	}
+    @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
+    public String get(HttpServletRequest req) {
+        return ControllerGeneralTest.DEFAULT_ACTION_GET_URL;
+    }
 
 
-	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
-	public String post(HttpServletRequest req) {
-		return ControllerGeneralTest.DEFAULT_ACTION_POST_URL;
-	}
+    @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
+    public String post(HttpServletRequest req) {
+        return ControllerGeneralTest.DEFAULT_ACTION_POST_URL;
+    }
 }

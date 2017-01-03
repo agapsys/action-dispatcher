@@ -17,25 +17,27 @@
 package com.agapsys.rcf.exceptions;
 
 public class ForbiddenException extends ClientException {
-	// CLASS SCOPE =============================================================
-	public static final int CODE = 403;
-	// =========================================================================
-	
-	// INSTANCE SCOPE ==========================================================
-	public ForbiddenException() {
-		this(null);
-	}
 
-	public ForbiddenException(Integer appStatus) {
-		this(appStatus, "");
-	}
-	
-	public ForbiddenException(String msg, Object...msgArgs) {
-		this(null, msg, msgArgs);
-	}
-	
-	public ForbiddenException(Integer appStatus, String msg, Object...msgArgs) {
-		super(CODE, appStatus, msg, msgArgs);
-	}
-	// =========================================================================
+    // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
+    // =========================================================================
+    public static final int CODE = 403;
+    // =========================================================================
+    // </editor-fold>
+
+    public ForbiddenException() {
+        this(null);
+    }
+
+    public ForbiddenException(Integer appStatus) {
+        this(appStatus, "");
+    }
+
+    public ForbiddenException(String msg, Object...msgArgs) {
+        this(null, msg, msgArgs);
+    }
+
+    public ForbiddenException(Integer appStatus, String msg, Object...msgArgs) {
+        super(CODE, appStatus, msg, msgArgs);
+    }
+
 }

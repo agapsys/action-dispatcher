@@ -29,29 +29,29 @@ import rcf.integration.ControllerGeneralTest;
 @WebController // <-- default mapping will be "phase"
 public class PhaseController extends PublicController {
 
-	@Override
-	public void beforeAction(HttpExchange exchange) throws ServletException, IOException {
-		exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
-	}
+    @Override
+    public void beforeAction(HttpExchange exchange) throws ServletException, IOException {
+        exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
+    }
 
-	@Override
-	public void afterAction(HttpExchange exchange) throws ServletException, IOException {
-		exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
-	}
+    @Override
+    public void afterAction(HttpExchange exchange) throws ServletException, IOException {
+        exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
+    }
 
-	@Override
-	public void onNotFound(HttpExchange exchange) throws ServletException, IOException {
-		exchange.getCoreResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
-		exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
-	}
+    @Override
+    public void onNotFound(HttpExchange exchange) throws ServletException, IOException {
+        exchange.getCoreResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
+        exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
+    }
 
-	@WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
-	public String get(HttpServletRequest req) {
-		return ControllerGeneralTest.PHASE_DEFAULT_URL;
-	}
+    @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
+    public String get(HttpServletRequest req) {
+        return ControllerGeneralTest.PHASE_DEFAULT_URL;
+    }
 
-	@WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
-	public String post(HttpServletRequest req){
-		return ControllerGeneralTest.PHASE_DEFAULT_URL;
-	}
+    @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
+    public String post(HttpServletRequest req){
+        return ControllerGeneralTest.PHASE_DEFAULT_URL;
+    }
 }

@@ -21,29 +21,28 @@ import com.agapsys.rcf.ControllerRegistrationListener;
 import com.agapsys.rcf.WebController;
 
 /**
- *	Utility class to generate container with controllers
- * @author Leandro Oliveira (leandro@agapsys.com)
+ * Utility class to generate container with controllers
  */
 public class ServletContainerBuilder extends com.agapsys.sevlet.container.ServletContainerBuilder<ServletContainerBuilder> {
 
-	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass, String name) {
-		return (ServletContainerBuilder) super.registerServlet(controllerClass, String.format("/%s/*", name));
-	}
+    public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass, String name) {
+        return (ServletContainerBuilder) super.registerServlet(controllerClass, String.format("/%s/*", name));
+    }
 
-	public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass) {
-		WebController annotation = controllerClass.getAnnotation(WebController.class);
+    public ServletContainerBuilder registerController(Class<? extends Controller> controllerClass) {
+        WebController annotation = controllerClass.getAnnotation(WebController.class);
 
-		if (annotation == null)
-			throw new IllegalArgumentException("Controller class does not have a WebController annotation");
+        if (annotation == null)
+            throw new IllegalArgumentException("Controller class does not have a WebController annotation");
 
-		String name = annotation.value().trim();
+        String name = annotation.value().trim();
 
-		if (name.isEmpty())
-			name = ControllerRegistrationListener.getDefaultMapping(controllerClass);
+        if (name.isEmpty())
+            name = ControllerRegistrationListener.getDefaultMapping(controllerClass);
 
-		registerController(controllerClass, name);
+        registerController(controllerClass, name);
 
-		return this;
-	}
+        return this;
+    }
 
 }

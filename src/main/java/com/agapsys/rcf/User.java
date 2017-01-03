@@ -19,10 +19,10 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- *
  * Represents an user accessing the application.
- * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface User extends Serializable {
-	public Set<String> getRoles();
+
+    public Set<String> getRoles();
+    
 }

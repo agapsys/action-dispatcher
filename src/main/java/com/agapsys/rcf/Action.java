@@ -16,16 +16,20 @@
 
 package com.agapsys.rcf;
 
+import java.io.IOException;
+import javax.servlet.ServletException;
+
 /**
  * Represents an action to be processed by application
- * @author Leandro Oliveira (leandro@agapsys.com)
  */
 public interface Action {
-	
-	/**
-	 * Processes the action.
-	 * @param exchange HTTP exchange
-	 * @throws Throwable if an error happened during the operation
-	 */
-	public void processRequest(HttpExchange exchange) throws Throwable;
+
+    /**
+     * Processes the action.
+     * @param request HTTP request
+     * @param response HTTP response
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     * @throws ServletException if the HTTP request cannot be handled.
+     */
+    public void processRequest(HttpRequest request, HttpResponse response) throws IOException, ServletException;
 }

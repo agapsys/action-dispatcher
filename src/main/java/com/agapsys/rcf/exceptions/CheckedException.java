@@ -15,24 +15,20 @@
  */
 package com.agapsys.rcf.exceptions;
 
-/**
- *
- * @author Leandro Oliveira (leandro@agapsys.com)
- */
 public class CheckedException extends Exception {
 
-	public CheckedException() {}
+    public CheckedException() {}
 
-	public CheckedException(String msg, Object...msgArgs) {
-		super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg);
-	}
+    public CheckedException(String msg, Object...msgArgs) {
+        super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg);
+    }
 
-	public CheckedException(Throwable throwable) {
-		super(throwable);
-	}
+    public CheckedException(Throwable throwable) {
+        super(throwable);
+    }
 
-	public CheckedException(Throwable throwable, String msg, Object...msgArgs) {
-		super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg, throwable);
-	}
+    public CheckedException(Throwable throwable, String msg, Object...msgArgs) {
+        super(msgArgs.length > 0 ? String.format(msg, msgArgs) : msg, throwable);
+    }
 
 }

@@ -16,24 +16,27 @@
 package com.agapsys.rcf.exceptions;
 
 public class UnauthorizedException extends ClientException {
-	// CLASS SCOPE =============================================================
-	public static final int CODE = 401;
-	// =========================================================================
-	
-	// INSTANCE SCOPE ==========================================================
-	public UnauthorizedException() {
-		this(null);
-	}
 
-	public UnauthorizedException(Integer appStatus) {
-		this(appStatus, "");
-	}
-	
-	public UnauthorizedException(String msg, Object...msgArgs) {
-		this(null, msg, msgArgs);
-	}
-	
-	public UnauthorizedException(Integer appStatus, String msg, Object...msgArgs) {
-		super(CODE, appStatus, msg, msgArgs);
-	}
+    // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
+    // =========================================================================
+    public static final int CODE = 401;
+    // =========================================================================
+    // </editor-fold>
+
+    public UnauthorizedException() {
+        this(null);
+    }
+
+    public UnauthorizedException(Integer appStatus) {
+        this(appStatus, "");
+    }
+
+    public UnauthorizedException(String msg, Object...msgArgs) {
+        this(null, msg, msgArgs);
+    }
+
+    public UnauthorizedException(Integer appStatus, String msg, Object...msgArgs) {
+        super(CODE, appStatus, msg, msgArgs);
+    }
+    
 }

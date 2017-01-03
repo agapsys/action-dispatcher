@@ -18,25 +18,27 @@ package com.agapsys.rcf.exceptions;
 
 /** Exception thrown when a request does does not contain expected data. */
 public class BadRequestException extends ClientException {
-	// CLASS SCOPE =============================================================
-	public static final int CODE = 400;
-	// =========================================================================
-	
-	// INSTANCE SCOPE ==========================================================
-	public BadRequestException() {
-		this(null);
-	}
 
-	public BadRequestException(Integer appStatus) {
-		this(appStatus, "");
-	}
+    // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
+    // =========================================================================
+    public static final int CODE = 400;
+    // =========================================================================
+    // </editor-fold>
 
-	public BadRequestException(String msg, Object...msgArgs) {
-		this(null, msg, msgArgs);
-	}
-	
-	public BadRequestException(Integer appStatus, String msg, Object... msgArgs) {
-		super(CODE, appStatus, msg, msgArgs);
-	}
-	// =========================================================================
+    public BadRequestException() {
+        this(null);
+    }
+
+    public BadRequestException(Integer appStatus) {
+        this(appStatus, "");
+    }
+
+    public BadRequestException(String msg, Object...msgArgs) {
+        this(null, msg, msgArgs);
+    }
+
+    public BadRequestException(Integer appStatus, String msg, Object... msgArgs) {
+        super(CODE, appStatus, msg, msgArgs);
+    }
+
 }

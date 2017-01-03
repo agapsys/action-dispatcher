@@ -7,152 +7,134 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class ActionServlet<HE extends HttpExchange> extends HttpServlet {
+public class ActionServlet extends HttpServlet {
 
-	private final ActionDispatcher actionDispatcher = new ActionDispatcher();
-	private final LazyInitializer lazyInitializer = new LazyInitializer() {
-		@Override
-		protected void onInitialize() {
-			synchronized (ActionServlet.class) {
-				onInit();
-			}
-		}
-	};
+    private final ActionDispatcher actionDispatcher = new ActionDispatcher() {
 
-	/**
-	 * Called during servlet initialization.
-	 *
-	 * This is the place to register actions. This method will be called only once during servlet instance life-cycle.
-	 */
-	protected void onInit() {}
+        @Override
+        protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+            super.beforeAction(request, response);
+            ActionServlet.this.beforeAction(request, response);
+        }
 
-	/**
-	 * Called upon endpoint not found.
-	 *
-	 * @param exchange HTTP exchange. Default implementation sends a {@linkplain HttpServletResponse#SC_NOT_FOUND} status.
-	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled.
-	 */
-	protected void onNotFound(HE exchange) throws ServletException, IOException {
-		exchange.getCoreResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
-	}
+        @Override
+        protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+            super.afterAction(request, response);
+            ActionServlet.this.afterAction(request, response);
+        }
+    };
+    private boolean initialized = false;
 
-	/**
-	 * Called when an uncaught error happens while processing an action. Default implementation does nothing.
-	 *
-	 * @param exchange HTTP exchange.
-	 * @param throwable error.
-	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled.
-	 * @return a boolean indicating if given error was handled. Default implementation returns false.
-	 */
-	protected boolean onUncaughtError(HE exchange, Throwable throwable) throws ServletException, IOException {
-		return false;
-	}
+    /**
+     * Returns a boolean indicating this servlet initialization status.
+     *
+     * @return a boolean indicating this servlet initialization status.
+     */
+    protected synchronized boolean isInitialized() {
+        return initialized;
+    }
 
-	/**
-	 * Called upon a error thrown due to client request.
-	 *
-	 * @param exchange HTTP exchange. Default implementation sends a 4XX status according to given exception.
-	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled
-	 */
-	protected void onClientError(HE exchange, ClientException error) throws ServletException, IOException {
-		HttpServletResponse coreResp = exchange.getCoreResponse();
+    private synchronized void __init() {
+        if (!isInitialized()) {
+            onInit();
+            initialized = true;
+        }
+    }
 
-		coreResp.setStatus(error.getHttpStatus());
-		Integer appStatus = error.getAppStatus();
-		coreResp.getWriter().printf(
-			"%s%s",
-			appStatus == null ? "" : String.format("%d:", appStatus),
-			error.getMessage()
-		);
-	}
+    /**
+     * Called during servlet initialization.
+     *
+     * This is the ideal place to register actions. This method will be called only once during servlet instance life-cycle.
+     */
+    protected void onInit() {}
 
-	/**
-	 * Register an action
-	 *
-	 * @param method HTTP method
-	 * @param path path relative to this provider Servlet mapping
-	 * @param action action associated with given parameters.
-	 */
-	protected void registerAction(HttpMethod method, String path, Action action) {
+    /**
+     * Register an action.
+     *
+     * @param method HTTP method.
+     * @param path path relative to this provider Servlet mapping.
+     * @param action action associated with given parameters.
+     */
+    protected synchronized void registerAction(HttpMethod method, String path, Action action) {
+        actionDispatcher.registerAction(method, path, action);
+    }
 
-		if (lazyInitializer.isInitialized())
-			throw new IllegalStateException("Servlet is already initialized");
+    /**
+     * Called when an uncaught error happened while processing the request.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @param uncaughtError uncaught error.
+     * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     * @return a boolean indicating if given error shall be propagated. Default implementation just returns true. In order to suppress the error, implementation should return false.
+     */
+    protected boolean onUncaughtError(HttpRequest request, HttpResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
+        return true;
+    }
 
-		if (!path.startsWith("/")) {
-			path = "/" + path;
-		}
+    /**
+     * Called upon a client error.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @param error client error.
+     * @throws ServletException if the HTTP request cannot be handled
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     */
+    protected void onClientError(HttpRequest request, HttpResponse response, ClientException error) throws ServletException, IOException {
+        response.setStatus(error.getHttpStatus());
+        Integer appStatus = error.getAppStatus();
+        response._getServletResponse().getWriter().printf(
+            "%s%s",
+            appStatus == null ? "" : String.format("%d:", appStatus),
+            error.getMessage()
+        );
+    }
 
-		actionDispatcher.registerAction(action, method, path);
-	}
 
-	/**
-	 * Called before an action. This method will be called only if an action associated to given request is found and it it allowed to be processed (see {@link SecurityManager}). Default implementation does nothing.
-	 *
-	 * @param exchange HTTP exchange.
-	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled.
-	 */
-	protected void beforeAction(HE exchange) throws ServletException, IOException {}
+    /**
+     * Called before an action. Default implementation does nothing.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     */
+    protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
 
-	/**
-	 * Called after an action. This method will be called only if an action associated to given request is found, the action is allowed to be processed (see {@link SecurityManager}), and the action was successfully processed. Default implementation does nothing.
-	 *
-	 * @param exchange HTTP exchange.
-	 * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
-	 * @throws ServletException if the HTTP request cannot be handled.
-	 */
-	protected void afterAction(HE exchange) throws ServletException, IOException {}
+    /**
+     * Called after an action processing. Default implementation does nothing.
+     *
+     * @param request HTTP request.
+     * @param response HTTP response.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
+     * @throws ServletException if the HTTP request cannot be handled.
+     */
+    protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
 
-	/**
-	 * Returns the HTTP exchange used by this servlet.
-	 *
-	 * @param req HTTP request.
-	 * @param resp HTTP response.
-	 * @return HTTP exchange.
-	 */
-	protected HE getHttpExchange(HttpServletRequest req, HttpServletResponse resp) {
-		return (HE) new HttpExchange(req, resp);
-	}
+    @Override
+    protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        __init();
 
-	@Override
-	protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!lazyInitializer.isInitialized()) {
-			lazyInitializer.initialize();
-		}
+        HttpRequest request;
+        HttpResponse response;
 
-		Action action = actionDispatcher.getAction(req);
+       try {
+           request = new HttpRequest(req, resp);
+           response = new HttpResponse(req, resp);
+       } catch (ClientException ex) {
+           resp.setStatus(ex.getHttpStatus());
+           return;
+       }
 
-		HE exchange = getHttpExchange(req, resp);
-
-		if (action == null) {
-			onNotFound(exchange);
-		} else {
-			try {
-				beforeAction(exchange);
-				action.processRequest(exchange);
-				afterAction(exchange);
-			} catch (ClientException ex) {
-				onClientError(exchange, ex);
-			} catch (Throwable ex) {
-				if (!onUncaughtError(exchange, ex)) {
-					if (ex instanceof RuntimeException) {
-						throw (RuntimeException) ex;
-					}
-
-					if (ex instanceof ServletException) {
-						throw (ServletException) ex;
-					}
-
-					if (ex instanceof IOException) {
-						throw (IOException) ex;
-					}
-
-					throw new ServletException(ex);
-				}
-			}
-		}
-	}
+        try {
+            actionDispatcher.dispatch(request, response);
+        } catch (ClientException ex) {
+            onClientError(request, response, ex);
+        } catch (RuntimeException ex) {
+            if (onUncaughtError(request, response, ex))
+                throw ex;
+        }
+    }
 }
