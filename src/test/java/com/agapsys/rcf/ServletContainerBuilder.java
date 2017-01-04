@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-package rcf;
-
-import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.ControllerRegistrationListener;
-import com.agapsys.rcf.WebController;
+package com.agapsys.rcf;
 
 /**
  * Utility class to generate container with controllers

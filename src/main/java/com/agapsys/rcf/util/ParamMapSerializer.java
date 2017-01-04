@@ -210,14 +210,15 @@ public class ParamMapSerializer {
     }
 
     public static class TimestampSerializer extends DefaultTypeSerializer<Date> {
+        private volatile boolean initialized = false;
+        private SimpleDateFormat sdf;
 
-        LazyInitializer<SimpleDateFormat> sdf = new LazyInitializer<SimpleDateFormat>() {
-
-            @Override
-            protected SimpleDateFormat getLazyInstance() {
-                return new SimpleDateFormat(getFormatPattern());
+        private synchronized void __init() {
+            if (initialized) {
+                sdf = new SimpleDateFormat(getFormatPattern());
+                initialized = true;
             }
-        };
+        }
 
         protected String getFormatPattern() {
              return "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -225,11 +226,13 @@ public class ParamMapSerializer {
 
         @Override
         public Date getObject(String str) throws SerializerException {
+            __init();
+
             if (str == null || str.trim().isEmpty())
                 return null;
 
             try {
-                return sdf.getInstance().parse(str);
+                return sdf.parse(str);
             } catch (ParseException ex) {
                 throw new SerializerException("Invalid timestamp value: %s", str);
             }

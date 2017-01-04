@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package rcf.integration;
+package com.agapsys.rcf.integration;
 
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpHeader;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.http.StringEntityRequest.StringEntityPost;
 import com.agapsys.rcf.ControllerRegistrationListener;
+import com.agapsys.rcf.ServletContainerBuilder;
+import com.agapsys.rcf.integration.controllers.Controller1;
+import com.agapsys.rcf.integration.controllers.Controller2;
+import com.agapsys.rcf.integration.controllers.DefaultController;
+import com.agapsys.rcf.integration.controllers.PhaseController;
+import com.agapsys.rcf.integration.controllers.PublicController;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import javax.servlet.http.HttpServletResponse;
@@ -28,12 +34,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import rcf.ServletContainerBuilder;
-import rcf.integration.controllers.Controller1;
-import rcf.integration.controllers.Controller2;
-import rcf.integration.controllers.DefaultController;
-import rcf.integration.controllers.PhaseController;
-import rcf.integration.controllers.PublicController;
 
 public class ControllerGeneralTest {
     // STATIC SCOPE ============================================================

@@ -14,35 +14,39 @@
  * limitations under the License.
  */
 
-package rcf.integration.controllers;
+package com.agapsys.rcf.integration.controllers;
 
-import com.agapsys.rcf.HttpExchange;
 import com.agapsys.rcf.HttpMethod;
+import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.HttpResponse;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
+import com.agapsys.rcf.exceptions.ClientException;
+import com.agapsys.rcf.integration.ControllerGeneralTest;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import rcf.integration.ControllerGeneralTest;
 
 @WebController // <-- default mapping will be "phase"
 public class PhaseController extends PublicController {
 
     @Override
-    public void beforeAction(HttpExchange exchange) throws ServletException, IOException {
-        exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
+    protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+        response.setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
     }
 
     @Override
-    public void afterAction(HttpExchange exchange) throws ServletException, IOException {
-        exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
+    protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+        response.setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
     }
 
     @Override
-    public void onNotFound(HttpExchange exchange) throws ServletException, IOException {
-        exchange.getCoreResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
-        exchange.getCoreResponse().setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
+    protected void onClientError(HttpRequest request, HttpResponse response, ClientException error) throws ServletException, IOException {
+        if (error.getHttpStatus() == HttpServletResponse.SC_NOT_FOUND) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
+        }
     }
 
     @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)

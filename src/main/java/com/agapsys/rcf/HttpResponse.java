@@ -24,6 +24,7 @@ public class HttpResponse extends ServletExchange {
 
     private final HttpResponse wrappedResponse;
 
+    // Generic constructor
     HttpResponse(HttpResponse wrappedResponse, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         super(servletRequest, servletResponse);
         this.wrappedResponse = wrappedResponse;
@@ -83,6 +84,16 @@ public class HttpResponse extends ServletExchange {
      */
     public final HttpResponse removeCookie(String name, String path) {
         addCookie(name, null, 0, path);
+        return this;
+    }
+
+    public final HttpResponse setHeader(String name, String value) {
+        _getServletResponse().setHeader(name, value);
+        return this;
+    }
+
+    public final HttpResponse addHeader(String name, String value) {
+        _getServletResponse().addHeader(name, value);
         return this;
     }
 

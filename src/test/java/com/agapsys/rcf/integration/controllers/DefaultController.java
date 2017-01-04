@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Agapsys Tecnologia Ltda-ME.
+ * Copyright 2015 Agapsys Tecnologia Ltda-ME.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package rcf.integration.controllers;
 
-import com.agapsys.rcf.Controller;
+package com.agapsys.rcf.integration.controllers;
+
+import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import javax.servlet.http.HttpServletRequest;
+import com.agapsys.rcf.integration.ControllerGeneralTest;
 
-@WebController
-public class Controller2 extends Controller{
-    @WebAction
-    public void get(HttpServletRequest req) {}
+@WebController("defaultController")
+public class DefaultController extends PublicController {
+
+    @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
+    public String get(HttpServletRequest req) {
+        return ControllerGeneralTest.DEFAULT_ACTION_GET_URL;
+    }
+
+
+    @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
+    public String post(HttpServletRequest req) {
+        return ControllerGeneralTest.DEFAULT_ACTION_POST_URL;
+    }
 }

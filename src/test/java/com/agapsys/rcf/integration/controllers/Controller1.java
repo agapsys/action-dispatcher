@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package rcf.integration.controllers;
+package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.WebAction;
 import javax.servlet.http.HttpServletRequest;
 
-public class Controller1 extends Controller{
+public class Controller1 extends Controller {
+
     @WebAction
     public void get(HttpServletRequest req) {}
+
 }

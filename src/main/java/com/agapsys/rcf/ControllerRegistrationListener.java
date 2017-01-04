@@ -30,7 +30,7 @@ import javax.servlet.ServletRegistration.Dynamic;
 
 /**
  * Controller registration listener.
- * Reads META-INF/controllers.info file an registers all controllers with the application.
+ * Reads META-INF/controllers.info file and registers all controllers with the application.
  */
 public class ControllerRegistrationListener implements ServletContextListener {
 
@@ -38,10 +38,10 @@ public class ControllerRegistrationListener implements ServletContextListener {
     public static final String EMBEDDED_INFO_FILE = "META-INF/rcf.info";
     private static final String MAPPING_DEFAULT_SUFFIX = "controller";
 
-    private static List<String> readEmbeddedInfo(String embeddedFileName, String encoding) {
+    private static List<String> __readEmbeddedInfo(String embeddedFileName, String encoding) {
         try (InputStream is = ControllerRegistrationListener.class.getClassLoader().getResourceAsStream(embeddedFileName)) {
             if (is != null)
-                return readEmbeddedInfo(is, encoding);
+                return __readEmbeddedInfo(is, encoding);
 
             return new LinkedList<>();
         } catch (IOException ex) {
@@ -49,7 +49,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
         }
     }
 
-    private static List<String> readEmbeddedInfo(InputStream is, String encoding) {
+    private static List<String> __readEmbeddedInfo(InputStream is, String encoding) {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(is, encoding));
             List<String> lines = new LinkedList<>();
@@ -70,8 +70,8 @@ public class ControllerRegistrationListener implements ServletContextListener {
         }
     }
 
-    private static Map<String, Class<? extends Controller>> getControllerMap() {
-        List<String> lines = readEmbeddedInfo(EMBEDDED_INFO_FILE, "UTF-8");
+    private static Map<String, Class<? extends Controller>> __getControllerMap() {
+        List<String> lines = __readEmbeddedInfo(EMBEDDED_INFO_FILE, "UTF-8");
         Map<String, Class<? extends Controller>> controllerMap = new LinkedHashMap<>();
 
         for (String line : lines) {
@@ -86,13 +86,16 @@ public class ControllerRegistrationListener implements ServletContextListener {
 
             Class<? extends Controller> controllerClass;
 
-            if (components.length == 1) {
-                controllerClassName = components[0];
-            } else if (components.length == 2) {
-                controllerMapping = components[0];
-                controllerClassName = components[1];
-            } else {
-                throw new RuntimeException(String.format("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line));
+            switch (components.length) {
+                case 1:
+                    controllerClassName = components[0];
+                    break;
+                case 2:
+                    controllerMapping = components[0];
+                    controllerClassName = components[1];
+                    break;
+                default:
+                    throw new RuntimeException(String.format("Invalid entry in %s: %s", EMBEDDED_INFO_FILE, line));
             }
 
             try {
@@ -131,7 +134,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
     public static String getDefaultMapping(Class<? extends Controller> controllerClass) {
         String mapping = controllerClass.getSimpleName();
 
-        if (mapping.toLowerCase().endsWith(MAPPING_DEFAULT_SUFFIX.toLowerCase()))
+        if (mapping.toLowerCase().endsWith(MAPPING_DEFAULT_SUFFIX))
             mapping = mapping.substring(0, 1).toLowerCase() + mapping.substring(1, mapping.length() - MAPPING_DEFAULT_SUFFIX.length());
 
         return mapping;
@@ -143,7 +146,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext sc = sce.getServletContext();
         if (sc.getMajorVersion() >= 3) {
-            for (Map.Entry<String, Class<? extends Controller>> entry : getControllerMap().entrySet()) {
+            for (Map.Entry<String, Class<? extends Controller>> entry : __getControllerMap().entrySet()) {
                 Class<? extends Controller> controllerClass = entry.getValue();
                 final Dynamic dn = sc.addServlet(controllerClass.getName(), controllerClass);
 
@@ -153,7 +156,7 @@ public class ControllerRegistrationListener implements ServletContextListener {
                 dn.addMapping(urlPattern);
             }
         } else {
-            throw new RuntimeException("Web Controller Framework requires Servlet 3.x specification support");
+            throw new RuntimeException("REST Controller Framework requires Servlet 3.x specification support");
         }
     }
 

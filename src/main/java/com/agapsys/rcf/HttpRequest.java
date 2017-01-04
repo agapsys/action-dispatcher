@@ -76,6 +76,7 @@ public class HttpRequest extends ServletExchange {
         return;
     }
 
+    // Generic constructor
     HttpRequest(String parentPath, HttpRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
         super(servletRequest, servletResponse);
         this.wrappedRequest = wrappedRequest;

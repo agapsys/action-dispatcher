@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package rcf;
+package com.agapsys.rcf.integration;
 
 import com.agapsys.http.HttpGet;
-import com.agapsys.http.HttpResponse;
 import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.Dto;
-import com.agapsys.rcf.HttpExchange;
+import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.HttpResponse;
+import com.agapsys.rcf.ServletContainerBuilder;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.ServletException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,12 +72,12 @@ public class DtoControllerTest extends Controller {
     }
 
     @WebAction
-    public SourceObject getObject(HttpExchange exchange) {
+    public SourceObject getObject(HttpRequest request, HttpResponse response) throws ServletException, IOException {
         return new SourceObject(1);
     }
 
     @WebAction
-    public List<SourceObject> getList(HttpExchange exchange) {
+    public List<SourceObject> getList(HttpRequest request, HttpResponse response) throws ServletException, IOException {
         List<SourceObject> list = new LinkedList<>();
         list.add(new SourceObject(0));
         list.add(new SourceObject(1));
@@ -85,7 +87,7 @@ public class DtoControllerTest extends Controller {
     }
 
     @WebAction
-    public Set<SourceObject> getSet(HttpExchange exchange) {
+    public Set<SourceObject> getSet(HttpRequest request, HttpResponse response) throws ServletException, IOException {
         Set<SourceObject> set = new LinkedHashSet<>();
         set.add(new SourceObject(3));
         set.add(new SourceObject(4));
@@ -94,7 +96,7 @@ public class DtoControllerTest extends Controller {
     }
 
     @WebAction
-    public Map<Object, SourceObject> getMap(HttpExchange exchange) {
+    public Map<Object, SourceObject> getMap(HttpRequest request, HttpResponse response) throws ServletException, IOException {
         Map<Object, SourceObject> map = new LinkedHashMap<>();
         map.put("a", new SourceObject(1));
         map.put("b", new SourceObject(3));

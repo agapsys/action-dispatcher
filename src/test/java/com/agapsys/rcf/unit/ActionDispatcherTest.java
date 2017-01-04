@@ -13,27 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package rcf.unit;
+package com.agapsys.rcf.unit;
 
 import com.agapsys.rcf.Action;
 import com.agapsys.rcf.ActionDispatcher;
-import com.agapsys.rcf.HttpExchange;
 import com.agapsys.rcf.HttpMethod;
-import javax.servlet.http.HttpServletResponse;
+import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.HttpResponse;
+import java.io.IOException;
+import javax.servlet.ServletException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ActionDispatcherTest {
-    // CLASS SCOPE =============================================================
-    private static class TestAction implements Action {
+
+    private class TestAction implements Action {
+
+        private boolean called = false;
+
         @Override
-        public void processRequest(HttpExchange exchange) {
-            exchange.getCoreResponse().setStatus(HttpServletResponse.SC_OK);
+        public void processRequest(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+            called = true;
+        }
+
+        public void assertCalled() {
+            try {
+                Assert.assertTrue(called);
+            } catch (RuntimeException ex) {
+                called = false;
+                throw ex;
+            }
         }
     }
-    // =========================================================================
 
-    // INSTANCE SCOPE ==========================================================
     private ActionDispatcher dispatcher;
 
     @Before
@@ -43,27 +56,28 @@ public class ActionDispatcherTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testPassNullAction() {
-        dispatcher.registerAction(null, HttpMethod.POST, "/test");
+        dispatcher.registerAction(HttpMethod.POST, "/test", null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testPassNullMethod() {
-        TestAction action = new TestAction();
-        dispatcher.registerAction(action, null, "/test");
+        dispatcher.registerAction(null, "/test", new TestAction());
     }
 
     @Test
     public void testSameUrlDistinctMethods() {
         TestAction action = new TestAction();
-        dispatcher.registerAction(action, HttpMethod.GET, "/test");
-        dispatcher.registerAction(action, HttpMethod.POST, "/test");
+
+        dispatcher.registerAction(HttpMethod.GET, "/test", action);
+        dispatcher.registerAction(HttpMethod.POST, "/test", action);
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void testSameUrlSameMethod() {
         TestAction action = new TestAction();
-        dispatcher.registerAction(action, HttpMethod.GET, "/test");
-        dispatcher.registerAction(action, HttpMethod.GET, "/test");
+
+        dispatcher.registerAction(HttpMethod.GET, "/test", action);
+        dispatcher.registerAction(HttpMethod.GET, "/test", action);
     }
     // =========================================================================
 }

@@ -28,8 +28,9 @@ public interface Action {
      * Processes the action.
      * @param request HTTP request
      * @param response HTTP response
-     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    public void processRequest(HttpRequest request, HttpResponse response) throws IOException, ServletException;
+    public void processRequest(HttpRequest request, HttpResponse response) throws ServletException, IOException;
+    
 }
