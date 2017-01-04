@@ -16,102 +16,25 @@
 package com.agapsys.rcf.integration;
 
 import com.agapsys.http.HttpGet;
-import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.HttpRequest;
-import com.agapsys.rcf.HttpResponse;
+import com.agapsys.http.HttpResponse;
 import com.agapsys.rcf.ServletContainerBuilder;
-import com.agapsys.rcf.WebAction;
-import com.agapsys.rcf.WebController;
+import com.agapsys.rcf.integration.controllers.DtoController;
 import com.agapsys.sevlet.container.ServletContainer;
 import com.agapsys.sevlet.container.StacktraceErrorHandler;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.servlet.ServletException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-@WebController("dto")
-public class DtoControllerTest extends Controller {
+public class DtoControllerTest {
 
-    public static class SourceObject implements Dto {
-        public final int srcVal;
-
-        public SourceObject(int val) {
-            this.srcVal = val;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("srcVal:%d", srcVal);
-        }
-
-        @Override
-        public Object getDto() {
-            return new DoubleDto(this);
-        }
-    }
-
-    public static class DoubleDto {
-        public final int dtoVal;
-
-        public DoubleDto(SourceObject obj) {
-            this.dtoVal = obj.srcVal * 2;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("dtoVal:%d", dtoVal);
-        }
-    }
-
-    @WebAction
-    public SourceObject getObject(HttpRequest request, HttpResponse response) throws ServletException, IOException {
-        return new SourceObject(1);
-    }
-
-    @WebAction
-    public List<SourceObject> getList(HttpRequest request, HttpResponse response) throws ServletException, IOException {
-        List<SourceObject> list = new LinkedList<>();
-        list.add(new SourceObject(0));
-        list.add(new SourceObject(1));
-        list.add(new SourceObject(2));
-
-        return list;
-    }
-
-    @WebAction
-    public Set<SourceObject> getSet(HttpRequest request, HttpResponse response) throws ServletException, IOException {
-        Set<SourceObject> set = new LinkedHashSet<>();
-        set.add(new SourceObject(3));
-        set.add(new SourceObject(4));
-        set.add(new SourceObject(5));
-        return set;
-    }
-
-    @WebAction
-    public Map<Object, SourceObject> getMap(HttpRequest request, HttpResponse response) throws ServletException, IOException {
-        Map<Object, SourceObject> map = new LinkedHashMap<>();
-        map.put("a", new SourceObject(1));
-        map.put("b", new SourceObject(3));
-        map.put("c", new SourceObject(5));
-        return map;
-    }
-
-    // Test code ---------------------------------------------------------------
     private ServletContainer sc;
 
     @Before
     public void before() {
         // Register controllers directly...
         sc = new ServletContainerBuilder()
-            .registerController(DtoControllerTest.class)
+            .registerController(DtoController.class)
             .setErrorHandler(new StacktraceErrorHandler())
             .build();
 
