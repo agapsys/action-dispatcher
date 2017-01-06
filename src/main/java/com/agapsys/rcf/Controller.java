@@ -87,7 +87,8 @@ public class Controller extends ActionServlet {
             int indexOfOpenParenthesis = signature.indexOf("(");
             int indexOfCloseParenthesis = signature.indexOf(")");
 
-            String[] args = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim().split(Pattern.quote(","));
+            String argString = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
+            String[] args = argString.isEmpty() ? new String[0] : argString.split(Pattern.quote(","));
 
             if (args.length == 0) {
                 return true; // <-- accepts no args...
@@ -121,11 +122,15 @@ public class Controller extends ActionServlet {
 
             for (Class<?> type : method.getParameterTypes()) {
 
-                if (HttpRequest.class.isAssignableFrom(type))
+                if (HttpRequest.class.isAssignableFrom(type)) {
                     argList.add(request);
+                    continue;
+                }
 
-                if (HttpResponse.class.isAssignableFrom(type))
+                if (HttpResponse.class.isAssignableFrom(type)) {
                     argList.add(response);
+                    continue;
+                }
 
                 throw new UnsupportedOperationException(String.format("Unsupported param type: %s", type.getName()));
             }
@@ -303,7 +308,7 @@ public class Controller extends ActionServlet {
                 String path = webAction.mapping().trim();
 
                 if (path.isEmpty()) {
-                    path = method.getName();
+                    path = "/" + method.getName();
                 }
 
                 MethodCallerAction action = new MethodCallerAction(method, webAction.secured(), webAction.requiredRoles());

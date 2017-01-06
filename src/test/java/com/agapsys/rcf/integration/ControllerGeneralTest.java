@@ -51,10 +51,10 @@ public class ControllerGeneralTest {
     // Secured actions ---------------------------------------------------------
     public static final String PUBLIC_DEFAULT                   = "/public";
     public static final String PUBLIC_GET_URL                   = "/public/get";
-    public static final String PUBLIC_MAPPED_GET_URL            = "/public/mapped/get";
-    public static final String PUBLIC_MAPPED_WITH_SLASH_GET_URL = "/public/mapped/get2";
+    public static final String PUBLIC_MAPPED_GET_URL            = "/public/mappedGet";
+    public static final String PUBLIC_MAPPED_WITH_SLASH_GET_URL = "/public/mappedGet2";
     public static final String PUBLIC_POST_URL                  = "/public/post";
-    public static final String PUBLIC_MAPPED_POST_URL           = "/public/mapped/post";
+    public static final String PUBLIC_MAPPED_POST_URL           = "/public/mappedPost";
     public static final String PUBLIC_WEBACTIONS_URL            = "/public/repeatableGetOrPost";
     public static final String PUBLIC_MULTIPLE_METHODS_URL      = "/public/multipleMethods";
 
@@ -94,6 +94,7 @@ public class ControllerGeneralTest {
         // Controller registration via listener...
         sc2 = new ServletContainerBuilder()
             .registerEventListener(ControllerRegistrationListener.class)
+            .setErrorHandler(new StacktraceErrorHandler())
             .build();
 
         sc1.startServer();

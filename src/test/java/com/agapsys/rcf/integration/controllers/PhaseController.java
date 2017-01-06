@@ -25,7 +25,6 @@ import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.integration.ControllerGeneralTest;
 import java.io.IOException;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebController // <-- default mapping will be "phase"
@@ -50,12 +49,12 @@ public class PhaseController extends PublicController {
     }
 
     @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
-    public String get(HttpServletRequest req) {
+    public String get(HttpRequest req) {
         return ControllerGeneralTest.PHASE_DEFAULT_URL;
     }
 
     @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
-    public String post(HttpServletRequest req){
+    public String post(HttpRequest req){
         return ControllerGeneralTest.PHASE_DEFAULT_URL;
     }
 }

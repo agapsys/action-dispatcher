@@ -41,8 +41,9 @@ public class SecuredController extends Controller {
         registerUser(request, response, new AppUser(request.getOptionalParameter(PARAM_ROLE, "")));
     }
 
+    // NOTE the order of parameters is inverted intentionally to ensure controller's MethodActionDispatcher is invoked correctly.
     @WebAction
-    public void unlogUser(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    public void unlogUser(HttpResponse response, HttpRequest request) throws ServletException, IOException {
         registerUser(request, response, null);
     }
 

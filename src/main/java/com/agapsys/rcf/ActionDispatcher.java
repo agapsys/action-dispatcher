@@ -94,10 +94,10 @@ public class ActionDispatcher {
      * @throws NotFoundException if there is not action to process given request.
      */
     public synchronized void dispatch(HttpRequest request, HttpResponse response) throws ServletException, IOException, NotFoundException {
-        String uri = request.getRequestUri();
-        int secondSlashIndex = uri.indexOf("/", 1);
+        String pathInfo = request.getPathInfo();
+        int secondSlashIndex = pathInfo.indexOf("/", 1);
 
-        String actionPath = secondSlashIndex == -1 ? uri : uri.substring(0, secondSlashIndex);
+        String actionPath = secondSlashIndex == -1 ? pathInfo : pathInfo.substring(0, secondSlashIndex);
 
         Map<String, Action> methodMap = actionMap.get(request.getMethod());
 
@@ -124,7 +124,7 @@ public class ActionDispatcher {
         if (action == null)
             throw new NotFoundException();
 
-        if (actionPath.equals(uri) && !uri.endsWith("/") && usingWildcard) { // <-- mapping: '/foo/*', uri: '/foo[?query=string]'. => redirects to '/foo/[?query=string]'
+        if (actionPath.equals(pathInfo) && !pathInfo.endsWith("/") && usingWildcard) { // <-- mapping: '/foo/*', uri: '/foo[?query=string]'. => redirects to '/foo/[?query=string]'
             String queryString = request.getQueryString();
             String redirectPath = request.getRequestUri() + "/";
             if (queryString != null)
@@ -132,9 +132,11 @@ public class ActionDispatcher {
 
             response.sendRedirect(redirectPath);
         } else {
-            if (!usingWildcard && !uri.equals(actionPath)) { // <-- mapping: '/foo', uri: '/foo/[?query=string]'. => redirects to '/foo[?query=string]'
-                if (HttpRequest._getRelativePath(actionPath, uri).equals("/")) {
-                    String redirectPath = uri.substring(0, uri.length() - 1);
+            if (!usingWildcard && !pathInfo.equals(actionPath)) { // <-- mapping: '/foo', uri: '/foo/[?query=string]'. => redirects to '/foo[?query=string]'
+                if (HttpRequest._getRelativePath(actionPath, pathInfo).equals("/")) {
+
+                    String requestUri = request.getRequestUri();
+                    String redirectPath = requestUri.substring(0, requestUri.length() - 1);
                     String queryString = request.getQueryString();
                     if (queryString != null)
                         redirectPath = redirectPath + "?" + queryString;
@@ -144,8 +146,12 @@ public class ActionDispatcher {
                     throw new NotFoundException();
                 }
             } else {
+                String parentPath = request.getRequestUri().replaceFirst(Pattern.quote(pathInfo), "");
+
+                request = new HttpRequest(parentPath, request);
+
                 beforeAction(request, response);
-                action.processRequest(new HttpRequest(actionPath, request), response);
+                action.processRequest(request, response);
                 afterAction(request, response);
             }
         }

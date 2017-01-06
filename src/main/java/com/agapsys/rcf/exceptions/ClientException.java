@@ -19,7 +19,7 @@ package com.agapsys.rcf.exceptions;
 public class ClientException extends UncheckedException {
 
     private final int httpsStatus;
-    private final int appStatus;
+    private final Integer appStatus;
 
     public ClientException(int httpStatus) {
         this(httpStatus, null);
@@ -46,5 +46,5 @@ public class ClientException extends UncheckedException {
     public Integer getAppStatus() {
         return appStatus;
     }
-    
+
 }
