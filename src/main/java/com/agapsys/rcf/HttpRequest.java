@@ -90,7 +90,8 @@ public class HttpRequest extends ServletExchange {
         requestUri = servletRequest.getRequestURI();
 
         if (wrappedRequest == null || parentPath == null) {
-            pathInfo = servletRequest.getPathInfo();
+            String pathInfo = servletRequest.getPathInfo();
+            this.pathInfo = pathInfo == null ? "/" : pathInfo;
             metadata = new LinkedHashMap<>();
             Map<String, String> tmpParameters = new LinkedHashMap<>();
             for (Map.Entry<String, String[]> entry : servletRequest.getParameterMap().entrySet()) {

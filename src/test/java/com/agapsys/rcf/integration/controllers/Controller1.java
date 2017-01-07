@@ -17,11 +17,10 @@ package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.WebAction;
-import javax.servlet.http.HttpServletRequest;
 
 public class Controller1 extends Controller {
 
     @WebAction
-    public void get(HttpServletRequest req) {}
+    public void get() {}
 
 }
