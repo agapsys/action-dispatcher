@@ -38,18 +38,18 @@ import org.junit.Test;
 public class ControllerGeneralTest {
     // STATIC SCOPE ============================================================
     // Default actions ---------------------------------------------------------
-    public static final String DEFAULT_ACTION_DEFAULT_URL = "/defaultController";
+    public static final String DEFAULT_ACTION_DEFAULT_URL = "/defaultController/";
     public static final String DEFAULT_ACTION_GET_URL     = "/defaultController/get";
     public static final String DEFAULT_ACTION_POST_URL    = "/defaultController/post";
 
     // Phase actions -----------------------------------------------------------
-    public static final String PHASE_DEFAULT_URL       = "/phase";
+    public static final String PHASE_DEFAULT_URL       = "/phase/";
     public static final String PHASE_BEFORE_HEADER     = "before-header";
     public static final String PHASE_AFTER_HEADER      = "before-header";
     public static final String PHASE_NOT_FOUND_HEADER  = "not-found";
 
     // Secured actions ---------------------------------------------------------
-    public static final String PUBLIC_DEFAULT                   = "/public";
+    public static final String PUBLIC_DEFAULT                   = "/public/";
     public static final String PUBLIC_GET_URL                   = "/public/get";
     public static final String PUBLIC_MAPPED_GET_URL            = "/public/mappedGet";
     public static final String PUBLIC_MAPPED_WITH_SLASH_GET_URL = "/public/mappedGet2";
@@ -135,27 +135,11 @@ public class ControllerGeneralTest {
         assertResponseEquals(DEFAULT_ACTION_GET_URL, resp);
         // ---------------------------------------------------------------------
 
-        // GET: DEFAULT + "/"
-        resp = sc1.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL + "/"));
-        assertResponseEquals(DEFAULT_ACTION_GET_URL, resp);
-
-        resp = sc2.doRequest(new HttpGet(DEFAULT_ACTION_DEFAULT_URL + "/"));
-        assertResponseEquals(DEFAULT_ACTION_GET_URL, resp);
-        // ---------------------------------------------------------------------
-
         // POST: DEFAULT
         resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL));
         assertResponseEquals(DEFAULT_ACTION_POST_URL, resp);
 
         resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL));
-        assertResponseEquals(DEFAULT_ACTION_POST_URL, resp);
-        // ---------------------------------------------------------------------
-
-        // POST: DEFAULT + "/"
-        resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL + "/"));
-        assertResponseEquals(DEFAULT_ACTION_POST_URL, resp);
-
-        resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", DEFAULT_ACTION_DEFAULT_URL + "/"));
         assertResponseEquals(DEFAULT_ACTION_POST_URL, resp);
         // ---------------------------------------------------------------------
     }
@@ -242,7 +226,7 @@ public class ControllerGeneralTest {
         // ---------------------------------------------------------------------
 
         // GET: NOT FOUND
-        resp = sc1.doRequest(new HttpGet(PHASE_DEFAULT_URL + "/unknown"));
+        resp = sc1.doRequest(new HttpGet(PHASE_DEFAULT_URL + "unknown"));
         beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
         afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
         notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -255,7 +239,7 @@ public class ControllerGeneralTest {
 
         Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
 
-        resp = sc2.doRequest(new HttpGet(PHASE_DEFAULT_URL + "/unknown"));
+        resp = sc2.doRequest(new HttpGet(PHASE_DEFAULT_URL + "unknown"));
         beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
         afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
         notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -270,7 +254,7 @@ public class ControllerGeneralTest {
         // ---------------------------------------------------------------------
 
         // POST: NOT FOUND -----------------------------------------------------
-        resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "/unknown"));
+        resp = sc1.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "unknown"));
         beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
         afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
         notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -283,7 +267,7 @@ public class ControllerGeneralTest {
 
         Assert.assertEquals(PHASE_NOT_FOUND_HEADER, notFoundHeader.getValue());
 
-        resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "/unknown"));
+        resp = sc2.doRequest(new StringEntityPost("text/plain", "utf-8", PHASE_DEFAULT_URL + "unknown"));
         beforeHeader = resp.getFirstHeader(PHASE_BEFORE_HEADER);
         afterHeader = resp.getFirstHeader(PHASE_AFTER_HEADER);
         notFoundHeader = resp.getFirstHeader(PHASE_NOT_FOUND_HEADER);
@@ -423,6 +407,61 @@ public class ControllerGeneralTest {
 
         resp = sc2.doRequest(new HttpGet("/%s/get", Controller2.class.getSimpleName()));
         assertStatus(200, resp);
+    }
+
+    @Test
+    public void testWildCardMapping() {
+        StringResponse resp;
+
+        resp = sc2.doRequest(new HttpGet("/%s/", Controller1.class.getSimpleName()));
+        assertResponseEquals("/", resp);
+
+        resp = sc2.doRequest(new HttpGet("/%s/test1/test2", Controller1.class.getSimpleName()));
+        assertResponseEquals("/test1/test2", resp);
+
+        resp = sc2.doRequest(new HttpGet("/%s/wildcard/extra/path", Controller1.class.getSimpleName()));
+        assertResponseEquals("/extra/path", resp);
+    }
+
+    @Test
+    public void testRedirects() {
+        StringResponse resp;
+
+        // Redirect due to missing trailing slash ------------------------------
+        resp = sc2.doRequest(new HttpGet("/%s", Controller1.class.getSimpleName()));
+        assertStatus(301, resp);
+        Assert.assertEquals(String.format("/%s/", Controller1.class.getSimpleName()), resp.getFirstHeader("Location").getValue());
+        // ---------------------------------------------------------------------
+
+        // Redirect due to trailing slash --------------------------------------
+        resp = sc2.doRequest(new HttpGet("/%s/get/", Controller1.class.getSimpleName()));
+        assertStatus(301, resp);
+        Assert.assertEquals(String.format("/%s/get", Controller1.class.getSimpleName()), resp.getFirstHeader("Location").getValue());
+
+        resp = sc2.doRequest(new HttpGet("/%s/get/?key=value", Controller1.class.getSimpleName()));
+        assertStatus(301, resp);
+        Assert.assertEquals(String.format("/%s/get?key=value", Controller1.class.getSimpleName()), resp.getFirstHeader("Location").getValue());
+        // ---------------------------------------------------------------------
+
+        // Redirect due to missing trailing slash ------------------------------
+        resp = sc2.doRequest(new HttpGet("/%s/wildcard", Controller1.class.getSimpleName()));
+        assertStatus(301, resp);
+        Assert.assertEquals(String.format("/%s/wildcard/", Controller1.class.getSimpleName()), resp.getFirstHeader("Location").getValue());
+
+        resp = sc2.doRequest(new HttpGet("/%s/wildcard?key=value", Controller1.class.getSimpleName()));
+        assertStatus(301, resp);
+        Assert.assertEquals(String.format("/%s/wildcard/?key=value", Controller1.class.getSimpleName()), resp.getFirstHeader("Location").getValue());
+        // ---------------------------------------------------------------------
+    }
+
+    @Test
+    public void testDoubleSlash() {
+        StringResponse resp;
+        resp = sc2.doRequest(new HttpGet("/%s/get//", Controller1.class.getSimpleName()));
+        assertStatus(404, resp);
+
+        resp = sc2.doRequest(new HttpGet("/%s//", Controller1.class.getSimpleName()));
+        assertStatus(404, resp);
     }
     // =========================================================================
 }

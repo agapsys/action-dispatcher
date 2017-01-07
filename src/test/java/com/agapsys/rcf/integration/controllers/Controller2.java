@@ -16,7 +16,7 @@
 package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 
@@ -24,6 +24,6 @@ import com.agapsys.rcf.WebController;
 public class Controller2 extends Controller {
 
     @WebAction
-    public void get(HttpRequest req) {}
+    public void get(ActionRequest req) {}
 
 }

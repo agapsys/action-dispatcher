@@ -31,6 +31,6 @@ public interface Action {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    public void processRequest(HttpRequest request, HttpResponse response) throws ServletException, IOException;
+    public void processRequest(ActionRequest request, ActionResponse response) throws ServletException, IOException;
     
 }

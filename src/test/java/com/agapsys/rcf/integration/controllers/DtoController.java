@@ -60,12 +60,12 @@ public class DtoController extends Controller {
     }
 
     @WebAction
-    public SourceObject getObject(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    public SourceObject getObject(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         return new SourceObject(1);
     }
 
     @WebAction
-    public List<SourceObject> getList(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    public List<SourceObject> getList(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         List<SourceObject> list = new LinkedList<>();
         list.add(new SourceObject(0));
         list.add(new SourceObject(1));
@@ -75,7 +75,7 @@ public class DtoController extends Controller {
     }
 
     @WebAction
-    public Set<SourceObject> getSet(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    public Set<SourceObject> getSet(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         Set<SourceObject> set = new LinkedHashSet<>();
         set.add(new SourceObject(3));
         set.add(new SourceObject(4));
@@ -84,7 +84,7 @@ public class DtoController extends Controller {
     }
 
     @WebAction
-    public Map<Object, SourceObject> getMap(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    public Map<Object, SourceObject> getMap(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         Map<Object, SourceObject> map = new LinkedHashMap<>();
         map.put("a", new SourceObject(1));
         map.put("b", new SourceObject(3));

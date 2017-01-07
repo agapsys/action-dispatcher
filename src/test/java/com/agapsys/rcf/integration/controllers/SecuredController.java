@@ -16,8 +16,8 @@
 package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.HttpRequest;
-import com.agapsys.rcf.HttpResponse;
+import com.agapsys.rcf.ActionRequest;
+import com.agapsys.rcf.ActionResponse;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.integration.AppUser;
@@ -37,13 +37,13 @@ public class SecuredController extends Controller {
     public void securedGetWithRoles() {}
 
     @WebAction
-    public void logUser(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    public void logUser(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         registerUser(request, response, new AppUser(request.getOptionalParameter(PARAM_ROLE, "")));
     }
 
     // NOTE the order of parameters is inverted intentionally to ensure controller's MethodActionDispatcher is invoked correctly.
     @WebAction
-    public void unlogUser(HttpResponse response, HttpRequest request) throws ServletException, IOException {
+    public void unlogUser(ActionResponse response, ActionRequest request) throws ServletException, IOException {
         registerUser(request, response, null);
     }
 

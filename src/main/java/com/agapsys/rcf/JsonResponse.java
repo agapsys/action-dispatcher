@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.http.HttpServletResponse;
 
-public class JsonResponse extends HttpResponse {
+public class JsonResponse extends ActionResponse {
 
-    public JsonResponse(HttpResponse wrappedResponse) {
+    public JsonResponse(ActionResponse wrappedResponse) {
         super(wrappedResponse);
     }
 

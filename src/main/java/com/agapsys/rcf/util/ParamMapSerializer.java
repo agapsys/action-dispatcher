@@ -16,7 +16,7 @@
 
 package com.agapsys.rcf.util;
 
-import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.exceptions.CheckedException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -332,7 +332,7 @@ public class ParamMapSerializer {
         return targetObject;
     }
 
-    public final <T> T getObject(HttpRequest request, Class<T> targetClass) throws MissingSerializerException, SerializerException {
+    public final <T> T getObject(ActionRequest request, Class<T> targetClass) throws MissingSerializerException, SerializerException {
         return getObject(request.getParameterMap(), targetClass);
     }
 

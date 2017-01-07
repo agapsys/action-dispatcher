@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
-public class HttpRequest extends ServletExchange {
+public class ActionRequest extends ServletExchange {
 
     static String _getRelativePath(String parent, String child) {
         if (parent.endsWith("/"))
@@ -40,7 +40,7 @@ public class HttpRequest extends ServletExchange {
         return tmpPath.startsWith("/") ? tmpPath : "/" + tmpPath;
     }
 
-    private final HttpRequest         wrappedRequest;
+    private final ActionRequest         wrappedRequest;
     private final HttpMethod          method;
     private final String              requestUri;
     private final String              pathInfo;
@@ -77,7 +77,7 @@ public class HttpRequest extends ServletExchange {
     }
 
     // Generic constructor
-    HttpRequest(String parentPath, HttpRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
+    ActionRequest(String parentPath, ActionRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
         super(servletRequest, servletResponse);
         this.wrappedRequest = wrappedRequest;
 
@@ -100,21 +100,21 @@ public class HttpRequest extends ServletExchange {
             }
             paramMap = Collections.unmodifiableMap(tmpParameters);
         } else { // <-- wrappedRequest != null && parentPath != null
-            pathInfo = _getRelativePath(parentPath, requestUri);
+            pathInfo = _getRelativePath(parentPath, wrappedRequest.pathInfo);
             metadata = wrappedRequest.metadata;
             paramMap = wrappedRequest.paramMap;
         }
     }
 
-    HttpRequest(String parentPath, HttpRequest wrappedRequest) {
+    ActionRequest(String parentPath, ActionRequest wrappedRequest) {
         this(parentPath, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest._getServletResponse());
     }
 
-    HttpRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+    ActionRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         this(null, null, servletRequest, servletResponse);
     }
 
-    protected HttpRequest(HttpRequest wrappedRequest) {
+    protected ActionRequest(ActionRequest wrappedRequest) {
         this(null, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest._getServletResponse());
     }
 
@@ -127,7 +127,7 @@ public class HttpRequest extends ServletExchange {
         return method;
     }
 
-    protected final HttpRequest getWrappedRequest() {
+    protected final ActionRequest getWrappedRequest() {
         return wrappedRequest;
     }
 

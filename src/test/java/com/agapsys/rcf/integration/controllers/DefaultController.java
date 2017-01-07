@@ -17,7 +17,7 @@
 package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.HttpMethod;
-import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebActions;
 import com.agapsys.rcf.WebController;
@@ -31,7 +31,7 @@ public class DefaultController extends PublicController {
         @WebAction(httpMethods = HttpMethod.GET),
         @WebAction(httpMethods = HttpMethod.GET, mapping = "/")
     })
-    public String get(HttpRequest req) {
+    public String get(ActionRequest req) {
         return ControllerGeneralTest.DEFAULT_ACTION_GET_URL;
     }
 

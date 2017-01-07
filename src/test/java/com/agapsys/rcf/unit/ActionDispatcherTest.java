@@ -18,8 +18,8 @@ package com.agapsys.rcf.unit;
 import com.agapsys.rcf.Action;
 import com.agapsys.rcf.ActionDispatcher;
 import com.agapsys.rcf.HttpMethod;
-import com.agapsys.rcf.HttpRequest;
-import com.agapsys.rcf.HttpResponse;
+import com.agapsys.rcf.ActionRequest;
+import com.agapsys.rcf.ActionResponse;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import org.junit.Assert;
@@ -33,7 +33,7 @@ public class ActionDispatcherTest {
         private boolean called = false;
 
         @Override
-        public void processRequest(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+        public void processRequest(ActionRequest request, ActionResponse response) throws ServletException, IOException {
             called = true;
         }
 

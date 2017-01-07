@@ -17,8 +17,8 @@
 package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.HttpMethod;
-import com.agapsys.rcf.HttpRequest;
-import com.agapsys.rcf.HttpResponse;
+import com.agapsys.rcf.ActionRequest;
+import com.agapsys.rcf.ActionResponse;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebActions;
 import com.agapsys.rcf.WebController;
@@ -32,17 +32,17 @@ import javax.servlet.http.HttpServletResponse;
 public class PhaseController extends PublicController {
 
     @Override
-    protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    protected void beforeAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         response.setHeader(ControllerGeneralTest.PHASE_BEFORE_HEADER, ControllerGeneralTest.PHASE_BEFORE_HEADER);
     }
 
     @Override
-    protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    protected void afterAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         response.setHeader(ControllerGeneralTest.PHASE_AFTER_HEADER, ControllerGeneralTest.PHASE_AFTER_HEADER);
     }
 
     @Override
-    protected void onClientError(HttpRequest request, HttpResponse response, ClientException error) throws ServletException, IOException {
+    protected void onClientError(ActionRequest request, ActionResponse response, ClientException error) throws ServletException, IOException {
         if (error.getHttpStatus() == HttpServletResponse.SC_NOT_FOUND) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.setHeader(ControllerGeneralTest.PHASE_NOT_FOUND_HEADER, ControllerGeneralTest.PHASE_NOT_FOUND_HEADER);
@@ -53,7 +53,7 @@ public class PhaseController extends PublicController {
         @WebAction(httpMethods = HttpMethod.GET),
         @WebAction(httpMethods = HttpMethod.GET, mapping = "/")
     })
-    public String get(HttpRequest req) {
+    public String get(ActionRequest req) {
         return ControllerGeneralTest.PHASE_DEFAULT_URL;
     }
 
@@ -61,7 +61,7 @@ public class PhaseController extends PublicController {
         @WebAction(httpMethods = HttpMethod.POST),
         @WebAction(httpMethods = HttpMethod.POST, mapping = "/")
     })
-    public String post(HttpRequest req){
+    public String post(ActionRequest req){
         return ControllerGeneralTest.PHASE_DEFAULT_URL;
     }
 }

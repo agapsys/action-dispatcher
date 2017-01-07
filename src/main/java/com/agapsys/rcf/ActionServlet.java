@@ -12,13 +12,13 @@ public class ActionServlet extends HttpServlet {
     private final ActionDispatcher actionDispatcher = new ActionDispatcher() {
 
         @Override
-        protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+        protected void beforeAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {
             super.beforeAction(request, response);
             ActionServlet.this.beforeAction(request, response);
         }
 
         @Override
-        protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+        protected void afterAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {
             super.afterAction(request, response);
             ActionServlet.this.afterAction(request, response);
         }
@@ -69,7 +69,7 @@ public class ActionServlet extends HttpServlet {
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      * @return a boolean indicating if given error shall be propagated. Default implementation just returns true. In order to suppress the error, implementation should return false.
      */
-    protected boolean onUncaughtError(HttpRequest request, HttpResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
+    protected boolean onUncaughtError(ActionRequest request, ActionResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
         return true;
     }
 
@@ -82,7 +82,7 @@ public class ActionServlet extends HttpServlet {
      * @throws ServletException if the HTTP request cannot be handled
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void onClientError(HttpRequest request, HttpResponse response, ClientException error) throws ServletException, IOException {
+    protected void onClientError(ActionRequest request, ActionResponse response, ClientException error) throws ServletException, IOException {
         response.setStatus(error.getHttpStatus());
         Integer appStatus = error.getAppStatus();
         response._getServletResponse().getWriter().printf(
@@ -101,7 +101,7 @@ public class ActionServlet extends HttpServlet {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
+    protected void beforeAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {}
 
     /**
      * Called after an action processing. Default implementation does nothing.
@@ -111,18 +111,38 @@ public class ActionServlet extends HttpServlet {
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      * @throws ServletException if the HTTP request cannot be handled.
      */
-    protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
+    protected void afterAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {}
 
     @Override
     protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         __init();
 
-        HttpRequest request;
-        HttpResponse response;
+        String pathInfo = req.getPathInfo();
+        if (pathInfo != null && pathInfo.contains("//")) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        if (pathInfo == null && !req.getRequestURI().endsWith("/")) {
+            resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+            String queryString = req.getQueryString();
+            if (queryString == null)
+                queryString = "";
+
+            String location = req.getRequestURI() + "/";
+            if (!queryString.isEmpty())
+                location = String.format("%s?%s", location, queryString);
+
+            resp.addHeader("Location", location);
+            return;
+        }
+
+        ActionRequest request;
+        ActionResponse response;
 
        try {
-           request = new HttpRequest(req, resp);
-           response = new HttpResponse(req, resp);
+           request = new ActionRequest(req, resp);
+           response = new ActionResponse(req, resp);
        } catch (ClientException ex) {
            resp.setStatus(ex.getHttpStatus());
            return;

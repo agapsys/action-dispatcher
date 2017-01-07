@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class JsonRequest extends HttpRequest {
+public class JsonRequest extends ActionRequest {
 
     // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
     // =========================================================================
@@ -119,7 +119,7 @@ public class JsonRequest extends HttpRequest {
     // =========================================================================
     // </editor-fold>
 
-    public JsonRequest(HttpRequest wrappedRequest) {
+    public JsonRequest(ActionRequest wrappedRequest) {
         super(wrappedRequest);
     }
 

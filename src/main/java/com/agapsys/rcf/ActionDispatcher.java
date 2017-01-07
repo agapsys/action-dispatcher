@@ -93,7 +93,7 @@ public class ActionDispatcher {
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      * @throws NotFoundException if there is not action to process given request.
      */
-    public synchronized void dispatch(HttpRequest request, HttpResponse response) throws ServletException, IOException, NotFoundException {
+    public synchronized void dispatch(ActionRequest request, ActionResponse response) throws ServletException, IOException, NotFoundException {
         String pathInfo = request.getPathInfo();
         int secondSlashIndex = pathInfo.indexOf("/", 1);
 
@@ -130,10 +130,10 @@ public class ActionDispatcher {
             if (queryString != null)
                 redirectPath = redirectPath + "?" + queryString;
 
-            response.sendRedirect(redirectPath);
+            response.sendPermanentRedirect(redirectPath);
         } else {
             if (!usingWildcard && !pathInfo.equals(actionPath)) { // <-- mapping: '/foo', uri: '/foo/[?query=string]'. => redirects to '/foo[?query=string]'
-                if (HttpRequest._getRelativePath(actionPath, pathInfo).equals("/")) {
+                if (ActionRequest._getRelativePath(actionPath, pathInfo).equals("/")) {
 
                     String requestUri = request.getRequestUri();
                     String redirectPath = requestUri.substring(0, requestUri.length() - 1);
@@ -141,14 +141,14 @@ public class ActionDispatcher {
                     if (queryString != null)
                         redirectPath = redirectPath + "?" + queryString;
 
-                    response.sendRedirect(redirectPath);
+                    response.sendPermanentRedirect(redirectPath);
                 } else {
                     throw new NotFoundException();
                 }
             } else {
-                String parentPath = request.getRequestUri().replaceFirst(Pattern.quote(pathInfo), "");
-
-                request = new HttpRequest(parentPath, request);
+                if (!actionPath.equals("/")) {
+                    request = new ActionRequest(actionPath, request);
+                }
 
                 beforeAction(request, response);
                 action.processRequest(request, response);
@@ -165,7 +165,7 @@ public class ActionDispatcher {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void beforeAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
+    protected void beforeAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {}
 
     /**
      * Called after an action processing. Default implementation does nothing.
@@ -175,6 +175,6 @@ public class ActionDispatcher {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void afterAction(HttpRequest request, HttpResponse response) throws ServletException, IOException {}
+    protected void afterAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {}
 
 }

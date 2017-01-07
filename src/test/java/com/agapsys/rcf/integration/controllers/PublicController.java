@@ -18,7 +18,7 @@ package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.HttpMethod;
-import com.agapsys.rcf.HttpRequest;
+import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebActions;
 import com.agapsys.rcf.WebController;
@@ -28,37 +28,37 @@ import com.agapsys.rcf.integration.ControllerGeneralTest;
 public class PublicController extends Controller {
 
     @WebAction
-    public String get(HttpRequest req) {
+    public String get(ActionRequest req) {
         return ControllerGeneralTest.PUBLIC_GET_URL;
     }
 
     @WebAction(mapping = "/mappedGet")
-    public String mappedGet(HttpRequest exchange) {
+    public String mappedGet(ActionRequest exchange) {
         return ControllerGeneralTest.PUBLIC_MAPPED_GET_URL;
     }
 
     @WebAction(mapping = "/mappedGet2")
-    public String mappedWithSlash(HttpRequest req) {
+    public String mappedWithSlash(ActionRequest req) {
         return ControllerGeneralTest.PUBLIC_MAPPED_WITH_SLASH_GET_URL;
     }
 
     @WebAction(httpMethods = HttpMethod.POST)
-    public String post(HttpRequest req) {
+    public String post(ActionRequest req) {
         return ControllerGeneralTest.PUBLIC_POST_URL;
     }
 
     @WebAction(httpMethods = HttpMethod.POST, mapping = "/mappedPost")
-    public String mappedPost(HttpRequest req) {
+    public String mappedPost(ActionRequest req) {
         return ControllerGeneralTest.PUBLIC_MAPPED_POST_URL;
     }
 
     @WebActions({@WebAction(httpMethods = HttpMethod.GET),@WebAction(httpMethods = HttpMethod.POST)})
-    public String repeatableGetOrPost(HttpRequest req) {
+    public String repeatableGetOrPost(ActionRequest req) {
         return ControllerGeneralTest.PUBLIC_WEBACTIONS_URL + req.getMethod();
     }
 
     @WebAction(httpMethods = {HttpMethod.GET, HttpMethod.POST})
-    public String multipleMethods(HttpRequest req) {
+    public String multipleMethods(ActionRequest req) {
         return ControllerGeneralTest.PUBLIC_MULTIPLE_METHODS_URL + req.getMethod();
     }
 }

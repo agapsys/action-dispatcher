@@ -16,11 +16,22 @@
 package com.agapsys.rcf.integration.controllers;
 
 import com.agapsys.rcf.Controller;
+import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.WebAction;
 
 public class Controller1 extends Controller {
 
     @WebAction
     public void get() {}
+
+    @WebAction(mapping = "/*")
+    public String rootWilcardGet(ActionRequest req) {
+        return req.getPathInfo();
+    }
+
+    @WebAction(mapping = "/wildcard/*")
+    public String wildCargGet(ActionRequest req) {
+        return req.getPathInfo();
+    }
 
 }

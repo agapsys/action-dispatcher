@@ -52,8 +52,8 @@ public class Controller extends ActionServlet {
 
         private static enum ArgGoal {
             INVALID (new Class[] {} ),
-            REQUEST (new Class[] { HttpRequest.class, HttpServletRequest.class } ),
-            RESPONSE(new Class[] { HttpResponse.class, HttpServletResponse.class} );
+            REQUEST (new Class[] { ActionRequest.class, HttpServletRequest.class } ),
+            RESPONSE(new Class[] { ActionResponse.class, HttpServletResponse.class} );
 
             private static ArgGoal __lookup(Class tested) {
                 for (ArgGoal goal : ArgGoal.values()) {
@@ -122,19 +122,19 @@ public class Controller extends ActionServlet {
             }
         }
 
-        private static Object[] __getCallParams(Method method, HttpRequest request, HttpResponse response) {
+        private static Object[] __getCallParams(Method method, ActionRequest request, ActionResponse response) {
             if (method.getParameterCount() == 0) return EMPTY_OBJ_ARRAY;
 
             List argList = new LinkedList();
 
             for (Class<?> type : method.getParameterTypes()) {
 
-                if (HttpRequest.class.isAssignableFrom(type)) {
+                if (ActionRequest.class.isAssignableFrom(type)) {
                     argList.add(request);
                     continue;
                 }
 
-                if (HttpResponse.class.isAssignableFrom(type)) {
+                if (ActionResponse.class.isAssignableFrom(type)) {
                     argList.add(response);
                     continue;
                 }
@@ -185,7 +185,7 @@ public class Controller extends ActionServlet {
             this.secured = secured || requiredRoles.length > 0;
         }
 
-        private void __checkSecurity(HttpRequest request, HttpResponse response) throws ServletException, IOException, UnauthorizedException, ForbiddenException {
+        private void __checkSecurity(ActionRequest request, ActionResponse response) throws ServletException, IOException, UnauthorizedException, ForbiddenException {
             if (secured) {
                 User user = getUser(request, response);
 
@@ -262,7 +262,7 @@ public class Controller extends ActionServlet {
         }
 
         @Override
-        public void processRequest(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+        public void processRequest(ActionRequest request, ActionResponse response) throws ServletException, IOException {
             try {
                 __checkSecurity(request, response);
 
@@ -354,7 +354,7 @@ public class Controller extends ActionServlet {
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
      */
-    protected boolean onControllerError(HttpRequest request, HttpResponse response, Throwable uncaughtError) throws ServletException, IOException {
+    protected boolean onControllerError(ActionRequest request, ActionResponse response, Throwable uncaughtError) throws ServletException, IOException {
         return true;
     }
 
@@ -367,7 +367,7 @@ public class Controller extends ActionServlet {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected User getUser(HttpRequest request, HttpResponse response) throws ServletException, IOException {
+    protected User getUser(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         HttpSession session = request.getServletRequest().getSession(false);
         if (session == null)
             return null;
@@ -385,7 +385,7 @@ public class Controller extends ActionServlet {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void registerUser(HttpRequest request, HttpResponse response, User user) throws ServletException, IOException {
+    protected void registerUser(ActionRequest request, ActionResponse response, User user) throws ServletException, IOException {
 
         if (user == null) {
             HttpSession session = request.getServletRequest().getSession(false);
@@ -408,12 +408,12 @@ public class Controller extends ActionServlet {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void sendObject(HttpRequest request, HttpResponse response, Object obj) throws ServletException, IOException {
+    protected void sendObject(ActionRequest request, ActionResponse response, Object obj) throws ServletException, IOException {
         new JsonResponse(response).sendObject(obj);
     }
 
     @Override
-    protected final boolean onUncaughtError(HttpRequest request, HttpResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
+    protected final boolean onUncaughtError(ActionRequest request, ActionResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
         super.onUncaughtError(request, response, uncaughtError);
 
         Throwable cause = uncaughtError.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
