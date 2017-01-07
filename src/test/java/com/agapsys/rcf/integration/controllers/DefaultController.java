@@ -21,6 +21,7 @@ import com.agapsys.rcf.HttpRequest;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.integration.ControllerGeneralTest;
+import javax.servlet.http.HttpServletRequest;
 
 @WebController("defaultController")
 public class DefaultController extends PublicController {
@@ -32,7 +33,7 @@ public class DefaultController extends PublicController {
 
 
     @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
-    public String post(HttpRequest req) {
+    public String post(HttpServletRequest req) {
         return ControllerGeneralTest.DEFAULT_ACTION_POST_URL;
     }
 }

@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -48,26 +50,37 @@ public class Controller extends ActionServlet {
     // Validates a candidate method to be interpreted as an action
     private static class MethodActionValidator {
 
-        private static final Class[] SUPPORTED_CLASSES = new Class[] {
-            HttpRequest.class,
-            HttpResponse.class
-        };
+        private static enum ArgGoal {
+            INVALID (new Class[] {} ),
+            REQUEST (new Class[] { HttpRequest.class, HttpServletRequest.class } ),
+            RESPONSE(new Class[] { HttpResponse.class, HttpServletResponse.class} );
 
-        /**
-         * Returns a boolean indicating if a class is supported as an argument of an action method.
-         *
-         * @param tested tested class
-         * @param supportedClasses supported classes
-         * @return a boolean indicating if a class is supported as an argument of an action method.
-         */
-        private static boolean __isSupported(Class tested) {
-            for (Class c : SUPPORTED_CLASSES) {
-                if (c.isAssignableFrom(tested)) {
-                    return true;
+            private static ArgGoal __lookup(Class tested) {
+                for (ArgGoal goal : ArgGoal.values()) {
+
+                    for (Class c : goal.supportedClasses) {
+                        if (c.isAssignableFrom(tested))
+                            return goal;
+                    }
+                }
+
+                return INVALID;
+            }
+
+            private static ArgGoal __lookup(String testedClassName) {
+                try {
+                    return __lookup(Class.forName(testedClassName));
+                } catch (ClassNotFoundException ex) {
+                    return INVALID;
                 }
             }
 
-            return false;
+            private final Class[] supportedClasses;
+
+            private ArgGoal(Class[] supportedClasses) {
+                this.supportedClasses = supportedClasses;
+            }
+
         }
 
         /**
@@ -90,29 +103,23 @@ public class Controller extends ActionServlet {
             String argString = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
             String[] args = argString.isEmpty() ? new String[0] : argString.split(Pattern.quote(","));
 
-            if (args.length == 0) {
-                return true; // <-- accepts no args...
-            }
+            switch (args.length) {
+                case 0:
+                    return true;
 
-            if (args.length > 2) {
-                return false; // <-- rejects more than two args...
-            }
+                case 1:
+                    return ArgGoal.__lookup(args[0]) != ArgGoal.INVALID;
 
-            if (args.length == 2 && (args[0].equals(args[1]))) {
-                return false; // <-- rejects two args with same class...
-            }
+                case 2: {
+                    ArgGoal arg0Goal = ArgGoal.__lookup(args[0]);
+                    ArgGoal arg1Goal = ArgGoal.__lookup(args[1]);
 
-            for (String className : args) {
-                try {
-                    Class<?> clazz = Class.forName(className);
-                    if (!__isSupported(clazz))
-                        return false;
-                } catch (ClassNotFoundException ex) {
-                    return false;
+                    return !(arg0Goal == ArgGoal.INVALID || arg1Goal == ArgGoal.INVALID || (arg0Goal == arg1Goal));
                 }
-            }
 
-            return true;
+                default:
+                    return false;
+            }
         }
 
         private static Object[] __getCallParams(Method method, HttpRequest request, HttpResponse response) {
@@ -129,6 +136,16 @@ public class Controller extends ActionServlet {
 
                 if (HttpResponse.class.isAssignableFrom(type)) {
                     argList.add(response);
+                    continue;
+                }
+
+                if (HttpServletRequest.class.isAssignableFrom(type)) {
+                    argList.add(request.getServletRequest());
+                    continue;
+                }
+
+                if (HttpServletResponse.class.isAssignableFrom(type)) {
+                    argList.add(response.getServletResponse());
                     continue;
                 }
 
