@@ -386,6 +386,8 @@ public class Controller extends ActionServlet {
      * @param request HTTP request.
      * @param response HTTP response.
      * @param user user to be registered with given HTTP exchange. Passing null unregisters the user
+     * @throws ServletException if the HTTP request cannot be handled.
+     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
     protected void registerUser(HttpRequest request, HttpResponse response, User user) throws ServletException, IOException {
 

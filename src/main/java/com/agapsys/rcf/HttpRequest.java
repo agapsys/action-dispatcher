@@ -195,7 +195,7 @@ public class HttpRequest extends ServletExchange {
         return val;
     }
 
-    /** @see HttpServletRequest#getHeader(java.lang.String). */
+    /** @see HttpServletRequest#getHeader(java.lang.String) */
     public final String getHeader(String name) {
         return getServletRequest().getHeader(name);
     }
