@@ -19,6 +19,7 @@ package com.agapsys.rcf.integration.controllers;
 import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.HttpRequest;
 import com.agapsys.rcf.WebAction;
+import com.agapsys.rcf.WebActions;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.integration.ControllerGeneralTest;
 import javax.servlet.http.HttpServletRequest;
@@ -26,13 +27,19 @@ import javax.servlet.http.HttpServletRequest;
 @WebController("defaultController")
 public class DefaultController extends PublicController {
 
-    @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
+    @WebActions({
+        @WebAction(httpMethods = HttpMethod.GET),
+        @WebAction(httpMethods = HttpMethod.GET, mapping = "/")
+    })
     public String get(HttpRequest req) {
         return ControllerGeneralTest.DEFAULT_ACTION_GET_URL;
     }
 
 
-    @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
+    @WebActions({
+        @WebAction(httpMethods = HttpMethod.POST),
+        @WebAction(httpMethods = HttpMethod.POST, mapping = "/")
+    })
     public String post(HttpServletRequest req) {
         return ControllerGeneralTest.DEFAULT_ACTION_POST_URL;
     }

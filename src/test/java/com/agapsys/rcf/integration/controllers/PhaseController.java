@@ -20,6 +20,7 @@ import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.HttpRequest;
 import com.agapsys.rcf.HttpResponse;
 import com.agapsys.rcf.WebAction;
+import com.agapsys.rcf.WebActions;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.integration.ControllerGeneralTest;
@@ -48,12 +49,18 @@ public class PhaseController extends PublicController {
         }
     }
 
-    @WebAction(httpMethods = HttpMethod.GET, defaultAction = true)
+    @WebActions({
+        @WebAction(httpMethods = HttpMethod.GET),
+        @WebAction(httpMethods = HttpMethod.GET, mapping = "/")
+    })
     public String get(HttpRequest req) {
         return ControllerGeneralTest.PHASE_DEFAULT_URL;
     }
 
-    @WebAction(httpMethods = HttpMethod.POST, defaultAction = true)
+    @WebActions({
+        @WebAction(httpMethods = HttpMethod.POST),
+        @WebAction(httpMethods = HttpMethod.POST, mapping = "/")
+    })
     public String post(HttpRequest req){
         return ControllerGeneralTest.PHASE_DEFAULT_URL;
     }

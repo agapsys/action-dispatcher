@@ -332,10 +332,6 @@ public class Controller extends ActionServlet {
 
                 for (HttpMethod httpMethod : httpMethods) {
                     registerAction(httpMethod, path, action);
-
-                    if (webAction.defaultAction()) {
-                        registerAction(httpMethod, "/", action);
-                    }
                 }
             }
         }
