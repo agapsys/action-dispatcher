@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class ParamMapSerializer {
 
@@ -214,8 +215,9 @@ public class ParamMapSerializer {
         private SimpleDateFormat sdf;
 
         private synchronized void __init() {
-            if (initialized) {
+            if (!initialized) {
                 sdf = new SimpleDateFormat(getFormatPattern());
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
                 initialized = true;
             }
         }
