@@ -17,10 +17,9 @@ package com.agapsys.rcf.integration;
 
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse;
-import com.agapsys.rcf.ServletContainerBuilder;
+import com.agapsys.jee.StacktraceErrorHandler;
+import com.agapsys.rcf.RcfContainer;
 import com.agapsys.rcf.integration.controllers.DtoController;
-import com.agapsys.sevlet.container.ServletContainer;
-import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,48 +27,47 @@ import org.junit.Test;
 
 public class DtoControllerTest {
 
-    private ServletContainer sc;
+    private RcfContainer rc;
 
     @Before
     public void before() {
         // Register controllers directly...
-        sc = new ServletContainerBuilder()
+        rc = new RcfContainer<>()
             .registerController(DtoController.class)
-            .setErrorHandler(new StacktraceErrorHandler())
-            .build();
+            .setErrorHandler(new StacktraceErrorHandler());
 
-        sc.startServer();
+        rc.start();
     }
 
     @After
     public void after() {
-        sc.stopServer();
+        rc.stop();
     }
 
     @Test
     public void testGetObject() {
-        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getObject"));
+        HttpResponse.StringResponse resp = rc.doRequest(new HttpGet("/dto/getObject"));
         Assert.assertEquals(200, resp.getStatusCode());
         Assert.assertEquals(String.format("{\"dtoVal\":%s}", 2), resp.getContentString());
     }
 
     @Test
     public void testGetList() {
-        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getList"));
+        HttpResponse.StringResponse resp = rc.doRequest(new HttpGet("/dto/getList"));
         Assert.assertEquals(200, resp.getStatusCode());
         Assert.assertEquals(String.format("[{\"dtoVal\":%s},{\"dtoVal\":%s},{\"dtoVal\":%s}]", 0, 2, 4), resp.getContentString());
     }
 
     @Test
     public void testGetSet() {
-        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getSet"));
+        HttpResponse.StringResponse resp = rc.doRequest(new HttpGet("/dto/getSet"));
         Assert.assertEquals(200, resp.getStatusCode());
         Assert.assertEquals(String.format("[{\"dtoVal\":%s},{\"dtoVal\":%s},{\"dtoVal\":%s}]", 6, 8, 10), resp.getContentString());
     }
 
     @Test
     public void testGetMap() {
-        HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/dto/getMap"));
+        HttpResponse.StringResponse resp = rc.doRequest(new HttpGet("/dto/getMap"));
         Assert.assertEquals(200, resp.getStatusCode());
         Assert.assertEquals(String.format("{\"a\":{\"dtoVal\":%s},\"b\":{\"dtoVal\":%s},\"c\":{\"dtoVal\":%s}}", 2, 6, 10), resp.getContentString());
     }

@@ -18,10 +18,9 @@ package com.agapsys.rcf.integration;
 import com.agapsys.http.HttpClient;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse.StringResponse;
-import com.agapsys.rcf.ServletContainerBuilder;
+import com.agapsys.jee.StacktraceErrorHandler;
+import com.agapsys.rcf.RcfContainer;
 import com.agapsys.rcf.integration.controllers.SecuredController;
-import com.agapsys.sevlet.container.ServletContainer;
-import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,25 +28,28 @@ import org.junit.Test;
 
 public class SecuredControllerTest {
 
-    private ServletContainer sc;
+    private RcfContainer rc;
     private StringResponse resp;
 
     @Before
     public void before() {
-        sc = new ServletContainerBuilder().registerController(SecuredController.class).setErrorHandler(new StacktraceErrorHandler()).build();
-        sc.startServer();
+        rc = RcfContainer.newInstance()
+            .registerController(SecuredController.class)
+            .setErrorHandler(new StacktraceErrorHandler());
+
+        rc.start();
     }
 
     @After
     public void after() {
-        sc.stopServer();
+        rc.stop();
     }
 
     @Test
     public void testUnlogged() {
-        resp = sc.doRequest(new HttpGet("/secured/securedGet"));
+        resp = rc.doRequest(new HttpGet("/secured/securedGet"));
         Assert.assertEquals(401, resp.getStatusCode());
-        resp = sc.doRequest(new HttpGet("/secured/securedGetWithRoles"));
+        resp = rc.doRequest(new HttpGet("/secured/securedGetWithRoles"));
         Assert.assertEquals(401, resp.getStatusCode());
     }
 
@@ -55,13 +57,13 @@ public class SecuredControllerTest {
     public void testLoggedWithoutRoles() {
         HttpClient client = new HttpClient();
 
-        resp = sc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, ""));
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, ""));
 
-        resp = sc.doRequest(client, new HttpGet("/secured/logUser"));
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser"));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGet"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
         Assert.assertEquals(403, resp.getStatusCode());
     }
 
@@ -69,11 +71,11 @@ public class SecuredControllerTest {
     public void testLoggedWithRoles() {
         HttpClient client = new HttpClient();
 
-        resp = sc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGet"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
         Assert.assertEquals(200, resp.getStatusCode());
     }
 
@@ -82,19 +84,19 @@ public class SecuredControllerTest {
         HttpClient client = new HttpClient();
 
         // Log (with roles)
-        resp = sc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGet"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
         Assert.assertEquals(200, resp.getStatusCode());
 
         // Unlogging
-        resp = sc.doRequest(client, new HttpGet("/secured/unlogUser"));
+        resp = rc.doRequest(client, new HttpGet("/secured/unlogUser"));
         Assert.assertEquals(200, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGet"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(401, resp.getStatusCode());
-        resp = sc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
         Assert.assertEquals(401, resp.getStatusCode());
     }
     // =========================================================================

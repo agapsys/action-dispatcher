@@ -72,7 +72,7 @@ limitations under the License.
         <!-- Test dependencies -->
         <dependency>
             <groupId>com.agapsys</groupId>
-            <artifactId>embedded-servlet-container</artifactId>
+            <artifactId>testing-servlet-container</artifactId>
             <version>0.1.0</version>
             <scope>test</scope>
         </dependency>

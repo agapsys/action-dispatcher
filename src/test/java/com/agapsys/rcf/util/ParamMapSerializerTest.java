@@ -18,15 +18,14 @@ package com.agapsys.rcf.util;
 
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse;
+import com.agapsys.jee.StacktraceErrorHandler;
 import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.Controller;
-import com.agapsys.rcf.ServletContainerBuilder;
+import com.agapsys.rcf.RcfContainer;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.exceptions.BadRequestException;
 import com.agapsys.rcf.util.ParamMapSerializer.SerializerException;
-import com.agapsys.sevlet.container.ServletContainer;
-import com.agapsys.sevlet.container.StacktraceErrorHandler;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -287,14 +286,14 @@ public class ParamMapSerializerTest {
     @Test
     public void testServlet () {
 
-        ServletContainer sc = new ServletContainerBuilder().registerController(TestController.class).setErrorHandler(new StacktraceErrorHandler()).build();
+        RcfContainer sc = new RcfContainer<>().registerController(TestController.class).setErrorHandler(new StacktraceErrorHandler());
 
-        sc.startServer();
+        sc.start();
 
         HttpResponse.StringResponse resp = sc.doRequest(new HttpGet("/test/get?uuidField=%s&dateField=%s&strField=%s", "2|1", "2015-11-28", "Hello+World áéíóú"));
         Assert.assertEquals(HttpServletResponse.SC_OK, resp.getStatusCode());
         Assert.assertEquals("{\"strField\":\"Hello World áéíóú\",\"booleanField\":false,\"shortField\":0,\"integerField\":0,\"longField\":0,\"floatField\":0.0,\"doubleField\":0.0,\"dateField\":\"2015-11-28T00:00:00.000Z\",\"uuidField\":\"00000000-0000-0001-0000-000000000002\"}", resp.getContentString());
-        sc.stopServer();
+        sc.stop();
     }
     // =========================================================================
 }
