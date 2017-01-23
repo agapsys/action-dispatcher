@@ -363,7 +363,7 @@ public class Controller extends ActionServlet {
      *
      * @param request HTTP request.
      * @param response HTTP response.
-     * @return an user associated with given request. Default uses servlet request session to retrive the user.
+     * @return an user associated with given request. Default uses servlet request session to retrive the user. If a user cannot be retrieved from given request, returns null.
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
