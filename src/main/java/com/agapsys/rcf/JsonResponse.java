@@ -21,6 +21,14 @@ import javax.servlet.http.HttpServletResponse;
 
 public class JsonResponse extends ActionResponse {
 
+    // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
+    // =========================================================================
+    public static String toJson(Object obj) {
+        return JsonRequest.DEFAULT_GSON.toJson(obj);
+    }
+    // =========================================================================
+    // </editor-fold>
+
     public JsonResponse(ActionResponse wrappedResponse) {
         super(wrappedResponse);
     }
@@ -38,7 +46,7 @@ public class JsonResponse extends ActionResponse {
         resp.setCharacterEncoding(JsonRequest.JSON_ENCODING);
 
         PrintWriter out = resp.getWriter();
-        out.write(JsonRequest.DEFAULT_GSON.toJson(object));
+        out.write(toJson(object));
         return this;
     }
 
