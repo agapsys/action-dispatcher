@@ -116,6 +116,14 @@ public class JsonRequest extends ActionRequest {
             }
         }
     }
+
+    public static <T> T readObject(Reader reader, Class<T> targetClass) {
+        return DEFAULT_GSON.fromJson(reader, targetClass);
+    }
+
+    public static <E> List<E> readList(Reader reader, Class<E> elementClass) {
+        return DEFAULT_GSON.fromJson(reader, new ListType(elementClass));
+    }
     // =========================================================================
     // </editor-fold>
 
@@ -143,7 +151,7 @@ public class JsonRequest extends ActionRequest {
 
         try {
             Reader reader = new InputStreamReader(_getServletRequest().getInputStream(), JSON_ENCODING);
-            return DEFAULT_GSON.fromJson(reader, targetClass);
+            return readObject(reader, targetClass);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         } catch (JsonIOException ex) {
@@ -156,16 +164,16 @@ public class JsonRequest extends ActionRequest {
     /**
      * Reads a list of objects contained in request.
      *
-     * @param <T> element type.
+     * @param <E> element type.
      * @param elementClass element class.
      * @return a list of object contained in the request.
      * @throws IOException if an I/O error happened during the process.
      * @throws BadRequestException if data contained in the request does not represent a list of objects.
      */
-    public final <T> List<T> readList(Class<T> elementClass) throws IOException, BadRequestException {
+    public final <E> List<E> readList(Class<E> elementClass) throws IOException, BadRequestException {
         try {
             Reader reader = new InputStreamReader(_getServletRequest().getInputStream(), JSON_ENCODING);
-            return DEFAULT_GSON.fromJson(reader, new ListType(elementClass));
+            return readList(reader, elementClass);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         } catch (JsonIOException ex) {
