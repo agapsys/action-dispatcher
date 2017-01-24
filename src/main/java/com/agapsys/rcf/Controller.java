@@ -27,6 +27,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
@@ -42,7 +44,7 @@ public class Controller extends ActionServlet {
     // <editor-fold desc="STATIC SCOPE">
     // ========================================================================
 
-    // <editor-fold desc="private static members..." defaultstate="collapsed">
+    // <editor-fold desc="Private static members" defaultstate="collapsed">
     // -------------------------------------------------------------------------
     private static final Set<String> EMPTY_ROLE_SET = Collections.unmodifiableSet(new LinkedHashSet<String>());
     private static final Object[]    EMPTY_OBJ_ARRAY = new Object[] {};
@@ -169,7 +171,37 @@ public class Controller extends ActionServlet {
         public Object getDto();
     }
 
+    /** Name of the session attribute used to store current user. */
     public static final String SESSION_ATTR_USER = Controller.class.getName() + ".SESSION_ATTR_USER";
+
+    /** Name of the default session attribute used to store CSRF token. */
+    public static final String SESSION_ATTR_CSRF_TOKEN = Controller.class.getName() + ".SESSION_ATTR_CSRF_TOKEN";
+
+    /** Name of the header used to send/retrieve a CSRF token. */
+    public static final String CSRF_HEADER  = "X-Csrf-Token";
+
+    // Default size of CSRF token
+    private static final int CSRF_TOKEN_LENGTH = 128;
+
+    private static String __getRandom(int length) {
+        char[] chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+        return __getRandom(length, chars);
+    }
+
+    private static String __getRandom(int length, char[] chars)  {
+        if (length < 1) throw new IllegalArgumentException("Invalid length: " + length);
+
+        if (chars == null || chars.length == 0) throw new IllegalArgumentException("Null/Empty chars");
+
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            char c = chars[random.nextInt(chars.length)];
+            sb.append(c);
+        }
+
+        return sb.toString();
+    }
     // =========================================================================
     // </editor-fold>
 
@@ -363,16 +395,28 @@ public class Controller extends ActionServlet {
      *
      * @param request HTTP request.
      * @param response HTTP response.
-     * @return an user associated with given request. Default uses servlet request session to retrive the user. If a user cannot be retrieved from given request, returns null.
+     * @return an user associated with given request. Default uses servlet request session to retrive the user. If a user cannot be retrieved from given request, returns null. Default implementation also verify CSRF attacks.
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
     protected User getUser(ActionRequest request, ActionResponse response) throws ServletException, IOException {
         HttpSession session = request.getServletRequest().getSession(false);
+
         if (session == null)
             return null;
 
-        return (User) session.getAttribute(SESSION_ATTR_USER);
+        User user = (User) session.getAttribute(SESSION_ATTR_USER);
+
+        if (user == null)
+            return null;
+
+        String sessionToken = (String) session.getAttribute(SESSION_ATTR_CSRF_TOKEN);
+        String requestToken = request.getHeader(CSRF_HEADER);
+
+        if (!Objects.equals(sessionToken, requestToken))
+            throw new ForbiddenException("Invalid CSRF header");
+
+        return user;
     }
 
     /**
@@ -381,7 +425,7 @@ public class Controller extends ActionServlet {
      * Default implementation uses servlet request session associated with given request.
      * @param request HTTP request.
      * @param response HTTP response.
-     * @param user user to be registered with given HTTP exchange. Passing null unregisters the user
+     * @param user user to be registered with given HTTP exchange. Passing null unregisters the user. Passing non-null user instance will generate a CSRF token header which will be sent in associated response.
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
@@ -389,12 +433,21 @@ public class Controller extends ActionServlet {
 
         if (user == null) {
             HttpSession session = request.getServletRequest().getSession(false);
-            if (session != null)
+
+            if (session != null) {
                 session.removeAttribute(SESSION_ATTR_USER);
+                session.removeAttribute(SESSION_ATTR_CSRF_TOKEN);
+            }
+
         } else {
             HttpSession session = request.getServletRequest().getSession();
             session.setAttribute(SESSION_ATTR_USER, user);
+
+            String csrfToken = __getRandom(CSRF_TOKEN_LENGTH);
+            session.setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
+            response.addHeader(CSRF_HEADER, csrfToken);
         }
+
     }
 
     /**

@@ -40,12 +40,11 @@ public class ActionRequest extends ServletExchange {
         return tmpPath.startsWith("/") ? tmpPath : "/" + tmpPath;
     }
 
-    private final ActionRequest         wrappedRequest;
+    private final ActionRequest       wrappedRequest;
     private final HttpMethod          method;
     private final String              requestUri;
     private final String              pathInfo;
     private final Map<String, String> paramMap;
-    private final Map<String, Object> metadata;
 
     // TODO make test
     public static void main(String[] args) {
@@ -92,7 +91,6 @@ public class ActionRequest extends ServletExchange {
         if (wrappedRequest == null || parentPath == null) {
             String pathInfo = servletRequest.getPathInfo();
             this.pathInfo = pathInfo == null ? "/" : pathInfo;
-            metadata = new LinkedHashMap<>();
             Map<String, String> tmpParameters = new LinkedHashMap<>();
             for (Map.Entry<String, String[]> entry : servletRequest.getParameterMap().entrySet()) {
                 String[] values = entry.getValue();
@@ -101,7 +99,6 @@ public class ActionRequest extends ServletExchange {
             paramMap = Collections.unmodifiableMap(tmpParameters);
         } else { // <-- wrappedRequest != null && parentPath != null
             pathInfo = _getRelativePath(parentPath, wrappedRequest.pathInfo);
-            metadata = wrappedRequest.metadata;
             paramMap = wrappedRequest.paramMap;
         }
     }
@@ -265,16 +262,16 @@ public class ActionRequest extends ServletExchange {
         return getServletRequest().getQueryString();
     }
 
-    public final Object putMetadata(String key, Object value) {
-        return metadata.put(key, value);
+    public final void putMetadata(String key, Object value) {
+        getServletRequest().setAttribute(key, value);
     }
 
     public final Object getMetadata(String key) {
-        return metadata.get(key);
+        return getServletRequest().getAttribute(key);
     }
 
-    public final Object removeMetadata(String key) {
-        return metadata.remove(key);
+    public final void removeMetadata(String key) {
+        getServletRequest().removeAttribute(key);
     }
 
     public final String getProtocol() {

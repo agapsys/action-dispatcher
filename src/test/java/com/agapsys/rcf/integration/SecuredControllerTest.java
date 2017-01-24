@@ -19,6 +19,7 @@ import com.agapsys.http.HttpClient;
 import com.agapsys.http.HttpGet;
 import com.agapsys.http.HttpResponse.StringResponse;
 import com.agapsys.jee.StacktraceErrorHandler;
+import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.RcfContainer;
 import com.agapsys.rcf.integration.controllers.SecuredController;
 import org.junit.After;
@@ -57,10 +58,11 @@ public class SecuredControllerTest {
     public void testLoggedWithoutRoles() {
         HttpClient client = new HttpClient();
 
-        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, ""));
-
         resp = rc.doRequest(client, new HttpGet("/secured/logUser"));
         Assert.assertEquals(200, resp.getStatusCode());
+
+        client.addDefaultHeader(Controller.CSRF_HEADER, resp.getFirstHeader(Controller.CSRF_HEADER).getValue()); // <-- Sets CSRF token header for each request.
+
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
@@ -73,6 +75,9 @@ public class SecuredControllerTest {
 
         resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
         Assert.assertEquals(200, resp.getStatusCode());
+
+        client.addDefaultHeader(Controller.CSRF_HEADER, resp.getFirstHeader(Controller.CSRF_HEADER).getValue()); // <-- Sets CSRF token header for each request.
+
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
@@ -86,6 +91,9 @@ public class SecuredControllerTest {
         // Log (with roles)
         resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
         Assert.assertEquals(200, resp.getStatusCode());
+
+        client.addDefaultHeader(Controller.CSRF_HEADER, resp.getFirstHeader(Controller.CSRF_HEADER).getValue()); // <-- Sets CSRF token header for each request.
+
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
