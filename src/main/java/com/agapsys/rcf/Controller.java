@@ -414,7 +414,7 @@ public class Controller extends ActionServlet {
         String requestToken = request.getHeader(CSRF_HEADER);
 
         if (!Objects.equals(sessionToken, requestToken))
-            throw new ForbiddenException("Invalid CSRF header");
+            return null;
 
         return user;
     }
