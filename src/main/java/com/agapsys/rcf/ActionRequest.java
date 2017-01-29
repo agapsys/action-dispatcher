@@ -17,10 +17,15 @@ package com.agapsys.rcf;
 
 import com.agapsys.rcf.exceptions.BadRequestException;
 import com.agapsys.rcf.exceptions.MethodNotAllowedException;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +33,108 @@ import javax.servlet.http.HttpServletResponse;
 
 
 public class ActionRequest extends ServletExchange {
+    
+    private static interface ParamConverter<T> {
+        public T getParam(String strVal) throws BadRequestException;
+    }
+    
+    private static abstract class AbstractParamConverter<T> implements ParamConverter<T> {
+        
+        private final boolean trim;
+        
+        public AbstractParamConverter(boolean trim) {
+            this.trim = trim;
+        }
+        
+        public AbstractParamConverter() {
+            this(true);
+        }
+        
+        @Override
+        public final T getParam(String strVal) throws BadRequestException {
+            if (strVal == null)
+                return null;
+            
+            strVal = trim ? strVal.trim() : strVal;
+            try {
+                return _getParam(strVal);
+            } catch (RuntimeException ex) {
+                throw new BadRequestException(ex.getMessage());
+            }
+        }
+        
+        protected abstract T _getParam(String strVal) throws BadRequestException;
+        
+    }
+    
+    private static final Map<Class, ParamConverter> PARAM_CONVERTER_MAP = new LinkedHashMap<>();
+    
+    static {
+         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        
+        PARAM_CONVERTER_MAP.put(Byte.class,       new AbstractParamConverter<Byte>() {
+            @Override
+            public Byte _getParam(String strVal) throws BadRequestException {
+                return Byte.parseByte(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(Short.class,      new AbstractParamConverter<Short>() {
+            @Override
+            protected Short _getParam(String strVal) throws BadRequestException {
+                return Short.parseShort(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(Integer.class,    new AbstractParamConverter<Integer>() {
+            @Override
+            protected Integer _getParam(String strVal) throws BadRequestException {
+                return Integer.parseInt(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(Long.class,       new AbstractParamConverter<Long>() {
+            @Override
+            protected Long _getParam(String strVal) throws BadRequestException {
+                return Long.parseLong(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(Float.class,      new AbstractParamConverter<Float>() {
+            @Override
+            protected Float _getParam(String strVal) throws BadRequestException {
+                return Float.parseFloat(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(Double.class,     new AbstractParamConverter<Double>() {
+            @Override
+            protected Double _getParam(String strVal) throws BadRequestException {
+                return Double.parseDouble(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(BigDecimal.class, new AbstractParamConverter<BigDecimal>() {
+            @Override
+            protected BigDecimal _getParam(String strVal) throws BadRequestException {
+                return new BigDecimal(strVal);
+            }
+        });
+        PARAM_CONVERTER_MAP.put(Date.class,       new AbstractParamConverter<Date>() {
+            
+            
+            @Override
+            protected Date _getParam(String strVal) throws BadRequestException {
+                try {
+                    return sdf.parse(strVal);
+                } catch (ParseException ex) {
+                    throw new BadRequestException(ex.getMessage());
+                }
+            }
+        });
+        PARAM_CONVERTER_MAP.put(String.class,     new AbstractParamConverter<String>(false) {
+            @Override
+            protected String _getParam(String strVal) throws BadRequestException {
+                return strVal;
+            }
+        });
+        
+    }
 
     static String _getRelativePath(String parent, String child) {
         if (parent.endsWith("/"))
@@ -181,15 +288,22 @@ public class ActionRequest extends ServletExchange {
      * @return parameter value
      */
     public final String getOptionalParameter(String paramName, String defaultValue) {
-
-        String val = getServletRequest().getParameter(paramName);
-        if (val == null || val.trim().isEmpty())
-            val = defaultValue;
-
-        if (val != null)
-            val = val.trim();
-
-        return val;
+        return getOptionalParameter(String.class, paramName, defaultValue);
+    }
+    
+    public final <T> T getOptionalParameter(Class<T> targetClass, String paramName, T defaultValue) {
+        String strVal = getServletRequest().getParameter(paramName);
+        ParamConverter<T> converter = PARAM_CONVERTER_MAP.get(targetClass);
+        
+        if (converter == null)
+            throw new UnsupportedOperationException("There is no converter for " + targetClass.getName());
+        
+        T t = converter.getParam(strVal);
+        
+        if (t == null)
+            return defaultValue;
+        
+        return t;
     }
 
     /** @see HttpServletRequest#getHeader(java.lang.String) */
@@ -232,18 +346,25 @@ public class ActionRequest extends ServletExchange {
      * @throws BadRequestException if parameter is not contained in given request.
      */
     public final String getMandatoryParameter(String paramName, String errorMessage, Object...errMsgArgs) throws BadRequestException {
-        String val = getServletRequest().getParameter(paramName);
-
-        if (val == null || val.trim().isEmpty()) {
-            if (errMsgArgs.length > 0)
-                errorMessage = String.format(errorMessage, errMsgArgs);
-
-            throw new BadRequestException(errorMessage);
-        }
-
-        return val;
+        return getMandatoryParameter(String.class, paramName, errorMessage, errMsgArgs);
     }
 
+    public final <T> T getMandatoryParameter(Class<T> targetClass, String paramName, String errorMsg, Object...errMsgArgs) throws BadRequestException {
+        String strVal = getServletRequest().getParameter(paramName);
+        ParamConverter<T> converter = PARAM_CONVERTER_MAP.get(targetClass);
+        
+        if (converter == null)
+            throw new UnsupportedOperationException("There is no converter for " + targetClass.getName());
+        
+        T t = converter.getParam(strVal);
+        
+        if (t == null)
+            throw new BadRequestException(errorMsg, errMsgArgs);
+
+        
+        return t;
+    }
+    
     public final String getRequestUrl() {
         return getServletRequest().getRequestURL().toString();
     }
