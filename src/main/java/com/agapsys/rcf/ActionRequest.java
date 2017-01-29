@@ -336,6 +336,10 @@ public class ActionRequest extends ServletExchange {
         return getMandatoryParameter(paramName, "Missing parameter: %s", paramName);
     }
 
+    public final <T> T getMandatoryParameter(Class<T> targetClass, String paramName) throws BadRequestException {
+        return getMandatoryParameter(targetClass, paramName, "Missing parameter: %s", paramName);
+    }
+    
     /**
      * Returns a mandatory parameter contained in the request.
      *
