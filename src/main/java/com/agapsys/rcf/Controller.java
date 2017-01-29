@@ -130,6 +130,17 @@ public class Controller extends ActionServlet {
             List argList = new LinkedList();
 
             for (Class<?> type : method.getParameterTypes()) {
+                
+                if (JsonRequest.class.isAssignableFrom(type)) {
+                    argList.add(new JsonRequest(request));
+                    continue;
+                }
+                
+                if (JsonResponse.class.isAssignableFrom(type)) {
+                    argList.add(new JsonResponse(response));
+                    continue;
+                }
+                
 
                 if (ActionRequest.class.isAssignableFrom(type)) {
                     argList.add(request);
