@@ -1,0 +1,6 @@
+# Application controllers
+com.agapsys.rcf.integration.controllers.DefaultController
+com.agapsys.rcf.integration.controllers.PhaseController
+com.agapsys.rcf.integration.controllers.PublicController
+com.agapsys.rcf.integration.controllers.Controller1
+com.agapsys.rcf.integration.controllers.Controller2
