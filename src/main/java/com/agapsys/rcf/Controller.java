@@ -230,7 +230,7 @@ public class Controller extends ActionServlet {
 
         private void __checkSecurity(ActionRequest request, ActionResponse response) throws ServletException, IOException, UnauthorizedException, ForbiddenException {
             if (secured) {
-                User user = getUser(request, response);
+                User user = getUser(request);
 
                 if (user == null)
                     throw new UnauthorizedException("Unauthorized");
@@ -405,12 +405,11 @@ public class Controller extends ActionServlet {
      * This method instructs the controller how to retrieve the user associated with given HTTP exchange.
      *
      * @param request HTTP request.
-     * @param response HTTP response.
      * @return an user associated with given request. Default uses servlet request session to retrive the user. If a user cannot be retrieved from given request, returns null. Default implementation also verify CSRF attacks.
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected User getUser(ActionRequest request, ActionResponse response) throws ServletException, IOException {
+    protected User getUser(ActionRequest request) throws ServletException, IOException {
         HttpSession session = request.getServletRequest().getSession(false);
 
         if (session == null)
