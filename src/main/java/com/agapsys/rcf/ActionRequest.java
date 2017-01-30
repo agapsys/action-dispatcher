@@ -41,13 +41,15 @@ public class ActionRequest extends ServletExchange {
     private static abstract class AbstractParamConverter<T> implements ParamConverter<T> {
         
         private final boolean trim;
+        private final Class<T> targetClass;
         
-        public AbstractParamConverter(boolean trim) {
+        private AbstractParamConverter(Class<T> targetClass, boolean trim) {
+            this.targetClass = targetClass;
             this.trim = trim;
         }
         
-        public AbstractParamConverter() {
-            this(true);
+        private AbstractParamConverter(Class<T> targetClass) {
+            this(targetClass, true);
         }
         
         @Override
@@ -59,7 +61,7 @@ public class ActionRequest extends ServletExchange {
             try {
                 return _getParam(strVal);
             } catch (RuntimeException ex) {
-                throw new BadRequestException(ex.getMessage());
+                throw new BadRequestException("Cannot convert \"%s\" into %s", strVal, targetClass.getName());
             }
         }
         
@@ -73,49 +75,49 @@ public class ActionRequest extends ServletExchange {
          final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
          sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         
-        PARAM_CONVERTER_MAP.put(Byte.class,       new AbstractParamConverter<Byte>() {
+        PARAM_CONVERTER_MAP.put(Byte.class,       new AbstractParamConverter<Byte>(Byte.class) {
             @Override
             public Byte _getParam(String strVal) throws BadRequestException {
                 return Byte.parseByte(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(Short.class,      new AbstractParamConverter<Short>() {
+        PARAM_CONVERTER_MAP.put(Short.class,      new AbstractParamConverter<Short>(Short.class) {
             @Override
             protected Short _getParam(String strVal) throws BadRequestException {
                 return Short.parseShort(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(Integer.class,    new AbstractParamConverter<Integer>() {
+        PARAM_CONVERTER_MAP.put(Integer.class,    new AbstractParamConverter<Integer>(Integer.class) {
             @Override
             protected Integer _getParam(String strVal) throws BadRequestException {
                 return Integer.parseInt(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(Long.class,       new AbstractParamConverter<Long>() {
+        PARAM_CONVERTER_MAP.put(Long.class,       new AbstractParamConverter<Long>(Long.class) {
             @Override
             protected Long _getParam(String strVal) throws BadRequestException {
                 return Long.parseLong(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(Float.class,      new AbstractParamConverter<Float>() {
+        PARAM_CONVERTER_MAP.put(Float.class,      new AbstractParamConverter<Float>(Float.class) {
             @Override
             protected Float _getParam(String strVal) throws BadRequestException {
                 return Float.parseFloat(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(Double.class,     new AbstractParamConverter<Double>() {
+        PARAM_CONVERTER_MAP.put(Double.class,     new AbstractParamConverter<Double>(Double.class) {
             @Override
             protected Double _getParam(String strVal) throws BadRequestException {
                 return Double.parseDouble(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(BigDecimal.class, new AbstractParamConverter<BigDecimal>() {
+        PARAM_CONVERTER_MAP.put(BigDecimal.class, new AbstractParamConverter<BigDecimal>(BigDecimal.class) {
             @Override
             protected BigDecimal _getParam(String strVal) throws BadRequestException {
                 return new BigDecimal(strVal);
             }
         });
-        PARAM_CONVERTER_MAP.put(Date.class,       new AbstractParamConverter<Date>() {
+        PARAM_CONVERTER_MAP.put(Date.class,       new AbstractParamConverter<Date>(Date.class) {
             
             
             @Override
@@ -127,7 +129,7 @@ public class ActionRequest extends ServletExchange {
                 }
             }
         });
-        PARAM_CONVERTER_MAP.put(String.class,     new AbstractParamConverter<String>(false) {
+        PARAM_CONVERTER_MAP.put(String.class,     new AbstractParamConverter<String>(String.class, false) {
             @Override
             protected String _getParam(String strVal) throws BadRequestException {
                 return strVal;
