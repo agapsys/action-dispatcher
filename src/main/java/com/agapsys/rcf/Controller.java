@@ -172,14 +172,14 @@ public class Controller extends ActionServlet {
     // </editor-fold>
 
     /** Defines a Data Transfer Object */
-    public static interface Dto {
+    public static interface Dto<T> {
 
         /**
          * Returns a transfer object associated with this instance.
          *
          * @return a transfer object associated with this instance.
          */
-        public Object getDto();
+        public T getDto();
     }
 
     /** Name of the session attribute used to store current user. */
