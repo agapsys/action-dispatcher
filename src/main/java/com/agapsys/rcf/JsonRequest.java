@@ -143,7 +143,7 @@ public class JsonRequest extends ActionRequest {
     public final <T> T readObject(Class<T> targetClass) throws IOException, BadRequestException {
         String reqContentType = _getServletRequest().getContentType();
 
-        if (!reqContentType.startsWith(JSON_CONTENT_TYPE))
+        if (reqContentType == null || !reqContentType.startsWith(JSON_CONTENT_TYPE))
             throw new BadRequestException("Invalid content-type: " + reqContentType);
 
         if (targetClass == null)
