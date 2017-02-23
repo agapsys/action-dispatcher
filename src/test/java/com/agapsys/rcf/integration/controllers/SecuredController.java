@@ -38,13 +38,13 @@ public class SecuredController extends Controller {
 
     @WebAction
     public void logUser(ActionRequest request, ActionResponse response) throws ServletException, IOException {
-        registerUser(request, response, new AppUser(request.getOptionalParameter(PARAM_ROLE, "")));
+        setUser(request, response, new AppUser(request.getOptionalParameter(PARAM_ROLE, "")));
     }
 
     // NOTE the order of parameters is inverted intentionally to ensure controller's MethodActionDispatcher is invoked correctly.
     @WebAction
     public void unlogUser(ActionResponse response, ActionRequest request) throws ServletException, IOException {
-        registerUser(request, response, null);
+        setUser(request, response, null);
     }
 
 }

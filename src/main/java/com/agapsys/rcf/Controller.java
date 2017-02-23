@@ -439,7 +439,7 @@ public class Controller extends ActionServlet {
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
-    protected void registerUser(ActionRequest request, ActionResponse response, User user) throws ServletException, IOException {
+    protected void setUser(ActionRequest request, ActionResponse response, User user) throws ServletException, IOException {
 
         if (user == null) {
             HttpSession session = request.getServletRequest().getSession(false);
