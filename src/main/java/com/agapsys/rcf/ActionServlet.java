@@ -85,7 +85,7 @@ public class ActionServlet extends HttpServlet {
     protected void onClientError(ActionRequest request, ActionResponse response, ClientException error) throws ServletException, IOException {
         response.setStatus(error.getHttpStatus());
         Integer appStatus = error.getAppStatus();
-        response._getServletResponse().getWriter().printf(
+        response.getServletResponse().getWriter().printf(
             "%s%s",
             appStatus == null ? "" : String.format("%d:", appStatus),
             error.getMessage()
@@ -143,6 +143,10 @@ public class ActionServlet extends HttpServlet {
        try {
            request = new ActionRequest(req, resp);
            response = new ActionResponse(req, resp);
+           
+           request._setResponse(response);
+           response._setRequest(request);
+           
        } catch (ClientException ex) {
            resp.setStatus(ex.getHttpStatus());
            return;

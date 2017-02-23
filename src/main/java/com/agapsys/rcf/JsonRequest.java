@@ -141,7 +141,7 @@ public class JsonRequest extends ActionRequest {
      * @throws BadRequestException if data contained in the request does not represent an instance of given class.
      */
     public final <T> T readObject(Class<T> targetClass) throws IOException, BadRequestException {
-        String reqContentType = _getServletRequest().getContentType();
+        String reqContentType = getServletRequest().getContentType();
 
         if (reqContentType == null || !reqContentType.startsWith(JSON_CONTENT_TYPE))
             throw new BadRequestException("Invalid content-type: " + reqContentType);
@@ -150,7 +150,7 @@ public class JsonRequest extends ActionRequest {
             throw new IllegalArgumentException("Null targetClass");
 
         try {
-            Reader reader = new InputStreamReader(_getServletRequest().getInputStream(), JSON_ENCODING);
+            Reader reader = new InputStreamReader(getServletRequest().getInputStream(), JSON_ENCODING);
             return readObject(reader, targetClass);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
@@ -172,7 +172,7 @@ public class JsonRequest extends ActionRequest {
      */
     public final <E> List<E> readList(Class<E> elementClass) throws IOException, BadRequestException {
         try {
-            Reader reader = new InputStreamReader(_getServletRequest().getInputStream(), JSON_ENCODING);
+            Reader reader = new InputStreamReader(getServletRequest().getInputStream(), JSON_ENCODING);
             return readList(reader, elementClass);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);

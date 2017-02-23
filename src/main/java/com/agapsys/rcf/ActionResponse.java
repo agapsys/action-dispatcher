@@ -23,11 +23,15 @@ import javax.servlet.http.HttpServletResponse;
 public class ActionResponse extends ServletExchange {
 
     private final ActionResponse wrappedResponse;
+    
+    private ActionRequest request;
 
     // Generic constructor
     ActionResponse(ActionResponse wrappedResponse, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         super(servletRequest, servletResponse);
         this.wrappedResponse = wrappedResponse;
+        if (wrappedResponse != null)
+            request = wrappedResponse.request;
     }
 
     ActionResponse(HttpServletRequest serlvetRequest, HttpServletResponse servletResponse) {
@@ -35,7 +39,7 @@ public class ActionResponse extends ServletExchange {
     }
 
     protected ActionResponse(ActionResponse wrappedResponse) {
-        this(wrappedResponse, wrappedResponse._getServletRequest(), wrappedResponse.getServletResponse());
+        this(wrappedResponse, wrappedResponse.getServletRequest(), wrappedResponse.getServletResponse());
     }
 
     protected final ActionResponse getWrappedResponse() {
@@ -71,7 +75,7 @@ public class ActionResponse extends ServletExchange {
      * @return this
      */
     public final ActionResponse addCookie(String name, String value, int maxAge) {
-        addCookie(name, value, maxAge, _getServletRequest().getContextPath());
+        addCookie(name, value, maxAge, getServletRequest().getContextPath());
         return this;
     }
 
@@ -88,12 +92,12 @@ public class ActionResponse extends ServletExchange {
     }
 
     public final ActionResponse setHeader(String name, String value) {
-        _getServletResponse().setHeader(name, value);
+        getServletResponse().setHeader(name, value);
         return this;
     }
 
     public final ActionResponse addHeader(String name, String value) {
-        _getServletResponse().addHeader(name, value);
+        getServletResponse().addHeader(name, value);
         return this;
     }
 
@@ -104,7 +108,7 @@ public class ActionResponse extends ServletExchange {
      * @return this
      */
     public final ActionResponse removeCookie(String name) {
-        removeCookie(name, _getServletRequest().getContextPath());
+        removeCookie(name, getServletRequest().getContextPath());
         return this;
     }
 
@@ -124,8 +128,11 @@ public class ActionResponse extends ServletExchange {
         return this;
     }
 
-    public final HttpServletResponse getServletResponse() {
-        return _getServletResponse();
+    final void _setRequest(ActionRequest request) {
+        this.request = request;
     }
-
+    
+    public final ActionRequest getRequest() {
+        return request;
+    }
 }

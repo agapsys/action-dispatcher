@@ -41,7 +41,7 @@ public class JsonResponse extends ActionResponse {
      * @return this
      */
     public final JsonResponse sendObject(Object object) throws IOException {
-        HttpServletResponse resp = _getServletResponse();
+        HttpServletResponse resp = getServletResponse();
         resp.setContentType(JsonRequest.JSON_CONTENT_TYPE);
         resp.setCharacterEncoding(JsonRequest.JSON_ENCODING);
 

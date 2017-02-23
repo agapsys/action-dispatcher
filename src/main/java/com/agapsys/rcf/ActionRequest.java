@@ -154,6 +154,8 @@ public class ActionRequest extends ServletExchange {
     private final String              requestUri;
     private final String              pathInfo;
     private final Map<String, String> paramMap;
+    
+    private ActionResponse response;
 
     // TODO make test
     public static void main(String[] args) {
@@ -209,11 +211,12 @@ public class ActionRequest extends ServletExchange {
         } else { // <-- wrappedRequest != null && parentPath != null
             pathInfo = _getRelativePath(parentPath, wrappedRequest.pathInfo);
             paramMap = wrappedRequest.paramMap;
+            response = wrappedRequest.response;
         }
     }
 
     ActionRequest(String parentPath, ActionRequest wrappedRequest) {
-        this(parentPath, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest._getServletResponse());
+        this(parentPath, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
 
     ActionRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
@@ -221,7 +224,7 @@ public class ActionRequest extends ServletExchange {
     }
 
     protected ActionRequest(ActionRequest wrappedRequest) {
-        this(null, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest._getServletResponse());
+        this(null, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
 
     /**
@@ -419,9 +422,13 @@ public class ActionRequest extends ServletExchange {
 
         return requestLine.toString();
     }
-
-    public final HttpServletRequest getServletRequest() {
-        return _getServletRequest();
+    
+    final void _setResponse(ActionResponse response) {
+        this.response = response;
+    }
+    
+    public final ActionResponse getResponse() {
+        return response;
     }
 
     @Override

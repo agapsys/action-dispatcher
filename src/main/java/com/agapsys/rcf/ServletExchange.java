@@ -18,18 +18,18 @@ package com.agapsys.rcf;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-class ServletExchange {
+public class ServletExchange {
     private final HttpServletRequest servletRequest;
-    final HttpServletRequest _getServletRequest() {
+    public final HttpServletRequest getServletRequest() {
         return servletRequest;
     }
 
     private final HttpServletResponse servletResponse;
-    final HttpServletResponse _getServletResponse() {
+    public final HttpServletResponse getServletResponse() {
         return servletResponse;
     }
 
-    ServletExchange(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+    public ServletExchange(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         if (servletRequest == null)
             throw new IllegalArgumentException("Servlet request cannot be null");
 
