@@ -84,8 +84,14 @@ public class ActionServlet extends HttpServlet {
      */
     protected void onClientError(ActionRequest request, ActionResponse response, ClientException error) throws ServletException, IOException {
         response.setStatus(error.getHttpStatus());
+        
+        HttpServletResponse servletResponse = response.getServletResponse();
+        
+        servletResponse.setContentType("text/plain");
+        servletResponse.setCharacterEncoding("UTF-8");
+        
         Integer appStatus = error.getAppStatus();
-        response.getServletResponse().getWriter().printf(
+        servletResponse.getWriter().printf(
             "%s%s",
             appStatus == null ? "" : String.format("%d:", appStatus),
             error.getMessage()
