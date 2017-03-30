@@ -30,8 +30,8 @@ public @interface WebAction {
     /** @return Accepted HTTP methods */
     HttpMethod[] httpMethods()    default {HttpMethod.GET};
 
-    /** @return name of the mapping. Passing an empty string will use the method name as path mapping. */
-    String       mapping()       default "";
+    /** @return name of the mapping. Passing {@linkplain Controller#METHOD_NAME_MAPPING} will force the use of method name as path mapping. */
+    String       mapping()       default Controller.METHOD_NAME_MAPPING;
 
     /** @return a boolean indicating if action execution requires a logged user. An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
     boolean      secured() default false;

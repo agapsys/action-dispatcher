@@ -21,6 +21,11 @@ import com.agapsys.rcf.exceptions.UnauthorizedException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -30,7 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,131 +47,12 @@ public class Controller extends ActionServlet {
 
     // <editor-fold desc="STATIC SCOPE">
     // ========================================================================
-
+    public static final String METHOD_NAME_MAPPING = "?";
+    
     // <editor-fold desc="Private static members" defaultstate="collapsed">
     // -------------------------------------------------------------------------
     private static final Set<String> EMPTY_ROLE_SET = Collections.unmodifiableSet(new LinkedHashSet<String>());
     private static final Object[]    EMPTY_OBJ_ARRAY = new Object[] {};
-
-    // Validates a candidate method to be interpreted as an action
-    private static class MethodActionValidator {
-
-        private static enum ArgGoal {
-            INVALID (new Class[] {} ),
-            REQUEST (new Class[] { ActionRequest.class, HttpServletRequest.class } ),
-            RESPONSE(new Class[] { ActionResponse.class, HttpServletResponse.class} );
-
-            private static ArgGoal __lookup(Class tested) {
-                for (ArgGoal goal : ArgGoal.values()) {
-
-                    for (Class c : goal.supportedClasses) {
-                        if (c.isAssignableFrom(tested))
-                            return goal;
-                    }
-                }
-
-                return INVALID;
-            }
-
-            private static ArgGoal __lookup(String testedClassName) {
-                try {
-                    return __lookup(Class.forName(testedClassName));
-                } catch (ClassNotFoundException ex) {
-                    return INVALID;
-                }
-            }
-
-            private final Class[] supportedClasses;
-
-            private ArgGoal(Class[] supportedClasses) {
-                this.supportedClasses = supportedClasses;
-            }
-
-        }
-
-        /**
-         * Checks if an annotated method signature matches with required one.
-         *
-         * @param method annotated method.
-         * @return boolean indicating if method signature is valid.
-         */
-        private static boolean __matchSignature(Method method) {
-            String signature = method.toGenericString();
-            String[] tokens = signature.split(Pattern.quote(" "));
-
-            if (!tokens[0].equals("public")) {
-                return false;
-            }
-
-            int indexOfOpenParenthesis = signature.indexOf("(");
-            int indexOfCloseParenthesis = signature.indexOf(")");
-
-            String argString = signature.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).trim();
-            String[] args = argString.isEmpty() ? new String[0] : argString.split(Pattern.quote(","));
-
-            switch (args.length) {
-                case 0:
-                    return true;
-
-                case 1:
-                    return ArgGoal.__lookup(args[0]) != ArgGoal.INVALID;
-
-                case 2: {
-                    ArgGoal arg0Goal = ArgGoal.__lookup(args[0]);
-                    ArgGoal arg1Goal = ArgGoal.__lookup(args[1]);
-
-                    return !(arg0Goal == ArgGoal.INVALID || arg1Goal == ArgGoal.INVALID || (arg0Goal == arg1Goal));
-                }
-
-                default:
-                    return false;
-            }
-        }
-
-        private static Object[] __getCallParams(Method method, ActionRequest request, ActionResponse response) {
-            if (method.getParameterCount() == 0) return EMPTY_OBJ_ARRAY;
-
-            List argList = new LinkedList();
-
-            for (Class<?> type : method.getParameterTypes()) {
-                
-                if (JsonRequest.class.isAssignableFrom(type)) {
-                    argList.add(new JsonRequest(request));
-                    continue;
-                }
-                
-                if (JsonResponse.class.isAssignableFrom(type)) {
-                    argList.add(new JsonResponse(response));
-                    continue;
-                }
-                
-
-                if (ActionRequest.class.isAssignableFrom(type)) {
-                    argList.add(request);
-                    continue;
-                }
-
-                if (ActionResponse.class.isAssignableFrom(type)) {
-                    argList.add(response);
-                    continue;
-                }
-
-                if (HttpServletRequest.class.isAssignableFrom(type)) {
-                    argList.add(request.getServletRequest());
-                    continue;
-                }
-
-                if (HttpServletResponse.class.isAssignableFrom(type)) {
-                    argList.add(response.getServletResponse());
-                    continue;
-                }
-
-                throw new UnsupportedOperationException(String.format("Unsupported param type: %s", type.getName()));
-            }
-
-            return argList.toArray();
-        }
-    }
     // -------------------------------------------------------------------------
     // </editor-fold>
 
@@ -223,9 +108,76 @@ public class Controller extends ActionServlet {
         private final boolean secured;
 
         private MethodCallerAction(Method method, boolean secured, String[] requiredRoles) {
+            if (!Modifier.isPublic(method.getModifiers()))
+                throw new RuntimeException("Action method is not public: " + method.toGenericString());
+            
             this.method = method;
             this.requiredRoles = requiredRoles;
             this.secured = secured || requiredRoles.length > 0;
+        }
+
+        private Object[] __getCallParams(Method method, ActionRequest request, ActionResponse response) throws IOException {
+            if (method.getParameterCount() == 0) return EMPTY_OBJ_ARRAY;
+
+            List argList = new LinkedList();
+
+            for (Parameter param : method.getParameters()) {
+                Class<?> paramClass = param.getType();
+                
+                if (JsonRequest.class.isAssignableFrom(paramClass)) {
+                    argList.add(new JsonRequest(request));
+                    continue;
+                }
+                
+                if (JsonResponse.class.isAssignableFrom(paramClass)) {
+                    argList.add(new JsonResponse(response));
+                    continue;
+                }
+                
+                if (ActionRequest.class.isAssignableFrom(paramClass)) {
+                    argList.add(request);
+                    continue;
+                }
+
+                if (ActionResponse.class.isAssignableFrom(paramClass)) {
+                    argList.add(response);
+                    continue;
+                }
+
+                if (HttpServletRequest.class.isAssignableFrom(paramClass)) {
+                    argList.add(request.getServletRequest());
+                    continue;
+                }
+
+                if (HttpServletResponse.class.isAssignableFrom(paramClass)) {
+                    argList.add(response.getServletResponse());
+                    continue;
+                }
+                
+                // It's a json for an object or a list of objects...
+                JsonRequest jsonRequest = new JsonRequest(request);
+                
+                if (Collection.class.isAssignableFrom(paramClass)) {
+                    // Must be a list...
+                    if (!List.class.isAssignableFrom(paramClass))
+                        throw new UnsupportedOperationException(String.format("Unsupported param type: %s", paramClass));
+                    
+                    Type pType = param.getParameterizedType();
+                    if (! (pType instanceof ParameterizedType))
+                        throw new UnsupportedOperationException("Missing list element type");
+                    
+                    Type elementType = ((ParameterizedType) pType).getActualTypeArguments()[0];
+                    if (!elementType.getClass().equals(Class.class))
+                        throw new UnsupportedOperationException("Unsupported list element type: " + elementType);
+                    
+                    argList.add(jsonRequest.readList((Class)elementType));
+                } else {
+                    // It's an object...
+                    argList.add(jsonRequest.readObject(paramClass));
+                }
+            }
+
+            return argList.toArray();
         }
 
         private void __checkSecurity(ActionRequest request, ActionResponse response) throws ServletException, IOException, UnauthorizedException, ForbiddenException {
@@ -309,7 +261,7 @@ public class Controller extends ActionServlet {
             try {
                 __checkSecurity(request, response);
 
-                Object[] callParams = MethodActionValidator.__getCallParams(method, request, response);
+                Object[] callParams = __getCallParams(method, request, response);
 
                 Object returnedObj = method.invoke(Controller.this, callParams);
 
@@ -360,14 +312,10 @@ public class Controller extends ActionServlet {
             }
 
             for (WebAction webAction : webActions) {
-                if (!MethodActionValidator.__matchSignature(method)) {
-                    throw new RuntimeException(String.format("Invalid action signature (%s).", method.toGenericString()));
-                }
-
                 HttpMethod[] httpMethods = webAction.httpMethods();
                 String path = webAction.mapping().trim();
 
-                if (path.isEmpty()) {
+                if (path.equals(METHOD_NAME_MAPPING)) {
                     path = "/" + method.getName();
                 }
 

@@ -157,7 +157,7 @@ public class JsonRequest extends ActionRequest {
         } catch (JsonIOException ex) {
             throw new IOException(ex);
         } catch (JsonSyntaxException ex) {
-            throw new BadRequestException(ex.getMessage());
+            throw new BadRequestException("Invalid data");
         }
     }
 
