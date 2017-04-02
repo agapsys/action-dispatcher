@@ -70,7 +70,7 @@ public class JsonRequest extends ActionRequest {
 
         @Override
         public String getTypeName() {
-            return String.format("java.util.List<%s>", typeArguments[0].getTypeName());
+            return String.format("java.util.List<%s>", ((Class)typeArguments[0]).getName());
         }
 
         @Override
