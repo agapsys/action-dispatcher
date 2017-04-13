@@ -336,20 +336,6 @@ public class Controller extends ActionServlet {
     protected void onControllerInit() {}
 
     /**
-     * Called upon controller uncaught error.
-     *
-     * @param request HTTP request.
-     * @param response HTTP response.
-     * @param uncaughtError uncaught error.
-     * @throws ServletException if the HTTP request cannot be handled.
-     * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
-     * @return a boolean indicating if given error shall be propagated. Default implementation just returns true.
-     */
-    protected boolean onControllerError(ActionRequest request, ActionResponse response, Throwable uncaughtError) throws ServletException, IOException {
-        return true;
-    }
-
-    /**
      * This method instructs the controller how to retrieve the user associated with given HTTP exchange.
      *
      * @param request HTTP request.
@@ -424,7 +410,7 @@ public class Controller extends ActionServlet {
     }
 
     @Override
-    protected final boolean onUncaughtError(ActionRequest request, ActionResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
+    protected boolean onUncaughtError(ActionRequest request, ActionResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
         super.onUncaughtError(request, response, uncaughtError);
 
         Throwable cause = uncaughtError.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
@@ -438,7 +424,7 @@ public class Controller extends ActionServlet {
         if (cause instanceof IOException)
             throw (IOException) cause;
 
-        return onControllerError(request, response, cause);
+        return true;
     }
 
 }
