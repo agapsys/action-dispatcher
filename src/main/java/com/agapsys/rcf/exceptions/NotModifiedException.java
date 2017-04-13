@@ -15,10 +15,6 @@
  */
 package com.agapsys.rcf.exceptions;
 
-/**
- *
- * @author leandro-agapsys
- */
 public class NotModifiedException extends ClientException {
 
     // <editor-fold desc="STATIC SCOPE" defaultstate="collapsed">
