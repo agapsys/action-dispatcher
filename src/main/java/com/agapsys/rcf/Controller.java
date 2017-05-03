@@ -48,7 +48,7 @@ public class Controller extends ActionServlet {
     // <editor-fold desc="STATIC SCOPE">
     // ========================================================================
     public static final String METHOD_NAME_MAPPING = "?";
-    
+
     // <editor-fold desc="Private static members" defaultstate="collapsed">
     // -------------------------------------------------------------------------
     private static final Set<String> EMPTY_ROLE_SET = Collections.unmodifiableSet(new LinkedHashSet<String>());
@@ -110,7 +110,7 @@ public class Controller extends ActionServlet {
         private MethodCallerAction(Method method, boolean secured, String[] requiredRoles) {
             if (!Modifier.isPublic(method.getModifiers()))
                 throw new RuntimeException("Action method is not public: " + method.toGenericString());
-            
+
             this.method = method;
             this.requiredRoles = requiredRoles;
             this.secured = secured || requiredRoles.length > 0;
@@ -123,17 +123,17 @@ public class Controller extends ActionServlet {
 
             for (Parameter param : method.getParameters()) {
                 Class<?> paramClass = param.getType();
-                
+
                 if (JsonRequest.class.isAssignableFrom(paramClass)) {
                     argList.add(new JsonRequest(request));
                     continue;
                 }
-                
+
                 if (JsonResponse.class.isAssignableFrom(paramClass)) {
                     argList.add(new JsonResponse(response));
                     continue;
                 }
-                
+
                 if (ActionRequest.class.isAssignableFrom(paramClass)) {
                     argList.add(request);
                     continue;
@@ -153,23 +153,23 @@ public class Controller extends ActionServlet {
                     argList.add(response.getServletResponse());
                     continue;
                 }
-                
+
                 // It's a json for an object or a list of objects...
                 JsonRequest jsonRequest = new JsonRequest(request);
-                
+
                 if (Collection.class.isAssignableFrom(paramClass)) {
                     // Must be a list...
                     if (!List.class.isAssignableFrom(paramClass))
                         throw new UnsupportedOperationException(String.format("Unsupported param type: %s", paramClass));
-                    
+
                     Type pType = param.getParameterizedType();
                     if (! (pType instanceof ParameterizedType))
                         throw new UnsupportedOperationException("Missing list element type");
-                    
+
                     Type elementType = ((ParameterizedType) pType).getActualTypeArguments()[0];
                     if (!elementType.getClass().equals(Class.class))
                         throw new UnsupportedOperationException("Unsupported list element type: " + elementType);
-                    
+
                     argList.add(jsonRequest.readList((Class)elementType));
                 } else {
                     // It's an object...
@@ -411,8 +411,6 @@ public class Controller extends ActionServlet {
 
     @Override
     protected boolean onUncaughtError(ActionRequest request, ActionResponse response, RuntimeException uncaughtError) throws ServletException, IOException {
-        super.onUncaughtError(request, response, uncaughtError);
-
         Throwable cause = uncaughtError.getCause(); // <-- MethodCallerAction throws the target exception wrapped in a RuntimeException
 
         if (cause == null)
@@ -424,7 +422,7 @@ public class Controller extends ActionServlet {
         if (cause instanceof IOException)
             throw (IOException) cause;
 
-        return true;
+        return super.onUncaughtError(request, response, uncaughtError);
     }
 
 }
