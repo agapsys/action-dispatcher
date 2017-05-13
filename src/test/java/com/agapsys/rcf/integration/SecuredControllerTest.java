@@ -61,12 +61,32 @@ public class SecuredControllerTest {
         resp = rc.doRequest(client, new HttpGet("/secured/logUser"));
         Assert.assertEquals(200, resp.getStatusCode());
 
-        client.addDefaultHeader(Controller.CSRF_HEADER, resp.getFirstHeader(Controller.CSRF_HEADER).getValue()); // <-- Sets CSRF token header for each request.
+        client.addDefaultHeader(Controller.XSRF_HEADER, resp.getCookie(Controller.XSRF_COOKIE).value); // <-- Sets XSRF token header for each request.
 
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
         Assert.assertEquals(403, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithPerms"));
+        Assert.assertEquals(403, resp.getStatusCode());
+    }
+
+    @Test
+    public void testLoggedWithoutPerms() {
+        HttpClient client = new HttpClient();
+
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser"));
+        Assert.assertEquals(200, resp.getStatusCode());
+
+        client.addDefaultHeader(Controller.XSRF_HEADER, resp.getCookie(Controller.XSRF_COOKIE).value); // <-- Sets XSRF token header for each request.
+
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        Assert.assertEquals(403, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithPerms"));
+        Assert.assertEquals(403, resp.getStatusCode());
+
     }
 
     @Test
@@ -76,11 +96,30 @@ public class SecuredControllerTest {
         resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
         Assert.assertEquals(200, resp.getStatusCode());
 
-        client.addDefaultHeader(Controller.CSRF_HEADER, resp.getFirstHeader(Controller.CSRF_HEADER).getValue()); // <-- Sets CSRF token header for each request.
+        client.addDefaultHeader(Controller.XSRF_HEADER, resp.getCookie(Controller.XSRF_COOKIE).value); // <-- Sets XSRF token header for each request.
 
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithPerms"));
+        Assert.assertEquals(403, resp.getStatusCode());
+    }
+
+    @Test
+    public void testLoggedWithPerms() {
+        HttpClient client = new HttpClient();
+
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_PERM, SecuredController.PERM));
+        Assert.assertEquals(200, resp.getStatusCode());
+
+        client.addDefaultHeader(Controller.XSRF_HEADER, resp.getCookie(Controller.XSRF_COOKIE).value); // <-- Sets XSRF token header for each request.
+
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        Assert.assertEquals(403, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithPerms"));
         Assert.assertEquals(200, resp.getStatusCode());
     }
 
@@ -89,14 +128,16 @@ public class SecuredControllerTest {
         HttpClient client = new HttpClient();
 
         // Log (with roles)
-        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE));
+        resp = rc.doRequest(client, new HttpGet("/secured/logUser?%s=%s&%s=%s", SecuredController.PARAM_ROLE, SecuredController.ROLE, SecuredController.PARAM_PERM, SecuredController.PERM));
         Assert.assertEquals(200, resp.getStatusCode());
 
-        client.addDefaultHeader(Controller.CSRF_HEADER, resp.getFirstHeader(Controller.CSRF_HEADER).getValue()); // <-- Sets CSRF token header for each request.
+        client.addDefaultHeader(Controller.XSRF_HEADER, resp.getCookie(Controller.XSRF_COOKIE).value); // <-- Sets XSRF token header for each request.
 
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(200, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        Assert.assertEquals(200, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithPerms"));
         Assert.assertEquals(200, resp.getStatusCode());
 
         // Unlogging
@@ -105,6 +146,8 @@ public class SecuredControllerTest {
         resp = rc.doRequest(client, new HttpGet("/secured/securedGet"));
         Assert.assertEquals(401, resp.getStatusCode());
         resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithRoles"));
+        Assert.assertEquals(401, resp.getStatusCode());
+        resp = rc.doRequest(client, new HttpGet("/secured/securedGetWithPerms"));
         Assert.assertEquals(401, resp.getStatusCode());
     }
     // =========================================================================

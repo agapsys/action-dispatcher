@@ -70,14 +70,17 @@ public class Controller extends ActionServlet {
     /** Name of the session attribute used to store current user. */
     public static final String SESSION_ATTR_USER = Controller.class.getName() + ".SESSION_ATTR_USER";
 
-    /** Name of the default session attribute used to store CSRF token. */
-    public static final String SESSION_ATTR_CSRF_TOKEN = Controller.class.getName() + ".SESSION_ATTR_CSRF_TOKEN";
+    /** Name of the default session attribute used to store XSRF token. */
+    public static final String SESSION_ATTR_XSRF_TOKEN = Controller.class.getName() + ".SESSION_ATTR_XSRF_TOKEN";
 
-    /** Name of the header used to send/retrieve a CSRF token. */
-    public static final String CSRF_HEADER  = "X-Csrf-Token";
+    /** Name of the cookie used to send/retrieve a XSRF token. */
+    public static final String XSRF_COOKIE = "XSRF-TOKEN";
 
-    // Default size of CSRF token
-    private static final int CSRF_TOKEN_LENGTH = 128;
+    /** Name of the header used to send/retrieve a XSRF token. */
+    public static final String XSRF_HEADER  = "X-XSRF-TOKEN";
+
+    // Default size of XSRF token
+    private static final int XSRF_TOKEN_LENGTH = 128;
 
     private static String __getRandom(int length) {
         char[] chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
@@ -104,16 +107,18 @@ public class Controller extends ActionServlet {
     private class MethodCallerAction implements Action {
 
         private final String[] requiredRoles;
-        private final Method method;
-        private final boolean secured;
+        private final long     requiredPerms;
+        private final Method   method;
+        private final boolean  secured;
 
-        private MethodCallerAction(Method method, boolean secured, String[] requiredRoles) {
+        private MethodCallerAction(Method method, boolean secured, String[] requiredRoles, long requiredPerms) {
             if (!Modifier.isPublic(method.getModifiers()))
                 throw new RuntimeException("Action method is not public: " + method.toGenericString());
 
             this.method = method;
             this.requiredRoles = requiredRoles;
-            this.secured = secured || requiredRoles.length > 0;
+            this.requiredPerms = requiredPerms;
+            this.secured = secured || requiredRoles.length > 0 || requiredPerms != 0;
         }
 
         private Object[] __getCallParams(Method method, ActionRequest request, ActionResponse response) throws IOException {
@@ -196,6 +201,11 @@ public class Controller extends ActionServlet {
                     if (!userRoles.contains(requiredRole))
                         throw new ForbiddenException();
                 }
+
+                long userPerms = user.getPermissions();
+
+                if ((userPerms & requiredPerms) != requiredPerms)
+                    throw new ForbiddenException();
             }
         }
 
@@ -319,7 +329,7 @@ public class Controller extends ActionServlet {
                     path = "/" + method.getName();
                 }
 
-                MethodCallerAction action = new MethodCallerAction(method, webAction.secured(), webAction.requiredRoles());
+                MethodCallerAction action = new MethodCallerAction(method, webAction.secured(), webAction.requiredRoles(), webAction.requiredPerms());
 
                 for (HttpMethod httpMethod : httpMethods) {
                     registerAction(httpMethod, path, action);
@@ -338,8 +348,8 @@ public class Controller extends ActionServlet {
     /**
      * This method instructs the controller how to retrieve the user associated with given HTTP exchange.
      *
-     * @param request HTTP request.
-     * @return an user associated with given request. Default uses servlet request session to retrive the user. If a user cannot be retrieved from given request, returns null. Default implementation also verify CSRF attacks.
+     * @param request HTTP request. Default implementation checks for header {@linkplain Controller#XSRF_HEADER} in order to prevent XRSF attacks.
+     * @return an user associated with given request. Default uses servlet request session to retrive the user. If a user cannot be retrieved from given request, returns null.
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
@@ -354,8 +364,8 @@ public class Controller extends ActionServlet {
         if (user == null)
             return null;
 
-        String sessionToken = (String) session.getAttribute(SESSION_ATTR_CSRF_TOKEN);
-        String requestToken = request.getHeader(CSRF_HEADER);
+        String sessionToken = (String) session.getAttribute(SESSION_ATTR_XSRF_TOKEN);
+        String requestToken = request.getHeader(XSRF_HEADER);
 
         if (!Objects.equals(sessionToken, requestToken))
             return null;
@@ -367,9 +377,12 @@ public class Controller extends ActionServlet {
      * This method instructs the controller how to associate an user with a HTTP exchange.
      *
      * Default implementation uses servlet request session associated with given request.
+     * Default implementation also sends a cookie ({@linkplain Controller#XSRF_COOKIE}) containing a XRSF token which must be sent on each request associated with given user
+     * as a header ({@linkplain Controller#XSRF_HEADER}).
+     *
      * @param request HTTP request.
      * @param response HTTP response.
-     * @param user user to be registered with given HTTP exchange. Passing null unregisters the user. Passing non-null user instance will generate a CSRF token header which will be sent in associated response.
+     * @param user user to be registered with given HTTP exchange. Passing null unregisters the user associated with given request.
      * @throws ServletException if the HTTP request cannot be handled.
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
@@ -380,16 +393,18 @@ public class Controller extends ActionServlet {
 
             if (session != null) {
                 session.removeAttribute(SESSION_ATTR_USER);
-                session.removeAttribute(SESSION_ATTR_CSRF_TOKEN);
+                session.removeAttribute(SESSION_ATTR_XSRF_TOKEN);
+                response.removeCookie(XSRF_COOKIE);
             }
 
         } else {
             HttpSession session = request.getServletRequest().getSession();
             session.setAttribute(SESSION_ATTR_USER, user);
 
-            String csrfToken = __getRandom(CSRF_TOKEN_LENGTH);
-            session.setAttribute(SESSION_ATTR_CSRF_TOKEN, csrfToken);
-            response.addHeader(CSRF_HEADER, csrfToken);
+            String xsrfToken = __getRandom(XSRF_TOKEN_LENGTH);
+            session.setAttribute(SESSION_ATTR_XSRF_TOKEN, xsrfToken);
+
+            response.addCookie(XSRF_COOKIE, xsrfToken, -1);
         }
 
     }

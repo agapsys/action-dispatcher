@@ -23,20 +23,35 @@ import java.util.Set;
 
 public class AppUser implements User {
 
-    public Set<String> roles;
+    public final Set<String> roles = new LinkedHashSet<>();
+    public final long perms;
 
     @Override
     public Set<String> getRoles() {
         return roles;
     }
 
-    public AppUser(String... roles) {
-        this.roles = new LinkedHashSet<>();
+    @Override
+    public long getPermissions() {
+        return perms;
+    }
+
+    public AppUser(long perms) {
+        this(perms, new String[] {});
+    }
+
+    public AppUser(String...roles) {
+        this(0, roles);
+    }
+
+    public AppUser(long perms, String... roles) {
         for (String role : roles) {
             if (role != null) {
                 this.roles.add(role);
             }
         }
+
+        this.perms = perms;
     }
 
 }

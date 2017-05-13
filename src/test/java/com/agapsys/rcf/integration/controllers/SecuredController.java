@@ -15,9 +15,9 @@
  */
 package com.agapsys.rcf.integration.controllers;
 
-import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.ActionRequest;
 import com.agapsys.rcf.ActionResponse;
+import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.integration.AppUser;
@@ -28,7 +28,11 @@ import javax.servlet.ServletException;
 public class SecuredController extends Controller {
 
     public static final String ROLE       = "role";
+
+    public static final long PERM = 1;
+
     public static final String PARAM_ROLE = "role";
+    public static final String PARAM_PERM = "perm";
 
     @WebAction(secured = true)
     public void securedGet() {}
@@ -36,9 +40,12 @@ public class SecuredController extends Controller {
     @WebAction(requiredRoles = {ROLE})
     public void securedGetWithRoles() {}
 
+    @WebAction(requiredPerms = PERM)
+    public void securedGetWithPerms() {}
+
     @WebAction
     public void logUser(ActionRequest request, ActionResponse response) throws ServletException, IOException {
-        setUser(request, response, new AppUser(request.getOptionalParameter(PARAM_ROLE, "")));
+        setUser(request, response, new AppUser(request.getOptionalParameter(Long.class, PARAM_PERM, 0l), request.getOptionalParameter(PARAM_ROLE, "")));
     }
 
     // NOTE the order of parameters is inverted intentionally to ensure controller's MethodActionDispatcher is invoked correctly.

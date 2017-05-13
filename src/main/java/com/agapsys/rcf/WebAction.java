@@ -39,4 +39,6 @@ public @interface WebAction {
     /** @return required roles for action execution.  An action is considered secured if ({@linkplain WebAction#secured()} == true || {@linkplain WebAction#requiredRoles()}.length &gt; 0). */
     String[]     requiredRoles() default {};
 
+    long         requiredPerms() default 0;
+
 }

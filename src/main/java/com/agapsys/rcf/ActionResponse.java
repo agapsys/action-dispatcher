@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ActionResponse extends ServletExchange {
 
     private final ActionResponse wrappedResponse;
-    
+
     private ActionRequest request;
 
     // Generic constructor
@@ -56,8 +56,12 @@ public class ActionResponse extends ServletExchange {
      * @return this
      */
     public final ActionResponse addCookie(String name, String value, int maxAge, String path) {
-        if (path == null || !path.startsWith("/"))
+
+        if (path == null || (!path.isEmpty() && !path.startsWith("/")))
             throw new IllegalArgumentException("Invalid path: " + path);
+
+        if (path.isEmpty())
+            path = "/";
 
         Cookie cookie = new Cookie(name, value);
         cookie.setPath(path);
@@ -131,7 +135,7 @@ public class ActionResponse extends ServletExchange {
     final void _setRequest(ActionRequest request) {
         this.request = request;
     }
-    
+
     public final ActionRequest getRequest() {
         return request;
     }

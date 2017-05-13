@@ -24,5 +24,7 @@ import java.util.Set;
 public interface User extends Serializable {
 
     public Set<String> getRoles();
-    
+
+    public long        getPermissions();
+
 }
