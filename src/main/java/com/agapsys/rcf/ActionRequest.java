@@ -199,7 +199,26 @@ public class ActionRequest extends ServletExchange {
 
         requestUri = servletRequest.getRequestURI();
 
-        if (wrappedRequest == null || parentPath == null) {
+        
+        if (wrappedRequest != null && parentPath == null) {
+            
+            //<editor-fold defaultstate="collapsed" desc="Simple wrapper">
+            pathInfo = wrappedRequest.pathInfo;
+            paramMap = wrappedRequest.paramMap;
+            response = wrappedRequest.response;
+            //</editor-fold>
+            
+        } else if (wrappedRequest != null && parentPath != null) {
+            
+            //<editor-fold defaultstate="collapsed" desc="Wrapping due to nesting (dispatcher)">
+            pathInfo = _getRelativePath(parentPath, wrappedRequest.pathInfo);
+            paramMap = wrappedRequest.paramMap;
+            response = wrappedRequest.response;
+            //</editor-fold>
+            
+        } else { // <-- wrappedRequest == null && parentPath == null
+            
+            //<editor-fold defaultstate="collapsed" desc="First level constructor">
             String pathInfo = servletRequest.getPathInfo();
             this.pathInfo = pathInfo == null ? "/" : pathInfo;
             Map<String, String> tmpParameters = new LinkedHashMap<>();
@@ -208,21 +227,23 @@ public class ActionRequest extends ServletExchange {
                 tmpParameters.put(entry.getKey(), values[values.length - 1]);
             }
             paramMap = Collections.unmodifiableMap(tmpParameters);
-        } else { // <-- wrappedRequest != null && parentPath != null
-            pathInfo = _getRelativePath(parentPath, wrappedRequest.pathInfo);
-            paramMap = wrappedRequest.paramMap;
-            response = wrappedRequest.response;
+            //</editor-fold>
+            
         }
+        
     }
 
+    // Handled by dispatcher...
     ActionRequest(String parentPath, ActionRequest wrappedRequest) {
         this(parentPath, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
 
+    // First level constructor...
     ActionRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         this(null, null, servletRequest, servletResponse);
     }
 
+    // Simple wrapper constructor...
     protected ActionRequest(ActionRequest wrappedRequest) {
         this(null, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
