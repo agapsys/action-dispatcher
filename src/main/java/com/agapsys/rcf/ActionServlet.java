@@ -119,6 +119,29 @@ public class ActionServlet extends HttpServlet {
      */
     protected void afterAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {}
 
+    
+    /**
+     * Returns the action request instance used by this servlet.
+     * 
+     * @param request raw HTTP request.
+     * @param response raw HTTP response.
+     * @return the action request instance used by this servlet.
+     */
+    protected ActionRequest getRequest(HttpServletRequest request, HttpServletResponse response) {
+        return new ActionRequest(request, response);
+    }
+    
+    /**
+     * Returns the action response instance used by this servlet.
+     * 
+     * @param request raw HTTP request.
+     * @param response raw HTTP response.
+     * @return the action response instance used by this servlet.
+     */
+    protected ActionResponse getResponse(HttpServletRequest request, HttpServletResponse response) {
+        return new ActionResponse(request, response);
+    }
+    
     @Override
     protected final void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         __init();
@@ -147,8 +170,8 @@ public class ActionServlet extends HttpServlet {
         ActionResponse response;
 
        try {
-           request = new ActionRequest(req, resp);
-           response = new ActionResponse(req, resp);
+           request = getRequest(req, resp);
+           response = getResponse(req, resp);
            
            request._setResponse(response);
            response._setRequest(request);
