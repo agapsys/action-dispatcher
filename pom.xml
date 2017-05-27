@@ -20,7 +20,7 @@ limitations under the License.
 
     <groupId>com.agapsys</groupId>
     <artifactId>rcf-core</artifactId>
-    <version>0.1.0-20170527</version>
+    <version>0.1.0-20170528</version>
 
     <packaging>jar</packaging>
 

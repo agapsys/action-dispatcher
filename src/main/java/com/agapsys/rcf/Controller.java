@@ -19,6 +19,7 @@ import com.agapsys.rcf.exceptions.ClientException;
 import com.agapsys.rcf.exceptions.ForbiddenException;
 import com.agapsys.rcf.exceptions.UnauthorizedException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -128,58 +131,79 @@ public class Controller extends ActionServlet {
 
             for (Parameter param : method.getParameters()) {
                 Class<?> paramClass = param.getType();
-
-                if (JsonRequest.class.isAssignableFrom(paramClass)) {
-                    argList.add(new JsonRequest(request));
-                    continue;
-                }
-
-                if (JsonResponse.class.isAssignableFrom(paramClass)) {
-                    argList.add(new JsonResponse(response));
-                    continue;
-                }
-
+                
+                //<editor-fold defaultstate="collapsed" desc="It's an ActionRequest">
                 if (ActionRequest.class.isAssignableFrom(paramClass)) {
-                    argList.add(request);
+                    if (paramClass == ActionRequest.class) {
+                        argList.add(request);
+                    } else {
+                        try {
+                            Constructor constructor = paramClass.getConstructor(ActionRequest.class);
+                            Object customRequest = constructor.newInstance(request);
+                            argList.add(customRequest);
+                        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            throw new RuntimeException(String.format("Cannot create request instance for %s", paramClass.getName()));
+                        }
+                    }
+                    
                     continue;
                 }
-
+                //</editor-fold>
+                
+                //<editor-fold defaultstate="collapsed" desc="It's an ActionResponse">
                 if (ActionResponse.class.isAssignableFrom(paramClass)) {
-                    argList.add(response);
+                    if (paramClass == ActionResponse.class) {
+                        argList.add(response);
+                    } else {
+                        try {
+                            Constructor constructor = paramClass.getConstructor(ActionResponse.class);
+                            Object customResponse = constructor.newInstance(response);
+                            argList.add(customResponse);
+                        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                            throw new RuntimeException(String.format("Cannot create response instance for %s", paramClass.getName()));
+                        }
+                    }
+                    
                     continue;
                 }
-
+                //</editor-fold>
+                
+                //<editor-fold defaultstate="collapsed" desc="It's an HttpServletRequest">
                 if (HttpServletRequest.class.isAssignableFrom(paramClass)) {
                     argList.add(request.getServletRequest());
                     continue;
                 }
+                //</editor-fold>
 
+                //<editor-fold defaultstate="collapsed" desc="It's an HttpServletResponse">
                 if (HttpServletResponse.class.isAssignableFrom(paramClass)) {
                     argList.add(response.getServletResponse());
                     continue;
                 }
+                //</editor-fold>
 
-                // It's a json for an object or a list of objects...
+                //<editor-fold defaultstate="collapsed" desc="It's a json for an object or a list of objects">
                 JsonRequest jsonRequest = new JsonRequest(request);
 
                 if (Collection.class.isAssignableFrom(paramClass)) {
                     // Must be a list...
                     if (!List.class.isAssignableFrom(paramClass))
                         throw new UnsupportedOperationException(String.format("Unsupported param type: %s", paramClass));
-
+                    
                     Type pType = param.getParameterizedType();
                     if (! (pType instanceof ParameterizedType))
                         throw new UnsupportedOperationException("Missing list element type");
-
+                    
                     Type elementType = ((ParameterizedType) pType).getActualTypeArguments()[0];
                     if (!elementType.getClass().equals(Class.class))
                         throw new UnsupportedOperationException("Unsupported list element type: " + elementType);
-
+                    
                     argList.add(jsonRequest.readList((Class)elementType));
                 } else {
                     // It's an object...
                     argList.add(jsonRequest.readObject(paramClass));
                 }
+                //</editor-fold>
             }
 
             return argList.toArray();

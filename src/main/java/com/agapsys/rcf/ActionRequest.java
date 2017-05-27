@@ -262,7 +262,7 @@ public class ActionRequest extends ServletExchange {
     }
 
     // Simple wrapper constructor...
-    protected ActionRequest(ActionRequest wrappedRequest) {
+    public ActionRequest(ActionRequest wrappedRequest) {
         this(null, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
 

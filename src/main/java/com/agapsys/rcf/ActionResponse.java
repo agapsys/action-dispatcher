@@ -38,7 +38,7 @@ public class ActionResponse extends ServletExchange {
         this(null, serlvetRequest, servletResponse);
     }
 
-    protected ActionResponse(ActionResponse wrappedResponse) {
+    public ActionResponse(ActionResponse wrappedResponse) {
         this(wrappedResponse, wrappedResponse.getServletRequest(), wrappedResponse.getServletResponse());
     }
 

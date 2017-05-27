@@ -20,6 +20,7 @@ import com.agapsys.rcf.ActionResponse;
 import com.agapsys.rcf.Controller;
 import com.agapsys.rcf.HttpMethod;
 import com.agapsys.rcf.JsonRequest;
+import com.agapsys.rcf.JsonResponse;
 import com.agapsys.rcf.WebAction;
 import com.agapsys.rcf.WebController;
 import com.agapsys.rcf.exceptions.BadRequestException;
@@ -72,7 +73,7 @@ public class JsonController extends Controller {
     }
     
     @WebAction(httpMethods = HttpMethod.POST, mapping = "/dtoAndArgs")
-    public String dtoAndArgsAction(JsonRequest request, Dto dto, ActionResponse resp) {
+    public String dtoAndArgsAction(JsonRequest request, JsonResponse response, Dto dto, ActionResponse resp) {
         String result = postDto(dto);
         
         if (request == null || resp == null)
