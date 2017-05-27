@@ -38,6 +38,23 @@ public class ActionRequest extends ServletExchange {
         public T getParam(String strVal) throws BadRequestException;
     }
     
+    private static <E> E __getEnum(Class<E> enumClass, String strVal) throws BadRequestException {
+        if (strVal == null)
+            return null;
+        
+        E[] enumValues = enumClass.getEnumConstants();
+        
+        if (enumValues != null) {
+            for (E e : enumValues) {
+                String name = ((Enum)e).name();
+                if (strVal.equals(name))
+                    return e;
+            }
+        }
+        
+        throw new BadRequestException("Invalid enum value: %s", strVal);
+    }
+    
     private static abstract class AbstractParamConverter<T> implements ParamConverter<T> {
         
         private final boolean trim;
@@ -58,6 +75,7 @@ public class ActionRequest extends ServletExchange {
                 return null;
             
             strVal = trim ? strVal.trim() : strVal;
+            
             try {
                 return _getParam(strVal);
             } catch (RuntimeException ex) {
@@ -319,12 +337,19 @@ public class ActionRequest extends ServletExchange {
     
     public final <T> T getOptionalParameter(Class<T> targetClass, String paramName, T defaultValue) {
         String strVal = getServletRequest().getParameter(paramName);
-        ParamConverter<T> converter = PARAM_CONVERTER_MAP.get(targetClass);
         
-        if (converter == null)
-            throw new UnsupportedOperationException("There is no converter for " + targetClass.getName());
+        T t;
         
-        T t = converter.getParam(strVal);
+        if (Enum.class.isAssignableFrom(targetClass)) {
+            t = __getEnum(targetClass, strVal);
+        } else {
+            ParamConverter<T> converter = PARAM_CONVERTER_MAP.get(targetClass);
+            
+            if (converter == null)
+                throw new UnsupportedOperationException("There is no converter for " + targetClass.getName());
+
+            t = converter.getParam(strVal);
+        }
         
         if (t == null)
             return defaultValue;
@@ -381,16 +406,22 @@ public class ActionRequest extends ServletExchange {
 
     public final <T> T getMandatoryParameter(Class<T> targetClass, String paramName, String errorMsg, Object...errMsgArgs) throws BadRequestException {
         String strVal = getServletRequest().getParameter(paramName);
-        ParamConverter<T> converter = PARAM_CONVERTER_MAP.get(targetClass);
         
-        if (converter == null)
-            throw new UnsupportedOperationException("There is no converter for " + targetClass.getName());
+        T t;
         
-        T t = converter.getParam(strVal);
+        if (Enum.class.isAssignableFrom(targetClass)) {
+            t = __getEnum(targetClass, strVal);
+        } else {
+            ParamConverter<T> converter = PARAM_CONVERTER_MAP.get(targetClass);
+        
+            if (converter == null)
+                throw new UnsupportedOperationException("There is no converter for " + targetClass.getName());
+            
+            t = converter.getParam(strVal);
+        }
         
         if (t == null)
             throw new BadRequestException(errorMsg, errMsgArgs);
-
         
         return t;
     }
