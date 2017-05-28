@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class ActionRequest extends ServletExchange {
     
+    //<editor-fold defaultstate="collapsed" desc="STATIC SCOPE">
     private static interface ParamConverter<T> {
         public T getParam(String strVal) throws BadRequestException;
     }
@@ -89,8 +90,8 @@ public class ActionRequest extends ServletExchange {
     private static final Map<Class, ParamConverter> PARAM_CONVERTER_MAP = new LinkedHashMap<>();
     
     static {
-         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         
         PARAM_CONVERTER_MAP.put(Byte.class,       new AbstractParamConverter<Byte>(Byte.class) {
             @Override
@@ -154,17 +155,18 @@ public class ActionRequest extends ServletExchange {
         });
         
     }
+    //</editor-fold>
     
     private final ActionRequest       wrappedRequest;
     private final HttpMethod          method;
     private final String              requestUri;
-    private       String              pathInfo;
     private final Map<String, String> paramMap;
     
+    private String         pathInfo;
     private ActionResponse response;
 
     // Generic constructor
-    ActionRequest(ActionRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
+    private ActionRequest(ActionRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
         super(servletRequest, servletResponse);
         this.wrappedRequest = wrappedRequest;
 
@@ -175,14 +177,13 @@ public class ActionRequest extends ServletExchange {
         }
 
         requestUri = servletRequest.getRequestURI();
-
         
         if (wrappedRequest != null) {
             
-            //<editor-fold defaultstate="collapsed" desc="Simple wrapper">
-            pathInfo = wrappedRequest.pathInfo;
-            paramMap = wrappedRequest.paramMap;
-            response = wrappedRequest.response;
+            //<editor-fold defaultstate="collapsed" desc="Wrapper">
+            pathInfo             = wrappedRequest.pathInfo;
+            paramMap             = wrappedRequest.paramMap;
+            response             = wrappedRequest.response;
             //</editor-fold>
             
         } else { 
@@ -212,6 +213,7 @@ public class ActionRequest extends ServletExchange {
         this(wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
 
+    
     /**
      * Returns the HTTP method associated with this request.
      *
@@ -233,10 +235,7 @@ public class ActionRequest extends ServletExchange {
         return pathInfo;
     }
     
-    final void _setPathInfo(String pathInfo) {
-        this.pathInfo = pathInfo;
-    }
-
+    
     /**
      * Return origin IP.
      *
@@ -425,14 +424,20 @@ public class ActionRequest extends ServletExchange {
         return requestLine.toString();
     }
     
-    final void _setResponse(ActionResponse response) {
-        this.response = response;
-    }
-    
     public final ActionResponse getResponse() {
         return response;
     }
 
+    
+    final void _setPathInfo(String pathInfo) {
+        this.pathInfo = pathInfo;
+    }
+    
+    final void _setResponse(ActionResponse response) {
+        this.response = response;
+    }
+    
+    
     @Override
     public String toString() {
         return getRequestLine();

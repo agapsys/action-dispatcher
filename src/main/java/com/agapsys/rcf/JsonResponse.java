@@ -17,6 +17,7 @@ package com.agapsys.rcf;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class JsonResponse extends ActionResponse {
@@ -33,6 +34,10 @@ public class JsonResponse extends ActionResponse {
         super(wrappedResponse);
     }
 
+    public JsonResponse(HttpServletRequest serlvetRequest, HttpServletResponse servletResponse) {
+        super(serlvetRequest, servletResponse);
+    }
+    
     /**
      * Sends an object in the response.
      *

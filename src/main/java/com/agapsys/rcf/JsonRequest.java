@@ -40,6 +40,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class JsonRequest extends ActionRequest {
 
@@ -130,6 +132,11 @@ public class JsonRequest extends ActionRequest {
     public JsonRequest(ActionRequest wrappedRequest) {
         super(wrappedRequest);
     }
+
+    public JsonRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        super(servletRequest, servletResponse);
+    }
+    
 
     /**
      * Reads an object represented by JSON request.

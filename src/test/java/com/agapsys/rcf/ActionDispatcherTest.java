@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agapsys.rcf.unit;
+package com.agapsys.rcf;
 
-import com.agapsys.rcf.Action;
-import com.agapsys.rcf.ActionDispatcher;
-import com.agapsys.rcf.HttpMethod;
-import com.agapsys.rcf.ActionRequest;
-import com.agapsys.rcf.ActionResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.servlet.ServletException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,6 +75,46 @@ public class ActionDispatcherTest {
 
         dispatcher.registerAction(HttpMethod.GET, "/test", action);
         dispatcher.registerAction(HttpMethod.GET, "/test", action);
+    }
+    
+    private static String __getRelativePath(String parent, String child) {
+        try {
+            Method method = ActionDispatcher.class.getDeclaredMethod("__getRelativePath", String.class, String.class);
+            method.setAccessible(true);
+            return (String) method.invoke(null, parent, child);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    @Test
+    public void testRelativePaths() {
+        String child;
+        String parent;
+        
+        child = "/foo/path/to/resource";
+        parent = "/foo/path";
+        Assert.assertEquals("/to/resource", __getRelativePath(parent, child));
+
+        child = "/foo/path";
+        parent = "/bar/path";
+        Assert.assertEquals("/foo/path", __getRelativePath(parent, child));
+
+        child = "/abc";
+        parent = "/";
+        Assert.assertEquals("/abc", __getRelativePath(parent, child));
+
+        child = "/";
+        parent = "/";
+        Assert.assertEquals("/", __getRelativePath(parent, child));
+
+        child = "/abc/";
+        parent = "/abc";
+        Assert.assertEquals("/", __getRelativePath(parent, child));
+
+        child = "/abc";
+        parent = "/abc/";
+        Assert.assertEquals("/", __getRelativePath(parent, child));
     }
     // =========================================================================
 }

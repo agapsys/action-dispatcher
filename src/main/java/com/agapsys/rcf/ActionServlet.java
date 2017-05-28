@@ -128,7 +128,7 @@ public class ActionServlet extends HttpServlet {
      * @param response raw HTTP response.
      * @return the action request instance used by this servlet.
      */
-    protected ActionRequest getRequest(HttpServletRequest request, HttpServletResponse response) {
+    protected ActionRequest getActionRequest(HttpServletRequest request, HttpServletResponse response) {
         return new ActionRequest(request, response);
     }
     
@@ -139,7 +139,7 @@ public class ActionServlet extends HttpServlet {
      * @param response raw HTTP response.
      * @return the action response instance used by this servlet.
      */
-    protected ActionResponse getResponse(HttpServletRequest request, HttpServletResponse response) {
+    protected ActionResponse getActionResponse(HttpServletRequest request, HttpServletResponse response) {
         return new ActionResponse(request, response);
     }
     
@@ -171,8 +171,8 @@ public class ActionServlet extends HttpServlet {
         ActionResponse response;
 
        try {
-           request = getRequest(req, resp);
-           response = getResponse(req, resp);
+           request = getActionRequest(req, resp);
+           response = getActionResponse(req, resp);
            
            request._setResponse(response);
            response._setRequest(request);

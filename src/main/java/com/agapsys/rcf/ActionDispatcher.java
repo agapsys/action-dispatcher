@@ -57,7 +57,7 @@ public class ActionDispatcher {
         return tmpPath.startsWith("/") ? tmpPath : "/" + tmpPath;
     }
     
-    private ActionRequest __getWrapped(String parentPath, ActionRequest wrappedRequest) {
+    private static ActionRequest __getWrapped(String parentPath, ActionRequest wrappedRequest) {
         try {
             Constructor constructor = wrappedRequest.getClass().getConstructor(ActionRequest.class);
             ActionRequest customRequest = (ActionRequest) constructor.newInstance(wrappedRequest);
@@ -70,35 +70,6 @@ public class ActionDispatcher {
             throw new RuntimeException(String.format("Cannot create request instance for %s", wrappedRequest.getClass().getName()));
         }
 
-    }
-    
-    // TODO make test
-    public static void main(String[] args) {
-        String child = "/foo/path/to/resource";
-        String parent = "/foo/path";
-        String relativePath = __getRelativePath(parent, child);
-
-        child = "/foo/path";
-        parent = "/bar/path";
-        relativePath = __getRelativePath(parent, child);
-
-        child = "/abc";
-        parent = "/";
-        relativePath = __getRelativePath(parent, child);
-
-        child = "/";
-        parent = "/";
-        relativePath = __getRelativePath(parent, child);
-
-        child = "/abc/";
-        parent = "/abc";
-        relativePath = __getRelativePath(parent, child);
-
-        child = "/abc";
-        parent = "/abc/";
-        relativePath = __getRelativePath(parent, child);
-
-        return;
     }
     // =========================================================================
     // </editor-fold>

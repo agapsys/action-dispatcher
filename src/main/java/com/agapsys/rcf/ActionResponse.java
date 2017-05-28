@@ -27,14 +27,14 @@ public class ActionResponse extends ServletExchange {
     private ActionRequest request;
 
     // Generic constructor
-    ActionResponse(ActionResponse wrappedResponse, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+    private ActionResponse(ActionResponse wrappedResponse, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         super(servletRequest, servletResponse);
         this.wrappedResponse = wrappedResponse;
         if (wrappedResponse != null)
             request = wrappedResponse.request;
     }
 
-    ActionResponse(HttpServletRequest serlvetRequest, HttpServletResponse servletResponse) {
+    public ActionResponse(HttpServletRequest serlvetRequest, HttpServletResponse servletResponse) {
         this(null, serlvetRequest, servletResponse);
     }
 
