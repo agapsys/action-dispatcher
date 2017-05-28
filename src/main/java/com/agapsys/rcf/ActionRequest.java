@@ -26,7 +26,6 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.regex.Pattern;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -155,57 +154,17 @@ public class ActionRequest extends ServletExchange {
         });
         
     }
-
-    static String _getRelativePath(String parent, String child) {
-        if (parent.endsWith("/"))
-            parent = parent.substring(0, parent.length() - 1);
-
-        if (child.endsWith("/"))
-            child = child.substring(0, child.length() - 1);
-
-        String tmpPath = child.replaceFirst(Pattern.quote(parent), "");
-        return tmpPath.startsWith("/") ? tmpPath : "/" + tmpPath;
-    }
-
+    
     private final ActionRequest       wrappedRequest;
     private final HttpMethod          method;
     private final String              requestUri;
-    private final String              pathInfo;
+    private       String              pathInfo;
     private final Map<String, String> paramMap;
     
     private ActionResponse response;
 
-    // TODO make test
-    public static void main(String[] args) {
-        String child = "/foo/path/to/resource";
-        String parent = "/foo/path";
-        String relativePath = _getRelativePath(parent, child);
-
-        child = "/foo/path";
-        parent = "/bar/path";
-        relativePath = _getRelativePath(parent, child);
-
-        child = "/abc";
-        parent = "/";
-        relativePath = _getRelativePath(parent, child);
-
-        child = "/";
-        parent = "/";
-        relativePath = _getRelativePath(parent, child);
-
-        child = "/abc/";
-        parent = "/abc";
-        relativePath = _getRelativePath(parent, child);
-
-        child = "/abc";
-        parent = "/abc/";
-        relativePath = _getRelativePath(parent, child);
-
-        return;
-    }
-
     // Generic constructor
-    ActionRequest(String parentPath, ActionRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
+    ActionRequest(ActionRequest wrappedRequest, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws MethodNotAllowedException {
         super(servletRequest, servletResponse);
         this.wrappedRequest = wrappedRequest;
 
@@ -218,7 +177,7 @@ public class ActionRequest extends ServletExchange {
         requestUri = servletRequest.getRequestURI();
 
         
-        if (wrappedRequest != null && parentPath == null) {
+        if (wrappedRequest != null) {
             
             //<editor-fold defaultstate="collapsed" desc="Simple wrapper">
             pathInfo = wrappedRequest.pathInfo;
@@ -226,15 +185,7 @@ public class ActionRequest extends ServletExchange {
             response = wrappedRequest.response;
             //</editor-fold>
             
-        } else if (wrappedRequest != null && parentPath != null) {
-            
-            //<editor-fold defaultstate="collapsed" desc="Wrapping due to nesting (dispatcher)">
-            pathInfo = _getRelativePath(parentPath, wrappedRequest.pathInfo);
-            paramMap = wrappedRequest.paramMap;
-            response = wrappedRequest.response;
-            //</editor-fold>
-            
-        } else { // <-- wrappedRequest == null && parentPath == null
+        } else { 
             
             //<editor-fold defaultstate="collapsed" desc="First level constructor">
             String pathInfo = servletRequest.getPathInfo();
@@ -251,19 +202,14 @@ public class ActionRequest extends ServletExchange {
         
     }
 
-    // Handled by dispatcher...
-    ActionRequest(String parentPath, ActionRequest wrappedRequest) {
-        this(parentPath, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
-    }
-
     // First level constructor...
-    ActionRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        this(null, null, servletRequest, servletResponse);
+    public ActionRequest(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        this(null, servletRequest, servletResponse);
     }
 
     // Simple wrapper constructor...
     public ActionRequest(ActionRequest wrappedRequest) {
-        this(null, wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
+        this(wrappedRequest, wrappedRequest.getServletRequest(), wrappedRequest.getServletResponse());
     }
 
     /**
@@ -285,6 +231,10 @@ public class ActionRequest extends ServletExchange {
 
     public final String getPathInfo() {
         return pathInfo;
+    }
+    
+    final void _setPathInfo(String pathInfo) {
+        this.pathInfo = pathInfo;
     }
 
     /**

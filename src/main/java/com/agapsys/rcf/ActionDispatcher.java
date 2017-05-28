@@ -18,6 +18,8 @@ package com.agapsys.rcf;
 
 import com.agapsys.rcf.exceptions.NotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -42,6 +44,61 @@ public class ActionDispatcher {
             return path + "*";
 
         return path + "/*";
+    }
+    
+    private static String __getRelativePath(String parent, String child) {
+        if (parent.endsWith("/"))
+            parent = parent.substring(0, parent.length() - 1);
+
+        if (child.endsWith("/"))
+            child = child.substring(0, child.length() - 1);
+
+        String tmpPath = child.replaceFirst(Pattern.quote(parent), "");
+        return tmpPath.startsWith("/") ? tmpPath : "/" + tmpPath;
+    }
+    
+    private ActionRequest __getWrapped(String parentPath, ActionRequest wrappedRequest) {
+        try {
+            Constructor constructor = wrappedRequest.getClass().getConstructor(ActionRequest.class);
+            ActionRequest customRequest = (ActionRequest) constructor.newInstance(wrappedRequest);
+            String pathInfo = __getRelativePath(parentPath, wrappedRequest.getPathInfo());
+            customRequest._setPathInfo(pathInfo);
+            
+            return customRequest;
+            
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new RuntimeException(String.format("Cannot create request instance for %s", wrappedRequest.getClass().getName()));
+        }
+
+    }
+    
+    // TODO make test
+    public static void main(String[] args) {
+        String child = "/foo/path/to/resource";
+        String parent = "/foo/path";
+        String relativePath = __getRelativePath(parent, child);
+
+        child = "/foo/path";
+        parent = "/bar/path";
+        relativePath = __getRelativePath(parent, child);
+
+        child = "/abc";
+        parent = "/";
+        relativePath = __getRelativePath(parent, child);
+
+        child = "/";
+        parent = "/";
+        relativePath = __getRelativePath(parent, child);
+
+        child = "/abc/";
+        parent = "/abc";
+        relativePath = __getRelativePath(parent, child);
+
+        child = "/abc";
+        parent = "/abc/";
+        relativePath = __getRelativePath(parent, child);
+
+        return;
     }
     // =========================================================================
     // </editor-fold>
@@ -133,7 +190,7 @@ public class ActionDispatcher {
             response.sendPermanentRedirect(redirectPath);
         } else {
             if (!usingWildcard && !pathInfo.equals(actionPath)) { // <-- mapping: '/foo', uri: '/foo/[?query=string]'. => redirects to '/foo[?query=string]'
-                if (ActionRequest._getRelativePath(actionPath, pathInfo).equals("/")) {
+                if (__getRelativePath(actionPath, pathInfo).equals("/")) {
 
                     String requestUri = request.getRequestUri();
                     String redirectPath = requestUri.substring(0, requestUri.length() - 1);
@@ -147,7 +204,7 @@ public class ActionDispatcher {
                 }
             } else {
                 if (!actionPath.equals("/")) {
-                    request = new ActionRequest(actionPath, request);
+                    request = __getWrapped(actionPath, request);
                 }
 
                 beforeAction(request, response);
@@ -176,5 +233,5 @@ public class ActionDispatcher {
      * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request.
      */
     protected void afterAction(ActionRequest request, ActionResponse response) throws ServletException, IOException {}
-
+    
 }

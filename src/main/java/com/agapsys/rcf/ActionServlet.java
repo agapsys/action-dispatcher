@@ -22,6 +22,7 @@ public class ActionServlet extends HttpServlet {
             super.afterAction(request, response);
             ActionServlet.this.afterAction(request, response);
         }
+
     };
     private boolean initialized = false;
 
