@@ -46,7 +46,7 @@ public class ActionDispatcher {
         return path + "/*";
     }
     
-    private static String __getRelativePath(String parent, String child) {
+    public static String getRelativePath(String parent, String child) {
         if (parent.endsWith("/"))
             parent = parent.substring(0, parent.length() - 1);
 
@@ -61,7 +61,7 @@ public class ActionDispatcher {
         try {
             Constructor constructor = wrappedRequest.getClass().getConstructor(ActionRequest.class);
             ActionRequest customRequest = (ActionRequest) constructor.newInstance(wrappedRequest);
-            String pathInfo = __getRelativePath(parentPath, wrappedRequest.getPathInfo());
+            String pathInfo = getRelativePath(parentPath, wrappedRequest.getPathInfo());
             customRequest._setPathInfo(pathInfo);
             
             return customRequest;
@@ -161,7 +161,7 @@ public class ActionDispatcher {
             response.sendPermanentRedirect(redirectPath);
         } else {
             if (!usingWildcard && !pathInfo.equals(actionPath)) { // <-- mapping: '/foo', uri: '/foo/[?query=string]'. => redirects to '/foo[?query=string]'
-                if (__getRelativePath(actionPath, pathInfo).equals("/")) {
+                if (getRelativePath(actionPath, pathInfo).equals("/")) {
 
                     String requestUri = request.getRequestUri();
                     String redirectPath = requestUri.substring(0, requestUri.length() - 1);
