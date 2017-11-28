@@ -21,6 +21,11 @@ import com.agapsys.rcf.WebAction;
 
 public class Controller1 extends Controller {
 
+	@WebAction
+	public static void sGet() {  // <-- static method action
+		System.out.println("Called!");
+	}
+
     @WebAction
     public void get() {}
 

@@ -406,6 +406,14 @@ public class ControllerGeneralTest {
         assertStatus(200, resp);
     }
 
+	@Test
+	public void testStaticMethodAction() {
+		StringResponse resp;
+
+		resp = rc2.doRequest(new HttpGet("/%s/sGet", Controller1.class.getSimpleName()));
+		assertStatus(200, resp);
+	}
+
     @Test
     public void testWildCardMapping() {
         StringResponse resp;
